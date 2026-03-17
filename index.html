@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Database Game Maker v4.1 - Beta valid rows</title>
+    <title>Database Game Maker v4.1 - Fixed Data Types</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,6 +26,7 @@
         .dirty-row { border-left: 3px solid #f59e0b !important; }
         .col-id { width: 220px; min-width: 220px; position: sticky; left: 0; z-index: 20; background: var(--bg-panel); border-right: 1px solid var(--border); }
         .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        .type-number { color: #60a5fa !important; font-family: 'JetBrains Mono', monospace; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-2px, 0, 0); } 40%, 60% { transform: translate3d(2px, 0, 0); } }
     </style>
 </head>
@@ -41,7 +42,7 @@
     <!-- NAVBAR -->
     <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30">
         <div class="flex items-center gap-4">
-            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V3.9</span></h1>
+            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V4.1 Fixed</span></h1>
             <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i> Open</button>
             <button @click="reloadProject()" class="btn-action" :disabled="!rootHandle" :class="!rootHandle && 'opacity-20'"><i class="fa-solid fa-rotate text-green-500"></i> Reload</button>
             <div class="h-4 w-[1px] bg-zinc-800 mx-1"></div>
@@ -53,7 +54,6 @@
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <!-- CLICKABLE ERROR INDICATOR: NOW AUTO-UPDATES -->
             <button @click="errorSummary.open = true" class="text-[10px] font-bold text-red-500 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition-all" x-show="errorCount > 0">
                 <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span x-text="errorCount"></span> ISSUES FOUND
             </button>
@@ -80,7 +80,6 @@
                             <i class="fa-solid fa-folder text-[11px] opacity-40"></i> 
                             <span class="truncate" x-text="folder.name"></span>
                         </div>
-                        <!-- Badge báo lỗi ở sidebar luôn đúng dù chưa click vào folder -->
                         <span x-show="getFolderErrorCount(folder.fullPath) > 0" 
                               class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center"
                               x-text="getFolderErrorCount(folder.fullPath)"></span>
@@ -121,23 +120,33 @@
                                         <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
                                             <td class="px-2">
                                                 <div class="min-w-[140px] flex items-center gap-1 group/field relative">
+                                                    <!-- Boolean -->
                                                     <template x-if="getFieldType(file, prop) === 'bool'">
                                                         <button @click="file.data[prop] = !file.data[prop]; markDirty(file)" 
                                                                 :class="file.data[prop] ? 'bg-blue-600' : 'bg-zinc-800'" class="w-9 h-5 rounded-full px-0.5 flex items-center transition-all">
                                                             <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'" class="w-4 h-4 bg-white rounded-full transition-all"></div>
                                                         </button>
                                                     </template>
+
+                                                    <!-- Enum -->
                                                     <template x-if="getFieldType(file, prop) === 'enum' || getFieldType(file, prop) === 'export_enum'">
-                                                        <select x-model="file.data[prop]" @change="markDirty(file)" class="g-input !h-8 text-xs appearance-none cursor-pointer">
+                                                        <select :value="file.data[prop]" @change="updateValue(file, prop, $event.target.value)" class="g-input !h-8 text-xs appearance-none cursor-pointer">
                                                             <template x-for="(val, idx) in getHint(file, prop).options">
-                                                                <option :value="getFieldType(file, prop) === 'enum' ? idx : val" x-text="val"></option>
+                                                                <option :value="getFieldType(file, prop) === 'enum' ? idx : val" x-text="val" :selected="file.data[prop] == (getFieldType(file, prop) === 'enum' ? idx : val)"></option>
                                                             </template>
                                                         </select>
                                                     </template>
+
+                                                    <!-- Input (Text/Number) - FIXED BINDING -->
                                                     <template x-if="['bool', 'enum', 'export_enum'].indexOf(getFieldType(file, prop)) === -1">
                                                         <div class="relative w-full">
-                                                            <input type="text" x-model="file.data[prop]" @input="markDirty(file)" 
-                                                                   :class="hasIssue(file, prop) && 'input-error shake-error'"
+                                                            <input type="text" 
+                                                                   :value="file.data[prop]" 
+                                                                   @input="updateValue(file, prop, $event.target.value)" 
+                                                                   :class="[
+                                                                        hasIssue(file, prop) && 'input-error shake-error',
+                                                                        typeof file.data[prop] === 'number' && 'type-number'
+                                                                   ]"
                                                                    class="g-input !h-8 focus:bg-zinc-950" placeholder="...">
                                                             <div x-show="hasIssue(file, prop)" class="absolute -right-1.5 -top-1.5 z-10">
                                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-[10px] bg-zinc-950 rounded-full"></i>
@@ -190,9 +199,6 @@
                     </template>
                 </div>
             </div>
-            <div class="px-6 py-4 border-t border-zinc-900 flex justify-end bg-zinc-900/10 text-[10px] text-zinc-500 italic">
-                Click on any item to jump to the resource.
-            </div>
         </div>
     </div>
 
@@ -212,6 +218,18 @@
         </div>
     </div>
 
+    <!-- MODAL: PASTE JSON -->
+    <div x-show="importModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl" @click.away="importModal.open = false">
+            <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest">Paste JSON Data</h3>
+            <textarea x-model="importModal.text" class="g-input !h-64 p-4 font-mono text-[11px] leading-relaxed resize-none" placeholder='{"path/to/file.tres": {"property": "value"}}'></textarea>
+            <div class="flex justify-end gap-3">
+                <button @click="importModal.open = false" class="px-4 py-2 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
+                <button @click="processImport(importModal.text); importModal.open = false" class="btn-action btn-primary !px-8">Process Import</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function editor() {
             return {
@@ -224,7 +242,6 @@
                 createModal: { open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '' },
                 importModal: { open: false, text: '' },
 
-                // CẢI TIẾN: Sử dụng Getter để Alpine luôn tính toán lại lỗi trên TOÀN BỘ project
                 get errorList() {
                     const list = [];
                     this.allFiles.forEach(f => {
@@ -239,10 +256,7 @@
                     });
                     return list;
                 },
-
-                get errorCount() {
-                    return this.errorList.length;
-                },
+                get errorCount() { return this.errorList.length; },
 
                 async openProject() {
                     try { this.rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' }); await this.loadProjectData(); } catch (e) { }
@@ -252,17 +266,25 @@
                     await this.loadProjectData();
                 },
                 async loadProjectData() {
-                    this.isSaving = true; this.allFiles = []; this.scripts = {}; this.classMap = {}; this.originalTypes.clear();
-                    this.dirtyCount = 0;
-                    try { 
-                        // Bước 1: Quét toàn bộ file
-                        await this.scanDir(this.rootHandle, ""); 
-                        // Bước 2: Dựng cây folder
-                        this.buildTree(); 
-                        // Bước 3: Ép Alpine nhận diện dữ liệu mới
-                        this.allFiles = [...this.allFiles];
-                    } finally { this.isSaving = false; }
+                    this.isSaving = true; this.allFiles = []; this.scripts = {}; this.classMap = {}; this.originalTypes.clear(); this.dirtyCount = 0;
+                    try { await this.scanDir(this.rootHandle, ""); this.buildTree(); this.allFiles = [...this.allFiles]; } finally { this.isSaving = false; }
                 },
+
+                // FIXED: HÀM CẬP NHẬT GIÁ TRỊ CÓ ÉP KIỂU (CASTING)
+                updateValue(file, prop, newValue) {
+                    const types = this.originalTypes.get(file.id);
+                    const targetType = types ? types[prop] : 'string';
+
+                    if (targetType === 'number') {
+                        file.data[prop] = newValue === "" ? 0 : (isNaN(newValue) ? newValue : Number(newValue));
+                    } else if (targetType === 'boolean') {
+                        file.data[prop] = (newValue === 'true' || newValue === true);
+                    } else {
+                        file.data[prop] = newValue;
+                    }
+                    this.markDirty(file);
+                },
+
                 async scanDir(handle, path) {
                     for await (const entry of handle.values()) {
                         const curPath = path + entry.name;
@@ -294,6 +316,26 @@
                         }
                     }
                 },
+                recordTypes(id, data) {
+                    const types = {}; Object.entries(data).forEach(([k, v]) => types[k] = typeof v);
+                    this.originalTypes.set(id, types);
+                },
+                isEmpty(file, prop) {
+                    const val = file.data[prop];
+                    return val === "" || val === null || val === undefined;
+                },
+                isInvalid(file, prop) {
+                    const val = file.data[prop]; const types = this.originalTypes.get(file.id);
+                    if (!types || !types[prop]) return false;
+                    if (types[prop] === 'number') return isNaN(val) || val === null;
+                    return false;
+                },
+                hasIssue(file, prop) { return this.isEmpty(file, prop) || this.isInvalid(file, prop); },
+                getFolderErrorCount(folderPath) {
+                    return this.allFiles.filter(f => f.folder === folderPath && Object.keys(f.data).some(p => this.hasIssue(f, p))).length;
+                },
+                goToError(err) { this.activeFolder = err.folder; this.searchQuery = err.fileName; this.errorSummary.open = false; },
+                
                 parseGDScript(content, fileName) {
                     const hints = {}; const enums = {};
                     const classNameMatch = content.match(/class_name\s+(\w+)/);
@@ -340,35 +382,6 @@
                     });
                     return data;
                 },
-                recordTypes(id, data) {
-                    const types = {}; Object.entries(data).forEach(([k, v]) => types[k] = typeof v);
-                    this.originalTypes.set(id, types);
-                },
-
-                // VALIDATION LOGIC
-                isEmpty(file, prop) {
-                    const val = file.data[prop];
-                    return val === "" || val === null || val === undefined;
-                },
-                isInvalid(file, prop) {
-                    const val = file.data[prop]; const types = this.originalTypes.get(file.id);
-                    if (!types || !types[prop]) return false;
-                    const targetType = types[prop];
-                    if (targetType === 'number') return isNaN(val) || val === null;
-                    if (targetType === 'boolean') return typeof val !== 'boolean' && val !== 'true' && val !== 'false';
-                    return false;
-                },
-                hasIssue(file, prop) {
-                    return this.isEmpty(file, prop) || this.isInvalid(file, prop);
-                },
-                getFolderErrorCount(folderPath) {
-                    return this.allFiles.filter(f => f.folder === folderPath && Object.keys(f.data).some(p => this.hasIssue(f, p))).length;
-                },
-                goToError(err) {
-                    this.activeFolder = err.folder;
-                    this.searchQuery = err.fileName;
-                    this.errorSummary.open = false;
-                },
                 getHint(file, prop) {
                     let combinedHints = {}; let current = file.scriptName; let stack = 0;
                     while (current && stack < 10) {
@@ -386,9 +399,7 @@
                 },
                 getFieldsForGroup(scriptName, files) {
                     let keys = new Set();
-                    files.forEach(f => Object.keys(f.data).forEach(k => {
-                        keys.add(k);
-                    }));
+                    files.forEach(f => Object.keys(f.data).forEach(k => keys.add(k)));
                     return Array.from(keys);
                 },
                 get groupedFiles() {
@@ -451,18 +462,12 @@
                                         if (first.data.hasOwnProperty(key)) {
                                             updatedKeys.add(key);
                                             const v = first.data[key];
+                                            // FIXED: CHỈ THÊM NGOẶC KÉP NẾU LÀ STRING
                                             let valStr = (typeof v === 'string' && !this.godotTypes.some(t => v.startsWith(t + "("))) ? `"${v}"` : v;
                                             return `${key} = ${valStr}`;
                                         }
                                     }
                                     return line;
-                                });
-                                Object.keys(first.data).forEach(k => {
-                                    if (!updatedKeys.has(k)) {
-                                        const v = first.data[k];
-                                        let valStr = (typeof v === 'string' && !this.godotTypes.some(t => v.startsWith(t + "("))) ? `"${v}"` : v;
-                                        newLines.push(`${k} = ${valStr}`);
-                                    }
                                 });
                                 await w.write(first.rawHeader + "\n" + newLines.join('\n'));
                                 first.rawBody = newLines.join('\n');
