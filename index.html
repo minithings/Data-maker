@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Database Game Maker v3.7 - Pro Workflow</title>
+    <title>Database Game Maker v3.8 - Pro Workflow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,6 +25,9 @@
         .btn-primary:hover { background: #3b82f6; }
         .dirty-row { border-left: 3px solid #f59e0b !important; }
         .col-id { width: 220px; min-width: 220px; position: sticky; left: 0; z-index: 20; background: var(--bg-panel); border-right: 1px solid var(--border); }
+        /* Hiệu ứng rung nhẹ khi có lỗi */
+        .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-2px, 0, 0); } 40%, 60% { transform: translate3d(2px, 0, 0); } }
     </style>
 </head>
 
@@ -39,7 +42,7 @@
     <!-- NAVBAR -->
     <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30">
         <div class="flex items-center gap-4">
-            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V3.7</span></h1>
+            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V3.8</span></h1>
             <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i> Open</button>
             <button @click="reloadProject()" class="btn-action" :disabled="!rootHandle" :class="!rootHandle && 'opacity-20'"><i class="fa-solid fa-rotate text-green-500"></i> Reload</button>
             <div class="h-4 w-[1px] bg-zinc-800 mx-1"></div>
@@ -51,8 +54,9 @@
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <div class="text-[10px] font-bold text-red-500 bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20" x-show="errorCount > 0">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span x-text="errorCount"></span> ERRORS
+            <!-- ERROR INDICATOR -->
+            <div @click="scrollToFirstError()" class="cursor-pointer text-[10px] font-bold text-red-500 bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20 animate-pulse" x-show="errorCount > 0">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span x-text="errorCount"></span> INVALID DATA
             </div>
             <input type="text" x-model="searchQuery" placeholder="Search everywhere..." class="g-input !w-64">
             <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0 || errorCount > 0" :class="(dirtyCount > 0 && errorCount === 0) ? 'btn-primary' : 'opacity-30'" class="btn-action px-8 uppercase tracking-widest transition-all shadow-lg">
@@ -80,7 +84,7 @@
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
+        <main id="main-scroll-area" class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
             <template x-for="(groupFiles, scriptName) in groupedFiles" :key="scriptName">
                 <div class="data-panel shadow-2xl">
                     <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between">
@@ -113,13 +117,16 @@
                                         </td>
                                         <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
                                             <td class="px-2">
-                                                <div class="min-w-[140px] flex items-center gap-1 group/field">
+                                                <div class="min-w-[140px] flex items-center gap-1 group/field relative">
+                                                    
+                                                    <!-- UI FOR DIFFERENT TYPES -->
                                                     <template x-if="getFieldType(file, prop) === 'bool'">
                                                         <button @click="file.data[prop] = !file.data[prop]; markDirty(file)" 
                                                                 :class="file.data[prop] ? 'bg-blue-600' : 'bg-zinc-800'" class="w-9 h-5 rounded-full px-0.5 flex items-center transition-all">
                                                             <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'" class="w-4 h-4 bg-white rounded-full transition-all"></div>
                                                         </button>
                                                     </template>
+
                                                     <template x-if="getFieldType(file, prop) === 'enum' || getFieldType(file, prop) === 'export_enum'">
                                                         <select x-model="file.data[prop]" @change="markDirty(file)" class="g-input !h-8 text-xs appearance-none cursor-pointer">
                                                             <template x-for="(val, idx) in getHint(file, prop).options">
@@ -127,17 +134,25 @@
                                                             </template>
                                                         </select>
                                                     </template>
+
                                                     <template x-if="getFieldType(file, prop) === 'multiline'">
                                                         <div @click="openTextEditor(file, prop)" class="g-input !h-8 flex items-center cursor-pointer hover:bg-zinc-900 group">
                                                             <span class="truncate italic text-zinc-500 text-[11px] flex-1" x-text="file.data[prop] || 'Edit text...'"></span>
                                                             <i class="fa-solid fa-expand text-[10px] text-zinc-700 group-hover:text-blue-500"></i>
                                                         </div>
                                                     </template>
+
                                                     <template x-if="['bool', 'enum', 'export_enum', 'multiline'].indexOf(getFieldType(file, prop)) === -1">
                                                         <div class="relative w-full">
                                                             <input type="text" x-model="file.data[prop]" @input="markDirty(file)" 
-                                                                   :class="isInvalid(file, prop) && 'input-error'"
+                                                                   :class="isInvalid(file, prop) && 'input-error shake-error'"
                                                                    class="g-input !h-8 focus:bg-zinc-950" placeholder="...">
+                                                            
+                                                            <!-- ERROR ICON INDICATOR -->
+                                                            <div x-show="isInvalid(file, prop)" class="absolute -right-1.5 -top-1.5 z-10">
+                                                                <i class="fa-solid fa-circle-exclamation text-red-500 text-[10px] bg-zinc-950 rounded-full"></i>
+                                                            </div>
+
                                                             <button @click="openTextEditor(file, prop)" class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-700 opacity-0 group-hover/field:opacity-100 transition-opacity">
                                                                 <i class="fa-solid fa-expand text-[10px]"></i>
                                                             </button>
@@ -159,7 +174,7 @@
         </main>
     </div>
 
-    <!-- MODAL: NEW RESOURCE (WITH SEARCH CLONE) -->
+    <!-- MODAL: NEW RESOURCE -->
     <div x-show="createModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-lg rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl" @click.away="createModal.open = false">
             <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest">Create New Resource</h3>
@@ -175,12 +190,10 @@
                         <span>Clone Template</span>
                         <span class="text-zinc-700">Search to filter...</span>
                     </label>
-                    <!-- SEARCH CLONE INPUT -->
                     <div class="relative">
                         <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 text-xs"></i>
                         <input type="text" x-model="createModal.cloneSearch" class="g-input !h-9 !pl-9 bg-zinc-900 border-zinc-800 text-xs" placeholder="Search tres files...">
                     </div>
-                    <!-- LIST CLONE -->
                     <div class="h-48 overflow-y-auto custom-scrollbar border border-zinc-900 rounded-lg p-1 bg-zinc-900/30">
                         <div @click="createModal.targetClone = ''" :class="!createModal.targetClone ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-zinc-500'" class="p-2 rounded text-[12px] cursor-pointer mb-1 italic transition-all">-- Empty Resource --</div>
                         <template x-for="f in filteredCloneFiles" :key="f.id">
@@ -215,7 +228,7 @@
         </div>
     </div>
 
-    <!-- OTHER MODALS (ADD COLUMN, TEXT EDITOR) -->
+    <!-- TEXT EDITOR MODAL -->
     <div x-show="textEditor.open" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-4xl rounded-2xl border border-zinc-800 flex flex-col shadow-2xl overflow-hidden" @click.away="textEditor.open = false">
             <div class="px-6 py-4 border-b border-zinc-900 flex justify-between bg-zinc-900/30">
@@ -234,7 +247,7 @@
                 rootHandle: null, dirtyCount: 0, errorCount: 0, isSaving: false,
                 blacklist: ['script', 'uid', 'format', 'load_steps', 'atlas', 'texture', 'sprite_frames', 'icon'],
                 godotTypes: ['ExtResource', 'SubResource', 'Rect2', 'Vector2', 'Vector3', 'Color', 'Transform2D'],
-                originalTypes: new Map(),
+                originalTypes: new Map(), // Lưu trữ kiểu dữ liệu gốc để check invalid
                 textEditor: { open: false, file: null, key: '', tempValue: '' },
                 createModal: { open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '' },
                 importModal: { open: false, text: '' },
@@ -337,16 +350,30 @@
                     const types = {}; Object.entries(data).forEach(([k, v]) => types[k] = typeof v);
                     this.originalTypes.set(id, types);
                 },
+                // NÂNG CẤP KIỂM TRA LỖI DỮ LIỆU
                 isInvalid(file, prop) {
-                    const val = file.data[prop]; const types = this.originalTypes.get(file.id);
+                    const val = file.data[prop]; 
+                    const types = this.originalTypes.get(file.id);
                     if (!types || !types[prop]) return false;
-                    return (types[prop] === 'number') && (isNaN(val) || val === "" || val === null);
+                    
+                    const targetType = types[prop];
+                    if (targetType === 'number') {
+                        return isNaN(val) || val === "" || val === null;
+                    }
+                    if (targetType === 'boolean') {
+                        return typeof val !== 'boolean' && val !== 'true' && val !== 'false';
+                    }
+                    return false;
                 },
                 checkGlobalErrors() {
                     let count = 0; this.allFiles.forEach(f => {
                         Object.keys(f.data).forEach(p => { if (this.isInvalid(f, p)) count++; });
                     });
                     this.errorCount = count;
+                },
+                scrollToFirstError() {
+                    const firstError = document.querySelector('.input-error');
+                    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 },
                 getHint(file, prop) { return this.getInheritedHints(file.scriptName)[prop] || { type: 'default' }; },
                 getFieldType(file, prop) { 
@@ -418,10 +445,18 @@
                     else { const p = file.path; this.allFiles = this.allFiles.filter(f => f.id !== file.id); this.allFiles.filter(f => f.path === p).forEach(f => this.markDirty(f)); }
                     this.buildTree();
                 },
+                // NÂNG CẤP ADD ENTRY CHO JSON: TẠO TRỐNG DỮ LIỆU
                 addNewEntry(group, scriptName) {
                     const first = group[0]; const id = prompt("Identifier/Name:"); if (!id) return;
                     if (first.type === 'json') {
-                        const newObj = { ...first, id: first.path + ":" + id, name: id, data: JSON.parse(JSON.stringify(first.data)), dirty: true };
+                        const emptyData = {};
+                        Object.keys(first.data).forEach(key => {
+                            const originalVal = first.data[key];
+                            if (typeof originalVal === 'boolean') emptyData[key] = false;
+                            else if (typeof originalVal === 'number') emptyData[key] = 0;
+                            else emptyData[key] = "";
+                        });
+                        const newObj = { ...first, id: first.path + ":" + id, name: id, data: emptyData, dirty: true };
                         this.allFiles.push(newObj); this.recordTypes(newObj.id, newObj.data); this.dirtyCount++;
                     } else this.internalCreate(id, '.tres', first.id);
                 },
