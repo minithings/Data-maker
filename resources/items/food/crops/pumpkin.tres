@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://diwdck3xugm3s"]
+
+[ext_resource type="Texture2D" uid="uid://bu48mnjmn4tq8" path="res://graphics/icons/crops.png" id="1_cesps"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_hwnw3"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_afogm"]
+atlas = ExtResource("1_cesps")
+region = Rect2(320, 32, 16, 16)
+
+[resource]
+script = ExtResource("2_hwnw3")
+energy_restore = 20
+hunger_restore = 100
+code = "pumpkin"
+name = "Bí ngô"
+description = "Bí ngô to chắc, giàu dinh dưỡng. Có thể nấu thành nhiều món ăn ngon vă tốt cho sức khỏe."
+icon = SubResource("AtlasTexture_afogm")
+sell_price = 35
+buy_price = 70
+category_type = "Consumable"

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bsnevhcwoghvh"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_1ox2k"]
+[ext_resource type="Script" uid="uid://jlk7al1lfpix" path="res://script/features/item/data/item_data.gd" id="2_v2vlx"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rqi53"]
+atlas = ExtResource("1_1ox2k")
+region = Rect2(32, 48, 16, 16)
+
+[resource]
+script = ExtResource("2_v2vlx")
+code = "wool"
+name = "Cuộn lông cừu"
+description = "Đá thô khai thác từ các mỏ đá. Nguyên liệu cơ bản để xây dựng công trình và chế tạo công cụ."
+icon = SubResource("AtlasTexture_rqi53")
+max_stack_size = 1000
+sell_price = 5
+buy_price = 10

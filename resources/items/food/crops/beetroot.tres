@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://cwgltcrmnb8ai"]
+
+[ext_resource type="Texture2D" uid="uid://bu48mnjmn4tq8" path="res://graphics/icons/crops.png" id="1_kye8j"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_kye8j"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_afogm"]
+atlas = ExtResource("1_kye8j")
+region = Rect2(320, 16, 16, 16)
+
+[resource]
+script = ExtResource("2_kye8j")
+energy_restore = 20
+hunger_restore = 76
+code = "beetroot"
+name = "Củ dền"
+description = "Củ dền tươi giàu vitamin và khoáng chất. Có thể ăn trực tiếp hoặc dùng để nấu ăn."
+icon = SubResource("AtlasTexture_afogm")
+sell_price = 75
+buy_price = 52
+category_type = "Consumable"

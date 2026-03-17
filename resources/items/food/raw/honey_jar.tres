@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://bun3imlqfov2w"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_6fa5w"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_n21kk"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_afogm"]
+atlas = ExtResource("1_6fa5w")
+region = Rect2(0, 0, 16, 16)
+
+[resource]
+script = ExtResource("2_n21kk")
+energy_restore = 5
+hunger_restore = 20
+code = "honey_jar"
+name = "Hũ mật ong"
+description = "Hạt lúa mì thu hoạch từ đồng. Nguyên liệu để làm bánh mì và nhiều món khác. Có thể ăn trực tiếp nhưng không bằng bánh mì."
+icon = SubResource("AtlasTexture_afogm")
+buy_price = 20
+category_type = "Consumable"

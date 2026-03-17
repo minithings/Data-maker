@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Database Game Maker v1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #09090b;
+            --bg-side: #09090b;
+            --bg-panel: #121217;
+            --bg-input: #000000;
+            --accent: #3b82f6;
+            --border: #27272a;
+            --text-main: #f4f4f5;
+            --text-dim: #71717a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+
+        .g-table-row td {
+            height: 58px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .field-h {
+            height: 36px;
+        }
+
+        .g-input {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .g-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+        }
+
+        .col-id {
+            width: 220px;
+            min-width: 220px;
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+        }
+
+        .col-number {
+            width: 110px;
+            min-width: 110px;
+            text-align: center;
+        }
+
+        .col-bool {
+            width: 70px;
+            min-width: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .col-enum {
+            width: 160px;
+            min-width: 160px;
+        }
+
+        .col-desc {
+            width: 320px;
+            min-width: 320px;
+        }
+
+        .col-default {
+            width: 180px;
+            min-width: 180px;
+        }
+
+        .sidebar-item {
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin: 0 8px 2px 8px;
+        }
+
+        .sidebar-active {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa !important;
+        }
+
+        .sidebar-active i {
+            color: #3b82f6;
+        }
+
+        .tree-line {
+            position: absolute;
+            left: 24px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: #18181b;
+        }
+
+        .scroll-container {
+            cursor: grab;
+            user-select: none;
+        }
+
+        .scroll-container:active {
+            cursor: grabbing;
+        }
+
+        .data-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .dirty-row {
+            border-left: 3px solid #f59e0b !important;
+        }
+
+        .input-number {
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            color: #60a5fa;
+        }
+
+        select.g-input {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2352525b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+    </style>
+</head>
+
+<body x-data="editor()" @keydown.window.prevent.ctrl.s="saveDirtyFiles()" class="h-screen flex flex-col">
+
+    <!-- SYNCING OVERLAY -->
+    <div x-show="isSaving" x-cloak
+        class="fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center backdrop-blur-sm">
+        <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+        <p class="mt-4 text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400">Syncing to disk...</p>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30 shrink-0">
+        <div class="flex items-center gap-4">
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="w-9 h-9 flex items-center justify-center hover:bg-zinc-900 rounded-lg transition-colors">
+                <i class="fa-solid fa-bars-staggered text-zinc-500"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-black shadow-sm">
+                    <i class="fa-solid fa-leaf text-sm"></i>
+                </div>
+                <h1 class="text-xs font-bold tracking-tight uppercase">Data Maker
+                    <span class="text-blue-400 font-black">V1.0</span>
+                </h1>
+            </div>
+            <button @click="openProject()"
+                class="ml-4 bg-zinc-900 hover:bg-zinc-800 px-4 py-1.5 rounded-lg text-[11px] font-bold text-zinc-300 transition-all border border-zinc-800 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-folder-open text-blue-500"></i> Open Project
+            </button>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="relative group">
+                <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 text-[11px]"></i>
+                <input type="text" x-model="searchQuery" placeholder="Search resources..."
+                    class="bg-zinc-900 border border-zinc-800 text-[13px] rounded-lg pl-9 pr-4 py-2 w-80 focus:border-zinc-500 outline-none transition-all">
+            </div>
+            <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0"
+                :class="dirtyCount > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20' : 'bg-zinc-900 text-zinc-600 opacity-50 cursor-not-allowed'"
+                class="px-6 py-2 rounded-lg text-[11px] font-bold transition-all flex items-center gap-2 uppercase tracking-widest">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Sync (<span x-text="dirtyCount"></span>)
+            </button>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- SIDEBAR -->
+        <aside x-show="sidebarOpen"
+            class="w-64 bg-zinc-950 flex flex-col border-r border-zinc-900 shrink-0 overflow-hidden relative">
+            <div class="p-4 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Hierarchy</div>
+            <div class="flex-1 overflow-y-auto custom-scrollbar relative">
+                <div class="tree-line"></div>
+                <template x-for="folder in folders" :key="folder.fullPath">
+                    <div @click="activeFolder = folder.fullPath; searchQuery = ''"
+                        :style="'padding-left: ' + (folder.level * 14 + 16) + 'px'"
+                        :class="activeFolder === folder.fullPath && !searchQuery ? 'sidebar-active' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50'"
+                        class="sidebar-item py-2 px-3 cursor-pointer flex items-center gap-3 group relative z-10">
+                        <i class="fa-solid fa-folder text-[12px] opacity-40 group-hover:opacity-80"></i>
+                        <span class="text-[13px] font-medium truncate" x-text="folder.name"></span>
+                    </div>
+                </template>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
+
+            <template x-for="(groupFiles, scriptName) in groupedFiles" :key="scriptName">
+                <div class="data-panel">
+                    <div class="panel-header flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400"
+                            x-text="scriptName"></span>
+                        <span class="ml-auto text-[10px] text-zinc-600 font-bold"
+                            x-text="groupFiles.length + ' ENTRIES'"></span>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar scroll-container" @mousedown="startDragging($event)"
+                        @mousemove="handleDragging($event)" @mouseup="stopDragging()" @mouseleave="stopDragging()">
+                        <table class="w-full text-left border-separate border-spacing-0">
+                            <thead>
+                                <tr class="bg-zinc-900/30">
+                                    <th
+                                        class="px-6 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-500 uppercase tracking-widest col-id">
+                                        Identifier</th>
+                                    <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
+                                        <th class="px-4 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-600 uppercase tracking-widest"
+                                            :class="getColClass(prop)" x-text="prop"></th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="file in groupFiles" :key="file.path">
+                                    <tr class="g-table-row group transition-colors" :class="file.dirty && 'dirty-row'">
+                                        <td class="px-6 col-id">
+                                            <span
+                                                class="text-[13px] font-semibold text-zinc-300 group-hover:text-white transition-colors"
+                                                x-text="file.name"></span>
+                                        </td>
+                                        <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
+                                            <td class="px-2">
+                                                <div :class="getColClass(prop)" class="flex items-center">
+                                                    <!-- Boolean Toggle -->
+                                                    <template x-if="getFieldType(file, prop) === 'bool'">
+                                                        <button
+                                                            @click="file.data[prop] = !file.data[prop]; markDirty(file)"
+                                                            :class="file.data[prop] ? 'bg-blue-600' : 'bg-zinc-800'"
+                                                            class="w-9 h-5 rounded-full transition-all flex items-center px-0.5">
+                                                            <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'"
+                                                                class="w-4 h-4 bg-white rounded-full transition-all shadow-sm">
+                                                            </div>
+                                                        </button>
+                                                    </template>
+
+                                                    <!-- Enum Select -->
+                                                    <template
+                                                        x-if="getFieldType(file, prop) === 'enum' || getFieldType(file, prop) === 'export_enum'">
+                                                        <select x-model="file.data[prop]" @change="markDirty(file)"
+                                                            class="g-input field-h">
+                                                            <template x-for="(val, idx) in getHint(file, prop).options">
+                                                                <option
+                                                                    :value="getFieldType(file, prop) === 'enum' ? idx : val"
+                                                                    x-text="val"></option>
+                                                            </template>
+                                                        </select>
+                                                    </template>
+
+                                                    <!-- Modal Editor -->
+                                                    <template
+                                                        x-if="getFieldType(file, prop) === 'multiline' || prop === 'description'">
+                                                        <div @click="openModal(file, prop)"
+                                                            class="g-input field-h cursor-pointer hover:bg-zinc-900 transition-colors flex items-center overflow-hidden">
+                                                            <p class="truncate text-[12px] italic text-zinc-500 font-medium"
+                                                                x-text="file.data[prop] || 'Click to edit...'"></p>
+                                                        </div>
+                                                    </template>
+
+                                                    <!-- Default Input -->
+                                                    <template
+                                                        x-if="['bool', 'enum', 'export_enum', 'multiline'].indexOf(getFieldType(file, prop)) === -1 && prop !== 'description'">
+                                                        <input type="text" x-model="file.data[prop]"
+                                                            @input="markDirty(file)" class="g-input field-h"
+                                                            :class="!isNaN(file.data[prop]) && 'input-number'"
+                                                            placeholder="...">
+                                                    </template>
+                                                </div>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </template>
+        </main>
+    </div>
+
+    <!-- MODAL -->
+    <div x-show="modal.open" x-cloak
+        class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
+        @keydown.escape.window="closeModal()">
+        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden"
+            @click.away="closeModal()">
+            <div class="px-6 py-4 border-b border-zinc-900 flex justify-between items-center bg-zinc-900/30">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-blue-500" x-text="modal.prop"></span>
+                <button @click="closeModal()" class="text-zinc-600 hover:text-white transition-colors"><i
+                        class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-8">
+                <textarea x-model="modal.value"
+                    class="g-input !h-[350px] !py-4 text-base leading-relaxed custom-scrollbar resize-none border-zinc-800"
+                    placeholder="Type content..."></textarea>
+            </div>
+            <div class="px-8 py-5 border-t border-zinc-900 flex justify-end gap-4">
+                <button @click="closeModal()"
+                    class="text-xs font-bold text-zinc-500 uppercase px-4 hover:text-white transition-colors">Cancel</button>
+                <button @click="confirmModal()"
+                    class="px-8 py-2.5 bg-white text-black rounded-xl text-xs font-bold uppercase tracking-widest transition hover:bg-zinc-200 shadow-lg shadow-white/5">Apply
+                    Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function editor() {
+            return {
+                allFiles: [], folders: [], scripts: {}, classMap: {}, activeFolder: '', searchQuery: '',
+                dirtyCount: 0, isSaving: false, sidebarOpen: true,
+                blacklist: ['script', 'atlas', 'region', 'uid', 'texture', 'sprite', 'frames', 'format', 'load_steps', 'id', 'Resource', 'icon'],
+                modal: { open: false, file: null, prop: '', value: '', fileName: '' },
+                isDragging: false, startX: 0, scrollLeft: 0,
+
+                async openProject() {
+                    try {
+                        const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                        this.allFiles = []; this.scripts = {}; this.classMap = {};
+                        await this.scanDir(dirHandle, "");
+                        this.buildTree();
+                    } catch (e) { console.error("Permission denied."); }
+                },
+
+                startDragging(e) { if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA' || e.target.closest('.col-bool')) return; const container = e.currentTarget; this.isDragging = true; this.startX = e.pageX - container.offsetLeft; this.scrollLeft = container.scrollLeft; },
+                handleDragging(e) { if (!this.isDragging) return; e.preventDefault(); const container = e.currentTarget; const x = e.pageX - container.offsetLeft; const walk = (x - this.startX) * 1.5; container.scrollLeft = this.scrollLeft - walk; },
+                stopDragging() { this.isDragging = false; },
+
+                async scanDir(handle, path) {
+                    for await (const entry of handle.values()) {
+                        const currentPath = path + entry.name;
+                        if (entry.kind === 'directory') {
+                            await this.scanDir(entry, currentPath + "/");
+                        } else {
+                            if (entry.name.endsWith('.tres')) {
+                                const file = await entry.getFile(); const content = await file.text();
+                                this.allFiles.push({
+                                    name: entry.name, path: currentPath,
+                                    folder: path.replace(/\/$/, "") || "root", // Lưu folder path
+                                    handle: entry, data: this.parseTres(content),
+                                    scriptName: this.getScriptNameFromTres(content), dirty: false
+                                });
+                            } else if (entry.name.endsWith('.gd')) {
+                                const file = await entry.getFile(); const content = await file.text();
+                                this.parseGDScript(content, entry.name);
+                            }
+                        }
+                    }
+                },
+
+                buildTree() {
+                    // Bước 1: Lấy tất cả các folder thực sự có chứa file .tres
+                    const foldersWithFiles = [...new Set(this.allFiles.map(f => f.folder))];
+
+                    // Bước 2: Tạo danh sách các folder cha để đảm bảo cấu trúc cây không bị đứt đoạn
+                    let validPaths = new Set();
+                    foldersWithFiles.forEach(path => {
+                        if (path === "root") {
+                            validPaths.add("root");
+                            return;
+                        }
+                        let segments = path.split('/');
+                        let current = "";
+                        segments.forEach(seg => {
+                            current = current ? current + "/" + seg : seg;
+                            validPaths.add(current);
+                        });
+                    });
+
+                    // Bước 3: Sắp xếp và build object folder để hiển thị lên sidebar
+                    const sortedPaths = Array.from(validPaths).sort();
+                    this.folders = sortedPaths.map(p => {
+                        const isRoot = p === "root";
+                        const segments = isRoot ? [] : p.split('/');
+                        return {
+                            name: isRoot ? 'Resources' : segments[segments.length - 1],
+                            fullPath: p,
+                            level: isRoot ? 0 : segments.length
+                        };
+                    });
+
+                    // Tự động chọn folder đầu tiên nếu chưa chọn
+                    if (this.folders.length > 0 && !this.activeFolder) {
+                        this.activeFolder = this.folders[0].fullPath;
+                    }
+                },
+
+                getScriptNameFromTres(content) {
+                    const scriptRef = content.match(/script\s*=\s*ExtResource\("([^"]+)"\)/);
+                    if (!scriptRef) return "StaticResource";
+                    const id = scriptRef[1];
+                    const extLine = content.split('\n').find(l => l.includes(`id="${id}"`) && l.includes('.gd'));
+                    return extLine?.match(/path="res:\/\/([^"]+)"/)?.[1].split('/').pop() || "StaticResource";
+                },
+
+                parseGDScript(content, fileName) {
+                    const hints = {}; const enums = {};
+                    const classNameMatch = content.match(/class_name\s+(\w+)/);
+                    if (classNameMatch) this.classMap[classNameMatch[1]] = fileName;
+
+                    const extendsMatch = content.match(/extends\s+(?:"res:\/\/([^"]+)"|(\w+))/);
+                    let parent = null;
+                    if (extendsMatch) {
+                        parent = extendsMatch[1] ? extendsMatch[1].split('/').pop() : extendsMatch[2];
+                    }
+
+                    const enumMatches = content.matchAll(/enum\s+(\w+)\s*\{([\s\S]+?)\}/g);
+                    for (const m of enumMatches) enums[m[1]] = m[2].split(',').map(v => v.trim().split('=')[0].trim()).filter(x => x);
+
+                    content.split('\n').forEach(line => {
+                        const l = line.trim(); const varMatch = l.match(/var\s+(\w+)/);
+                        if (!varMatch) return;
+                        const varName = varMatch[1];
+                        if (l.includes('@export_multiline')) hints[varName] = { type: 'multiline' };
+                        else if (l.includes('@export_enum')) hints[varName] = { type: 'export_enum', options: l.match(/\(([\s\S]+?)\)/)[1].split(',').map(s => s.replace(/["']/g, "").trim()) };
+                        else if (l.includes(': bool')) hints[varName] = { type: 'bool' };
+                        else { for (let e in enums) { if (l.includes(`: ${e}`)) hints[varName] = { type: 'enum', options: enums[e] }; } }
+                    });
+
+                    this.scripts[fileName] = { hints, parent };
+                },
+
+                getInheritedHints(scriptName) {
+                    let combinedHints = {};
+                    let current = scriptName;
+                    let stack = 0;
+                    while (current && stack < 10) {
+                        let scriptInfo = this.scripts[current] || this.scripts[this.classMap[current]];
+                        if (!scriptInfo) break;
+                        combinedHints = { ...scriptInfo.hints, ...combinedHints };
+                        current = scriptInfo.parent;
+                        stack++;
+                    }
+                    return combinedHints;
+                },
+
+                getHint(file, prop) {
+                    const allHints = this.getInheritedHints(file.scriptName);
+                    return allHints[prop] || { type: 'default' };
+                },
+
+                getFieldType(file, prop) { return this.getHint(file, prop).type; },
+
+                getColClass(prop) {
+                    const p = prop.toLowerCase();
+                    if (p.includes('price') || p.includes('amount') || p.includes('restore') || p.includes('size')) return 'col-number';
+                    if (p === 'description') return 'col-desc';
+                    if (p.includes('rarity') || p.includes('type') || p.includes('category')) return 'col-enum';
+                    if (this.isBoolDummy(p)) return 'col-bool';
+                    return 'col-default';
+                },
+                isBoolDummy(p) { return p.includes('stackable') || p.includes('enabled') || p.includes('can_'); },
+
+                parseTres(content) {
+                    const body = {};
+                    content.split(/\r?\n/).forEach(line => {
+                        if (line.includes('=') && !line.startsWith('[')) {
+                            const [key, ...rest] = line.split('='); const k = key.trim(); const vRaw = rest.join('=').trim();
+                            if (this.blacklist.includes(k.toLowerCase()) || vRaw.includes('SubResource') || vRaw.includes('ExtResource')) return;
+                            let v = vRaw.startsWith('"') && vRaw.endsWith('"') ? vRaw.slice(1, -1) : vRaw;
+                            if (v === "true") v = true; else if (v === "false") v = false;
+                            body[k] = v;
+                        }
+                    });
+                    return body;
+                },
+
+                get groupedFiles() {
+                    let filtered = this.searchQuery ? this.allFiles.filter(f => f.name.toLowerCase().includes(this.searchQuery.toLowerCase())) : this.allFiles.filter(f => f.folder === this.activeFolder);
+                    const groups = {};
+                    filtered.forEach(f => { if (!groups[f.scriptName]) groups[f.scriptName] = []; groups[f.scriptName].push(f); });
+                    return groups;
+                },
+
+                getFieldsForGroup(scriptName, files) {
+                    let keys = new Set();
+                    const allHints = this.getInheritedHints(scriptName);
+                    files.forEach(f => Object.keys(f.data).forEach(k => keys.add(k)));
+                    Object.keys(allHints).forEach(k => { if (!this.blacklist.includes(k.toLowerCase())) keys.add(k); });
+                    return Array.from(keys);
+                },
+
+                openModal(file, prop) { this.modal.open = true; this.modal.file = file; this.modal.prop = prop; this.modal.value = file.data[prop] || ''; this.modal.fileName = file.name; },
+                closeModal() { this.modal.open = false; },
+                confirmModal() { this.modal.file.data[this.modal.prop] = this.modal.value; this.markDirty(this.modal.file); this.closeModal(); },
+                markDirty(file) { if (!file.dirty) { file.dirty = true; this.dirtyCount++; } },
+
+                async saveDirtyFiles() {
+                    if (this.dirtyCount === 0) return; this.isSaving = true;
+                    try {
+                        for (let file of this.allFiles.filter(f => f.dirty)) {
+                            const fObj = await file.handle.getFile();
+                            const lines = (await fObj.text()).split(/\r?\n/);
+                            let existingKeys = new Set();
+                            let newLines = lines.map(line => {
+                                if (line.includes('=') && !line.startsWith('[')) {
+                                    const key = line.split('=')[0].trim(); existingKeys.add(key);
+                                    if (file.data.hasOwnProperty(key)) return `${key} = ${this.formatValue(file, key)}`;
+                                }
+                                return line;
+                            });
+                            Object.keys(file.data).forEach(k => { if (!existingKeys.has(k) && file.data[k] !== undefined && file.data[k] !== "") newLines.push(`${k} = ${this.formatValue(file, k)}`); });
+                            const w = await file.handle.createWritable(); await w.write(newLines.join('\n')); await w.close();
+                            file.dirty = false;
+                        }
+                        this.dirtyCount = 0;
+                    } catch (e) { alert("Error: " + e.message); }
+                    finally { this.isSaving = false; }
+                },
+
+                formatValue(file, key) {
+                    let val = file.data[key]; const hint = this.getHint(file, key);
+                    if (val === true || val === "true") return "true";
+                    if (val === false || val === "false") return "false";
+                    if (hint.type === 'enum' || (!isNaN(val) && String(val).trim() !== "")) return val;
+                    return `"${val}"`;
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

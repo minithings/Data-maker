@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemToolData" format=3 uid="uid://bug8af6orodt1"]
+
+[ext_resource type="Texture2D" uid="uid://dm0hrx4fqmgmi" path="res://graphics/icons/weapons/RPG/1.png" id="1_y42ka"]
+[ext_resource type="Script" uid="uid://dcxo7dqbaytuy" path="res://script/features/item/data/item_tool_data.gd" id="2_2t1dw"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b2mwg"]
+atlas = ExtResource("1_y42ka")
+region = Rect2(112, 0, 16, 16)
+
+[resource]
+script = ExtResource("2_2t1dw")
+tool_type = "shovel"
+code = "tool_shovel_t1"
+name = "Xẻ ng gỗ"
+description = "Xẻ ng gỗ cơ bản dùng để di dời và phá bỏ các công trình đã xây dựng."
+icon = SubResource("AtlasTexture_b2mwg")
+max_stack_size = 1

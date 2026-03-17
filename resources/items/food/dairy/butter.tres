@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://cekerph5d0f2s"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_ryeio"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_1vcfq"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_afogm"]
+atlas = ExtResource("1_ryeio")
+region = Rect2(48, 0, 16, 16)
+
+[resource]
+script = ExtResource("2_1vcfq")
+energy_restore = 5
+hunger_restore = 20
+code = "butter"
+name = "Thỏi Bơ"
+description = "Hạt lúa mì thu hoạch từ đồng. Nguyên liệu để làm bánh mì và nhiều món khác. Có thể ăn trực tiếp nhưng không bằng bánh mì."
+icon = SubResource("AtlasTexture_afogm")
+buy_price = 20
+category_type = "Consumable"

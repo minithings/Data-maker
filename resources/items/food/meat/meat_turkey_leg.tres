@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://jwivlxvudabd"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_g68d3"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_a8ro1"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yf8ba"]
+atlas = ExtResource("1_g68d3")
+region = Rect2(16, 48, 16, 16)
+
+[resource]
+script = ExtResource("2_a8ro1")
+energy_restore = 15
+hunger_restore = 80
+code = "meat_turkey_leg"
+name = "Đùi Gà Tây"
+description = "Củ dền tươi giàu vitamin và khoáng chất. Có thể ăn trực tiếp hoặc dùng để nấu ăn."
+icon = SubResource("AtlasTexture_yf8ba")
+sell_price = 25
+buy_price = 50
+category_type = "Consumable"

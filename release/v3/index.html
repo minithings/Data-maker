@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Database Game Maker v1.5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-main: #09090b; --bg-side: #09090b; --bg-panel: #121217; --bg-input: #000000; --accent: #3b82f6; --border: #27272a; --text-main: #f4f4f5; --text-dim: #71717a; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow: hidden; letter-spacing: -0.01em; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+        .g-table-row td { height: 58px; vertical-align: middle; border-bottom: 1px solid var(--border); }
+        .field-h { height: 36px; }
+        .g-input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0 12px; border-radius: 8px; font-size: 13px; outline: none; transition: all 0.2s; width: 100%; display: flex; align-items: center; }
+        .g-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15); }
+        .col-id { width: 220px; min-width: 220px; position: sticky; left: 0; z-index: 20; background: var(--bg-panel); border-right: 1px solid var(--border); }
+        .sidebar-item { transition: all 0.2s; border-radius: 8px; margin: 0 8px 2px 8px; }
+        .sidebar-active { background: rgba(59, 130, 246, 0.1); color: #60a5fa !important; }
+        .data-panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+        .panel-header { background: rgba(255, 255, 255, 0.02); padding: 10px 20px; border-bottom: 1px solid var(--border); }
+        [x-cloak] { display: none !important; }
+        .dirty-row { border-left: 3px solid #f59e0b !important; }
+        .type-number { color: #60a5fa; font-family: 'JetBrains Mono', monospace; }
+        .type-boolean { color: #4ade80; }
+        .btn-add-prop { font-size: 10px; padding: 4px 12px; border-radius: 6px; background: #27272a; color: #a1a1aa; transition: all 0.2s; border: 1px solid transparent; }
+        .btn-add-prop:hover { background: #1d4ed8; color: white; border-color: #3b82f6; }
+        select.g-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2352525b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 12px; }
+    </style>
+</head>
+
+<body x-data="editor()" @keydown.window.prevent.ctrl.s="saveDirtyFiles()" class="h-screen flex flex-col">
+
+    <!-- SYNCING OVERLAY -->
+    <div x-show="isSaving" x-cloak class="fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center backdrop-blur-sm">
+        <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+        <p class="mt-4 text-[10px] font-bold tracking-[0.3em] uppercase text-zinc-400 font-mono">Syncing to disk...</p>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30 shrink-0">
+        <div class="flex items-center gap-4">
+            <button @click="sidebarOpen = !sidebarOpen" class="w-9 h-9 flex items-center justify-center hover:bg-zinc-900 rounded-lg">
+                <i class="fa-solid fa-bars-staggered text-zinc-500"></i>
+            </button>
+            <h1 class="text-xs font-bold tracking-tight uppercase">Data Maker <span class="text-blue-500">V1.5</span></h1>
+            <button @click="openProject()" class="ml-4 bg-zinc-900 hover:bg-zinc-800 px-4 py-1.5 rounded-lg text-[11px] font-bold text-zinc-300 transition-all border border-zinc-800 uppercase flex items-center gap-2">
+                <i class="fa-solid fa-folder-open text-blue-500"></i> Open Project
+            </button>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <input type="text" x-model="searchQuery" placeholder="Search..." class="bg-zinc-900 border border-zinc-800 text-[13px] rounded-lg px-4 py-2 w-64 focus:border-zinc-500 outline-none">
+            <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0" :class="dirtyCount > 0 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20' : 'bg-zinc-900 text-zinc-600 opacity-50 cursor-not-allowed'" class="px-6 py-2 rounded-lg text-[11px] font-bold transition-all flex items-center gap-2 uppercase tracking-widest">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Sync (<span x-text="dirtyCount"></span>)
+            </button>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex overflow-hidden">
+        <aside x-show="sidebarOpen" class="w-64 bg-zinc-950 flex flex-col border-r border-zinc-900 shrink-0 overflow-hidden">
+            <div class="p-4 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">Hierarchy</div>
+            <div class="flex-1 overflow-y-auto custom-scrollbar">
+                <template x-for="folder in folders" :key="folder.fullPath">
+                    <div @click="activeFolder = folder.fullPath; searchQuery = ''" 
+                         :style="'padding-left: ' + (folder.level * 14 + 16) + 'px'" 
+                         :class="activeFolder === folder.fullPath && !searchQuery ? 'sidebar-active' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50'" 
+                         class="sidebar-item py-2 px-3 cursor-pointer flex items-center gap-3">
+                        <i class="fa-solid fa-folder text-[12px] opacity-40"></i>
+                        <span class="text-[13px] font-medium truncate" x-text="folder.name"></span>
+                    </div>
+                </template>
+            </div>
+        </aside>
+
+        <main class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
+            <template x-for="(groupFiles, scriptName) in groupedFiles" :key="scriptName">
+                <div class="data-panel">
+                    <div class="panel-header flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400" x-text="scriptName"></span>
+                            <button @click="openAddPropModal(groupFiles)" class="btn-add-prop flex items-center gap-2">
+                                <i class="fa-solid fa-plus-circle"></i> Add Column
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left border-separate border-spacing-0">
+                            <thead>
+                                <tr class="bg-zinc-900/30">
+                                    <th class="px-6 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-500 uppercase col-id">Identifier</th>
+                                    <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
+                                        <th class="px-4 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-600 uppercase min-w-[150px]" x-text="prop"></th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="file in groupFiles" :key="file.id">
+                                    <tr class="g-table-row group" :class="file.dirty && 'dirty-row'">
+                                        <td class="px-6 col-id">
+                                            <span class="text-[13px] font-semibold text-zinc-300" x-text="file.name"></span>
+                                        </td>
+                                        <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
+                                            <td class="px-2">
+                                                <div class="flex items-center">
+                                                    <!-- Boolean -->
+                                                    <template x-if="typeof file.data[prop] === 'boolean'">
+                                                        <button @click="file.data[prop] = !file.data[prop]; markDirty(file)" 
+                                                                :class="file.data[prop] ? 'bg-green-600' : 'bg-zinc-800'" 
+                                                                class="w-9 h-5 rounded-full transition-all flex items-center px-0.5">
+                                                            <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'" class="w-4 h-4 bg-white rounded-full transition-all"></div>
+                                                        </button>
+                                                    </template>
+                                                    <!-- Input (String & Number) -->
+                                                    <template x-if="typeof file.data[prop] !== 'boolean'">
+                                                        <input type="text" 
+                                                               :value="file.data[prop]"
+                                                               @input="updateCellValue(file, prop, $event.target.value)"
+                                                               class="g-input field-h" 
+                                                               :class="typeof file.data[prop] === 'number' ? 'type-number' : ''"
+                                                               placeholder="...">
+                                                    </template>
+                                                </div>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </template>
+        </main>
+    </div>
+
+    <!-- MODAL: ADD COLUMN -->
+    <div x-show="addPropModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden" @click.away="addPropModal.open = false">
+            <div class="px-6 py-4 border-b border-zinc-900 flex justify-between items-center bg-zinc-900/30">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-blue-500">New Column Settings</span>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase mb-2 block">Property Name</label>
+                    <input type="text" x-model="addPropModal.name" class="g-input !h-11" placeholder="max_stackable">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase mb-2 block">Data Type</label>
+                    <select x-model="addPropModal.type" class="g-input !h-11">
+                        <option value="string">String</option>
+                        <option value="number">Number</option>
+                        <option value="boolean">Boolean</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase mb-2 block">Default Value</label>
+                    <template x-if="addPropModal.type !== 'boolean'">
+                        <input type="text" x-model="addPropModal.defaultValue" class="g-input !h-11" placeholder="100">
+                    </template>
+                    <template x-if="addPropModal.type === 'boolean'">
+                        <select x-model="addPropModal.defaultValue" class="g-input !h-11">
+                            <option value="false">False</option>
+                            <option value="true">True</option>
+                        </select>
+                    </template>
+                </div>
+            </div>
+            <div class="px-6 py-5 border-t border-zinc-900 flex justify-end gap-3">
+                <button @click="addPropModal.open = false" class="text-xs font-bold text-zinc-500 uppercase">Cancel</button>
+                <button @click="confirmAddProperty()" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-blue-500">Create Column</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function editor() {
+            return {
+                allFiles: [], folders: [], activeFolder: '', searchQuery: '',
+                dirtyCount: 0, isSaving: false, sidebarOpen: true,
+                blacklist: ['script', 'atlas', 'region', 'uid', 'texture', 'sprite', 'frames', 'format', 'load_steps', 'id', 'Resource', 'icon'],
+                addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
+
+                async openProject() {
+                    try {
+                        const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                        this.allFiles = [];
+                        await this.scanDir(dirHandle, "");
+                        this.buildTree();
+                    } catch (e) { console.error(e); }
+                },
+
+                async scanDir(handle, path) {
+                    for await (const entry of handle.values()) {
+                        const currentPath = path + entry.name;
+                        if (entry.kind === 'directory') {
+                            await this.scanDir(entry, currentPath + "/");
+                        } else {
+                            const file = await entry.getFile();
+                            const content = await file.text();
+                            if (entry.name.endsWith('.tres')) {
+                                this.allFiles.push({
+                                    id: currentPath, name: entry.name, path: currentPath,
+                                    folder: path.replace(/\/$/, "") || "root", handle: entry, 
+                                    data: this.parseTres(content), scriptName: "Godot Resource", type: 'tres', dirty: false
+                                });
+                            } else if (entry.name.endsWith('.json')) {
+                                try {
+                                    const jsonData = JSON.parse(content);
+                                    for (const [id, value] of Object.entries(jsonData)) {
+                                        this.allFiles.push({
+                                            id: currentPath + ":" + id, name: id, path: currentPath,
+                                            folder: path.replace(/\/$/, "") || "root", handle: entry, 
+                                            data: value, scriptName: entry.name, type: 'json', dirty: false
+                                        });
+                                    }
+                                } catch (e) { }
+                            }
+                        }
+                    }
+                },
+
+                buildTree() {
+                    const paths = [...new Set(this.allFiles.map(f => f.folder))];
+                    this.folders = paths.sort().map(p => ({
+                        name: p === "root" ? 'Root' : p.split('/').pop(),
+                        fullPath: p, level: p === "root" ? 0 : p.split('/').length
+                    }));
+                    if (this.folders.length > 0) this.activeFolder = this.folders[0].fullPath;
+                },
+
+                parseTres(content) {
+                    const body = {};
+                    content.split(/\r?\n/).forEach(line => {
+                        if (line.includes('=') && !line.startsWith('[')) {
+                            const [k, ...v] = line.split('='); const key = k.trim();
+                            if (this.blacklist.includes(key.toLowerCase())) return;
+                            let val = v.join('=').trim().replace(/^"|"$/g, '');
+                            if (val === "true") val = true; else if (val === "false") val = false;
+                            else if (!isNaN(val) && val !== "") val = Number(val);
+                            body[key] = val;
+                        }
+                    });
+                    return body;
+                },
+
+                get groupedFiles() {
+                    let filtered = this.searchQuery ? this.allFiles.filter(f => f.name.toLowerCase().includes(this.searchQuery.toLowerCase())) : this.allFiles.filter(f => f.folder === this.activeFolder);
+                    const groups = {};
+                    filtered.forEach(f => { if (!groups[f.scriptName]) groups[f.scriptName] = []; groups[f.scriptName].push(f); });
+                    return groups;
+                },
+
+                getFieldsForGroup(scriptName, files) {
+                    let keys = new Set();
+                    files.forEach(f => Object.keys(f.data).forEach(k => keys.add(k)));
+                    return Array.from(keys);
+                },
+
+                // LOGIC CẬP NHẬT GIÁ TRỊ Ô (ÉP KIỂU NGƯỢC)
+                updateCellValue(file, prop, newValue) {
+                    const originalValue = file.data[prop];
+                    if (typeof originalValue === 'number') {
+                        file.data[prop] = newValue === "" ? 0 : (isNaN(newValue) ? newValue : Number(newValue));
+                    } else {
+                        file.data[prop] = newValue;
+                    }
+                    this.markDirty(file);
+                },
+
+                openAddPropModal(groupFiles) {
+                    this.addPropModal = { open: true, group: groupFiles, name: '', type: 'string', defaultValue: '' };
+                },
+
+                confirmAddProperty() {
+                    const { name, type, defaultValue, group } = this.addPropModal;
+                    if (!name.trim()) return;
+
+                    let finalValue;
+                    if (type === 'number') {
+                        finalValue = (defaultValue === "" || isNaN(defaultValue)) ? 0 : Number(defaultValue);
+                    } else if (type === 'boolean') {
+                        finalValue = (defaultValue === 'true');
+                    } else {
+                        finalValue = String(defaultValue);
+                    }
+
+                    group.forEach(file => {
+                        if (!(name in file.data)) {
+                            file.data[name] = finalValue;
+                            this.markDirty(file);
+                        }
+                    });
+                    this.addPropModal.open = false;
+                },
+
+                markDirty(file) { if (!file.dirty) { file.dirty = true; this.dirtyCount++; } },
+
+                async saveDirtyFiles() {
+                    if (this.dirtyCount === 0) return;
+                    this.isSaving = true;
+                    try {
+                        const uniquePaths = [...new Set(this.allFiles.filter(f => f.dirty).map(f => f.path))];
+                        for (let path of uniquePaths) {
+                            const entriesInFile = this.allFiles.filter(f => f.path === path);
+                            const first = entriesInFile[0];
+                            const w = await first.handle.createWritable();
+                            if (first.type === 'tres') {
+                                const fObj = await first.handle.getFile();
+                                let lines = (await fObj.text()).split(/\r?\n/);
+                                let newLines = lines.map(line => {
+                                    if (line.includes('=') && !line.startsWith('[')) {
+                                        const key = line.split('=')[0].trim();
+                                        if (first.data.hasOwnProperty(key)) {
+                                            let v = first.data[key];
+                                            return `${key} = ${typeof v === 'string' ? '"'+v+'"' : v}`;
+                                        }
+                                    }
+                                    return line;
+                                });
+                                await w.write(newLines.join('\n'));
+                            } else {
+                                const fullJson = {};
+                                this.allFiles.filter(f => f.path === path).forEach(f => fullJson[f.name] = f.data);
+                                await w.write(JSON.stringify(fullJson, null, "\t"));
+                            }
+                            await w.close();
+                            entriesInFile.forEach(f => f.dirty = false);
+                        }
+                        this.dirtyCount = 0;
+                    } catch (e) { alert(e.message); }
+                    finally { this.isSaving = false; }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

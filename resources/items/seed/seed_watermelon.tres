@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemSeedData" format=3 uid="uid://dn40yctirrjh7"]
+
+[ext_resource type="Texture2D" uid="uid://bu48mnjmn4tq8" path="res://graphics/icons/crops.png" id="1_atlas"]
+[ext_resource type="Script" uid="uid://c6bllpvhgwah8" path="res://script/features/item/data/item_seed_data.gd" id="2_script"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j5ltj"]
+atlas = ExtResource("1_atlas")
+region = Rect2(144, 192, 16, 16)
+
+[resource]
+script = ExtResource("2_script")
+crop_code = "crop_watermelon"
+code = "seed_watermelon"
+name = "Hạt giống dưa hấu"
+description = "Hạt giống để trồng dưa hấu. Thích hợp trồng vào mùa hè."
+icon = SubResource("AtlasTexture_j5ltj")
+sell_price = 25
+buy_price = 50

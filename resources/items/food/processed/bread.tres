@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://dl8cc1qhwaeje"]
+
+[ext_resource type="Texture2D" uid="uid://c3ibp6xacekwi" path="res://graphics/icons/Food.png" id="1_wgebb"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_tfi5h"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_afogm"]
+atlas = ExtResource("1_wgebb")
+region = Rect2(32, 48, 16, 16)
+
+[resource]
+script = ExtResource("2_tfi5h")
+health_restore = 10
+energy_restore = 100
+hunger_restore = 200
+code = "bread"
+name = "Bánh mì"
+description = "Bánh mì thơm ngon làm từ lú mì. Thực phẩm cơ bản giúp no bụng lâu và phục hồi sức lực hiệu quả."
+icon = SubResource("AtlasTexture_afogm")
+sell_price = 50
+buy_price = 100
+rarity = 1
+category_type = "Consumable"
