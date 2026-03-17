@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Database Game Maker v2.0 - Strict Logic</title>
+    <title>Database Game Maker v2.1 - Delete Logic</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,9 +15,9 @@
         .g-table-row td { height: 58px; vertical-align: middle; border-bottom: 1px solid var(--border); }
         .g-input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0 12px; border-radius: 8px; font-size: 13px; outline: none; width: 100%; height: 38px; transition: all 0.2s; }
         .g-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
-        /* Cảnh báo lỗi nhập liệu */
-        .input-error { border-color: #ef4444 !important; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important; color: #ef4444 !important; }
+        .input-error { border-color: #ef4444 !important; color: #ef4444 !important; }
         .col-id { width: 220px; min-width: 220px; position: sticky; left: 0; z-index: 20; background: var(--bg-panel); border-right: 1px solid var(--border); }
+        .col-action { width: 60px; text-align: center; }
         .sidebar-active { background: rgba(59, 130, 246, 0.1); color: #60a5fa !important; }
         .data-panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
         [x-cloak] { display: none !important; }
@@ -25,6 +25,8 @@
         .btn-action:hover { background: #27272a; color: white; }
         .btn-primary { background: #2563eb; color: white; border: none; }
         .btn-primary:hover { background: #3b82f6; }
+        .btn-delete { color: #71717a; transition: color 0.2s; }
+        .btn-delete:hover { color: #ef4444; }
         .type-number { color: #60a5fa; font-family: 'JetBrains Mono', monospace; }
         .dirty-row { border-left: 3px solid #f59e0b !important; }
     </style>
@@ -35,19 +37,19 @@
     <!-- OVERLAY -->
     <div x-show="isSaving" x-cloak class="fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center backdrop-blur-sm">
         <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-        <p class="mt-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Syncing & Formatting...</p>
+        <p class="mt-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Processing changes...</p>
     </div>
 
     <!-- NAVBAR -->
     <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30">
         <div class="flex items-center gap-4">
-            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V2.0</span></h1>
+            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V2.1</span></h1>
             <button @click="openProject()" class="btn-action !py-1.5"><i class="fa-solid fa-folder-open text-blue-500"></i> Open Project</button>
         </div>
         <div class="flex items-center gap-4">
-            <input type="text" x-model="searchQuery" placeholder="Quick filter..." class="g-input !w-64">
+            <input type="text" x-model="searchQuery" placeholder="Filter identifiers..." class="g-input !w-64">
             <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0" :class="dirtyCount > 0 ? 'btn-primary' : 'opacity-30 cursor-not-allowed'" class="btn-action px-8 uppercase tracking-widest transition-all">
-                Save Project (<span x-text="dirtyCount"></span>)
+                Sync (<span x-text="dirtyCount"></span>)
             </button>
         </div>
     </nav>
@@ -56,10 +58,10 @@
         <!-- SIDEBAR -->
         <aside class="w-64 bg-zinc-950 flex flex-col border-r border-zinc-900 shrink-0">
             <div class="p-4 flex flex-col gap-4">
-                <button @click="openCreateModal()" class="btn-action btn-primary w-full justify-center shadow-lg shadow-blue-900/20">
+                <button @click="openCreateModal()" class="btn-action btn-primary w-full justify-center">
                     <i class="fa-solid fa-plus-circle"></i> New Resource
                 </button>
-                <div class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Navigation</div>
+                <div class="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">Hierarchy</div>
             </div>
             <div class="flex-1 overflow-y-auto custom-scrollbar">
                 <template x-for="folder in folders" :key="folder.fullPath">
@@ -73,21 +75,19 @@
             </div>
         </aside>
 
-        <!-- MAIN CONTENT -->
+        <!-- MAIN -->
         <main class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
             <template x-for="(groupFiles, scriptName) in groupedFiles" :key="scriptName">
                 <div class="data-panel">
                     <div class="px-5 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/20">
                         <div class="flex items-center gap-3">
                             <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400" x-text="scriptName"></span>
-                            
                             <button @click="addNewEntry(groupFiles, scriptName)" class="btn-action !py-1 !px-3">
                                 <i class="fa-solid fa-plus text-blue-500"></i> New Entry
                             </button>
-
                             <template x-if="groupFiles[0].type === 'json'">
                                 <button @click="openAddPropModal(groupFiles)" class="btn-action !py-1 !px-3">
-                                    <i class="fa-solid fa-columns"></i> Add Column
+                                    <i class="fa-solid fa-columns text-zinc-500"></i> Add Column
                                 </button>
                             </template>
                         </div>
@@ -101,6 +101,7 @@
                                     <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
                                         <th class="px-4 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-600 uppercase min-w-[150px]" x-text="prop"></th>
                                     </template>
+                                    <th class="px-4 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-500 uppercase col-action"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -111,28 +112,24 @@
                                         </td>
                                         <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
                                             <td class="px-2">
-                                                <!-- Boolean logic -->
                                                 <template x-if="typeof file.data[prop] === 'boolean'">
                                                     <button @click="file.data[prop] = !file.data[prop]; markDirty(file)" 
                                                             :class="file.data[prop] ? 'bg-green-600' : 'bg-zinc-800'" class="w-9 h-5 rounded-full px-0.5 flex items-center transition-all">
-                                                        <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'" class="w-4 h-4 bg-white rounded-full shadow-sm transition-all"></div>
+                                                        <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'" class="w-4 h-4 bg-white rounded-full transition-all"></div>
                                                     </button>
                                                 </template>
-
-                                                <!-- Text/Number logic with Validation -->
                                                 <template x-if="typeof file.data[prop] !== 'boolean'">
-                                                    <input type="text" 
-                                                           x-model="file.data[prop]"
-                                                           @input="markDirty(file)"
-                                                           class="g-input" 
-                                                           :class="{
-                                                               'type-number': isActuallyNumber(file, prop),
-                                                               'input-error': isInvalidFormat(file, prop)
-                                                           }"
-                                                           placeholder="...">
+                                                    <input type="text" x-model="file.data[prop]" @input="markDirty(file)"
+                                                           class="g-input" :class="{ 'type-number': isActuallyNumber(file, prop), 'input-error': isInvalidFormat(file, prop) }">
                                                 </template>
                                             </td>
                                         </template>
+                                        <!-- CỘT XÓA -->
+                                        <td class="px-2 col-action">
+                                            <button @click="deleteEntry(file)" class="btn-delete" title="Delete Entry">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -143,20 +140,18 @@
         </main>
     </div>
 
-    <!-- MODAL: CREATE FILE (Sidebar) -->
+    <!-- MODAL: CREATE FILE -->
     <div x-show="createModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-lg rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl">
             <h3 class="text-blue-500 font-bold uppercase text-[11px] tracking-widest">Create New Resource</h3>
-            <input type="text" x-model="createModal.name" class="g-input !h-12" placeholder="Resource Name (e.g. items_database)">
-            
+            <input type="text" x-model="createModal.name" class="g-input !h-12" placeholder="Resource Name...">
             <div class="grid grid-cols-2 gap-4">
-                <button @click="createModal.ext = '.tres'" :class="createModal.ext === '.tres' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.tres (Godot)</button>
-                <button @click="createModal.ext = '.json'" :class="createModal.ext === '.json' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.json (Table)</button>
+                <button @click="createModal.ext = '.tres'" :class="createModal.ext === '.tres' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.tres</button>
+                <button @click="createModal.ext = '.json'" :class="createModal.ext === '.json' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.json</button>
             </div>
-
             <template x-if="createModal.ext === '.tres'">
                 <div class="pt-3 space-y-2">
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase">Select Template to Clone</label>
+                    <label class="text-[10px] font-bold text-zinc-500 uppercase">Clone Template</label>
                     <div class="h-40 overflow-y-auto custom-scrollbar border border-zinc-900 rounded-lg p-1 bg-zinc-900/30">
                         <template x-for="f in allFiles.filter(f => f.type === 'tres')" :key="f.id">
                             <div @click="createModal.targetClone = f.id" :class="createModal.targetClone === f.id ? 'bg-blue-500 text-white' : ''" class="p-2 rounded text-[12px] cursor-pointer hover:bg-white/5 truncate" x-text="f.name"></div>
@@ -164,10 +159,9 @@
                     </div>
                 </div>
             </template>
-
-            <div class="flex justify-end gap-3 pt-4">
+            <div class="flex justify-end gap-3 pt-4 border-t border-zinc-900">
                 <button @click="createModal.open = false" class="text-xs font-bold text-zinc-500 uppercase px-4">Cancel</button>
-                <button @click="confirmCreateFile()" class="btn-action btn-primary !px-10">Create Resource</button>
+                <button @click="confirmCreateFile()" class="btn-action btn-primary !px-10">Create</button>
             </div>
         </div>
     </div>
@@ -195,7 +189,6 @@
                 blacklist: ['script', 'atlas', 'region', 'uid', 'texture', 'sprite', 'frames', 'format', 'load_steps', 'id', 'Resource', 'icon'],
                 addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
                 createModal: { open: false, name: '', ext: '.tres', targetClone: '' },
-                schemaMap: {}, // Lưu trữ kiểu dữ liệu gốc của từng cột
 
                 async openProject() {
                     try {
@@ -227,27 +220,46 @@
                     }
                 },
 
-                // KIỂM TRA ĐỊNH DẠNG SAI
+                // LOGIC XÓA ENTRY
+                async deleteEntry(file) {
+                    const msg = file.type === 'tres' ? `Bạn có chắc chắn muốn xóa FILE vật lý: ${file.name}?` : `Bạn có chắc muốn xóa Entry: ${file.name} trong file ${file.path.split('/').pop()}?`;
+                    if (!confirm(msg)) return;
+
+                    if (file.type === 'tres') {
+                        try {
+                            this.isSaving = true;
+                            // Xóa trực tiếp file trên ổ cứng
+                            await file.handle.remove();
+                            // Xóa khỏi danh sách hiển thị
+                            this.allFiles = this.allFiles.filter(f => f.id !== file.id);
+                            this.buildTree(); // Cập nhật sidebar nếu folder trống
+                        } catch (e) { alert("Không thể xóa file: " + e.message); }
+                        finally { this.isSaving = false; }
+                    } else {
+                        // JSON: Chỉ xóa khỏi danh sách và đánh dấu file cha cần lưu lại
+                        const parentPath = file.path;
+                        this.allFiles = this.allFiles.filter(f => f.id !== file.id);
+                        // Đánh dấu tất cả các entry còn lại của file JSON này là Dirty để Sync ghi đè
+                        this.allFiles.filter(f => f.path === parentPath).forEach(f => {
+                            if (!f.dirty) { f.dirty = true; this.dirtyCount++; }
+                        });
+                        // Trường hợp xóa entry cuối cùng của JSON
+                        if (this.allFiles.filter(f => f.path === parentPath).length === 0) {
+                             // Bạn có thể chọn xóa luôn file JSON hoặc để nó rỗng {}. 
+                             // Ở đây ta giữ file rỗng, người dùng bấm Sync sẽ lưu {}.
+                             this.dirtyCount++; 
+                        }
+                    }
+                },
+
                 isInvalidFormat(file, prop) {
                     const value = file.data[prop];
-                    const originalType = this.getOriginalType(file, prop);
-                    if (originalType === 'number') {
-                        return isNaN(value) || value === "";
-                    }
+                    if (this.isActuallyNumber(file, prop)) return isNaN(value) || value === "";
                     return false;
                 },
-
                 isActuallyNumber(file, prop) {
-                    return this.getOriginalType(file, prop) === 'number';
-                },
-
-                getOriginalType(file, prop) {
-                    // Tìm file đầu tiên trong cùng nhóm để xác định type
                     const group = this.allFiles.filter(f => f.scriptName === file.scriptName);
-                    if (group.length > 0) {
-                        return typeof group[0].data[prop];
-                    }
-                    return 'string';
+                    return group.length > 0 && typeof group[0].data[prop] === 'number';
                 },
 
                 addNewEntry(group, scriptName) {
@@ -255,18 +267,14 @@
                     if (first.type === 'json') {
                         const id = prompt("New Entry ID:");
                         if (!id) return;
-                        
-                        // Lấy cấu trúc và KIỂU DỮ LIỆU từ dòng đầu tiên
-                        const templateData = first.data;
+                        const template = first.data;
                         const newData = {};
-                        
-                        Object.keys(templateData).forEach(key => {
-                            const type = typeof templateData[key];
-                            if (type === 'number') newData[key] = 0;
-                            else if (type === 'boolean') newData[key] = false;
-                            else newData[key] = "";
+                        Object.keys(template).forEach(k => {
+                            const type = typeof template[k];
+                            if (type === 'number') newData[k] = 0;
+                            else if (type === 'boolean') newData[k] = false;
+                            else newData[k] = "";
                         });
-
                         this.allFiles.push({ ...first, id: first.path + ":" + id, name: id, data: newData, dirty: true });
                         this.dirtyCount++;
                     } else {
@@ -283,6 +291,8 @@
                         const paths = [...new Set(this.allFiles.filter(f => f.dirty).map(f => f.path))];
                         for (let p of paths) {
                             const entries = this.allFiles.filter(f => f.path === p);
+                            if (entries.length === 0) continue; // Tránh lỗi nếu file đã bị xóa hết entry
+                            
                             const first = entries[0];
                             const w = await first.handle.createWritable();
 
@@ -290,7 +300,6 @@
                                 let content = first.rawHeader + "[resource]\n";
                                 Object.keys(first.data).forEach(k => {
                                     let v = first.data[k];
-                                    // Ép kiểu chuẩn TRES
                                     if (!isNaN(v) && v !== "" && typeof v !== 'boolean') v = Number(v);
                                     content += `${k} = ${typeof v === 'string' ? '"'+v+'"' : v}\n`;
                                 });
@@ -298,15 +307,11 @@
                             } else {
                                 const json = {};
                                 entries.forEach(e => {
-                                    const processedData = { ...e.data };
-                                    // ÉP KIỂU CHUẨN JSON TRƯỚC KHI LƯU
-                                    Object.keys(processedData).forEach(key => {
-                                        const originalType = this.getOriginalType(e, key);
-                                        if (originalType === 'number') {
-                                            processedData[key] = isNaN(processedData[key]) ? 0 : Number(processedData[key]);
-                                        }
+                                    const processed = { ...e.data };
+                                    Object.keys(processed).forEach(key => {
+                                        if (this.isActuallyNumber(e, key)) processed[key] = isNaN(processed[key]) ? 0 : Number(processed[key]);
                                     });
-                                    json[e.name] = processedData;
+                                    json[e.name] = processed;
                                 });
                                 await w.write(JSON.stringify(json, null, "\t"));
                             }
@@ -318,11 +323,10 @@
                     finally { this.isSaving = false; }
                 },
 
-                // Các hàm hỗ trợ khác giữ nguyên logic
                 buildTree() {
                     const paths = [...new Set(this.allFiles.map(f => f.folder))];
                     this.folders = paths.sort().map(p => ({ name: p === "root" ? 'Root' : p.split('/').pop(), fullPath: p, level: p === "root" ? 0 : p.split('/').length }));
-                    if (this.folders.length > 0 && !this.activeFolder) this.activeFolder = this.folders[0].fullPath;
+                    if (this.folders.length > 0 && (!this.activeFolder || !paths.includes(this.activeFolder))) this.activeFolder = this.folders[0].fullPath;
                 },
                 openCreateModal() { this.createModal = { open: true, name: '', ext: '.tres', targetClone: '' }; },
                 async confirmCreateFile() {
