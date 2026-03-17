@@ -2,15 +2,17 @@
 	"tool_axe_t1": {
 		"name": "Hachet",
 		"description": "Riều nè",
-		"max_stackable": "0123",
+		"max_stackable": "1",
 		"price": 12,
-		"is_active": false
+		"is_active": false,
+		"testa": 1000
 	},
 	"tool_pickage_t1": {
 		"name": "Pickage",
 		"description": "Cuốc chim nè",
-		"max_stackable": "0sad123",
+		"max_stackable": "1",
 		"price": 12,
-		"is_active": false
+		"is_active": false,
+		"testa": 1000
 	}
 }
