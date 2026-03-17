@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Database Game Maker v4.1 - Fixed Data Types</title>
+    <title>Database Game Maker v4.1 - Pro Max Workflow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,8 +25,8 @@
         .btn-primary:hover { background: #3b82f6; }
         .dirty-row { border-left: 3px solid #f59e0b !important; }
         .col-id { width: 220px; min-width: 220px; position: sticky; left: 0; z-index: 20; background: var(--bg-panel); border-right: 1px solid var(--border); }
-        .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         .type-number { color: #60a5fa !important; font-family: 'JetBrains Mono', monospace; }
+        .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-2px, 0, 0); } 40%, 60% { transform: translate3d(2px, 0, 0); } }
     </style>
 </head>
@@ -34,15 +34,15 @@
 <body x-data="editor()" @keydown.window.prevent.ctrl.s="saveDirtyFiles()" class="h-screen flex flex-col">
 
     <!-- LOADING OVERLAY -->
-    <div x-show="isSaving" x-cloak class="fixed inset-0 bg-black/80 z-[200] flex flex-col items-center justify-center backdrop-blur-sm">
+    <div x-show="isSaving" x-cloak class="fixed inset-0 bg-black/80 z-[200] flex flex-col items-center justify-center backdrop-blur-sm font-mono text-xs">
         <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-        <p class="mt-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Processing everything...</p>
+        <p class="mt-4 text-zinc-400 uppercase tracking-widest">Processing...</p>
     </div>
 
     <!-- NAVBAR -->
     <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30">
         <div class="flex items-center gap-4">
-            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V4.1 Fixed</span></h1>
+            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V4.1 Final</span></h1>
             <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i> Open</button>
             <button @click="reloadProject()" class="btn-action" :disabled="!rootHandle" :class="!rootHandle && 'opacity-20'"><i class="fa-solid fa-rotate text-green-500"></i> Reload</button>
             <div class="h-4 w-[1px] bg-zinc-800 mx-1"></div>
@@ -54,11 +54,11 @@
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <button @click="errorSummary.open = true" class="text-[10px] font-bold text-red-500 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition-all" x-show="errorCount > 0">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span x-text="errorCount"></span> ISSUES FOUND
+            <button @click="errorSummary.open = true" class="text-[10px] font-bold text-red-500 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20" x-show="errorCount > 0">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span x-text="errorCount"></span> ISSUES
             </button>
-            <input type="text" x-model="searchQuery" placeholder="Search everywhere..." class="g-input !w-64">
-            <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0 || errorCount > 0" :class="(dirtyCount > 0 && errorCount === 0) ? 'btn-primary' : 'opacity-30'" class="btn-action px-8 uppercase tracking-widest transition-all shadow-lg">
+            <input type="text" x-model="searchQuery" placeholder="Search..." class="g-input !w-64">
+            <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0 || errorCount > 0" :class="(dirtyCount > 0 && errorCount === 0) ? 'btn-primary' : 'opacity-30'" class="btn-action px-8 uppercase tracking-widest">
                 Sync (<span x-text="dirtyCount"></span>)
             </button>
         </div>
@@ -70,7 +70,7 @@
             <div class="p-4">
                 <button @click="openCreateModal()" class="btn-action btn-primary w-full justify-center"><i class="fa-solid fa-plus-circle"></i> New Resource</button>
             </div>
-            <div class="flex-1 overflow-y-auto custom-scrollbar">
+            <div class="flex-1 overflow-y-auto custom-scrollbar border-t border-zinc-900">
                 <template x-for="folder in folders" :key="folder.fullPath">
                     <div @click="activeFolder = folder.fullPath; searchQuery = ''" 
                          :style="'padding-left: ' + (folder.level * 12 + 16) + 'px'" 
@@ -80,9 +80,7 @@
                             <i class="fa-solid fa-folder text-[11px] opacity-40"></i> 
                             <span class="truncate" x-text="folder.name"></span>
                         </div>
-                        <span x-show="getFolderErrorCount(folder.fullPath) > 0" 
-                              class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center"
-                              x-text="getFolderErrorCount(folder.fullPath)"></span>
+                        <span x-show="getFolderErrorCount(folder.fullPath) > 0" class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center" x-text="getFolderErrorCount(folder.fullPath)"></span>
                     </div>
                 </template>
             </div>
@@ -96,7 +94,8 @@
                         <div class="flex items-center gap-4">
                             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
                             <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400" x-text="scriptName"></span>
-                            <button @click="addNewEntry(groupFiles, scriptName)" class="btn-action !py-1 !px-3 hover:text-blue-400"><i class="fa-solid fa-plus"></i> Add Entry</button>
+                            <button @click="addNewEntry(groupFiles, scriptName)" class="btn-action !py-1 !px-3 hover:text-blue-400"><i class="fa-solid fa-plus"></i> Entry</button>
+                            <button @click="openAddPropModal(groupFiles)" class="btn-action !py-1 !px-3 hover:text-green-400 border-green-900/20"><i class="fa-solid fa-table-columns"></i> Column</button>
                         </div>
                     </div>
 
@@ -120,7 +119,17 @@
                                         <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
                                             <td class="px-2">
                                                 <div class="min-w-[140px] flex items-center gap-1 group/field relative">
-                                                    <!-- Boolean -->
+                                                    
+                                                    <!-- MULTILINE EDIT POPUP -->
+                                                    <template x-if="getFieldType(file, prop) === 'multiline'">
+                                                        <div class="flex items-center gap-2 w-full">
+                                                            <input type="text" :value="file.data[prop]" readonly @click="openMultiline(file, prop)"
+                                                                   class="g-input !h-8 cursor-pointer overflow-hidden truncate italic text-zinc-500" placeholder="Click to edit...">
+                                                            <button @click="openMultiline(file, prop)" class="text-blue-500 hover:text-blue-400"><i class="fa-solid fa-expand"></i></button>
+                                                        </div>
+                                                    </template>
+
+                                                    <!-- BOOL -->
                                                     <template x-if="getFieldType(file, prop) === 'bool'">
                                                         <button @click="file.data[prop] = !file.data[prop]; markDirty(file)" 
                                                                 :class="file.data[prop] ? 'bg-blue-600' : 'bg-zinc-800'" class="w-9 h-5 rounded-full px-0.5 flex items-center transition-all">
@@ -128,7 +137,7 @@
                                                         </button>
                                                     </template>
 
-                                                    <!-- Enum -->
+                                                    <!-- ENUM -->
                                                     <template x-if="getFieldType(file, prop) === 'enum' || getFieldType(file, prop) === 'export_enum'">
                                                         <select :value="file.data[prop]" @change="updateValue(file, prop, $event.target.value)" class="g-input !h-8 text-xs appearance-none cursor-pointer">
                                                             <template x-for="(val, idx) in getHint(file, prop).options">
@@ -137,16 +146,11 @@
                                                         </select>
                                                     </template>
 
-                                                    <!-- Input (Text/Number) - FIXED BINDING -->
-                                                    <template x-if="['bool', 'enum', 'export_enum'].indexOf(getFieldType(file, prop)) === -1">
+                                                    <!-- TEXT / NUMBER (FIXED) -->
+                                                    <template x-if="['bool', 'enum', 'export_enum', 'multiline'].indexOf(getFieldType(file, prop)) === -1">
                                                         <div class="relative w-full">
-                                                            <input type="text" 
-                                                                   :value="file.data[prop]" 
-                                                                   @input="updateValue(file, prop, $event.target.value)" 
-                                                                   :class="[
-                                                                        hasIssue(file, prop) && 'input-error shake-error',
-                                                                        typeof file.data[prop] === 'number' && 'type-number'
-                                                                   ]"
+                                                            <input type="text" :value="file.data[prop]" @input="updateValue(file, prop, $event.target.value)" 
+                                                                   :class="[hasIssue(file, prop) && 'input-error shake-error', typeof file.data[prop] === 'number' && 'type-number']"
                                                                    class="g-input !h-8 focus:bg-zinc-950" placeholder="...">
                                                             <div x-show="hasIssue(file, prop)" class="absolute -right-1.5 -top-1.5 z-10">
                                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-[10px] bg-zinc-950 rounded-full"></i>
@@ -169,63 +173,96 @@
         </main>
     </div>
 
-    <!-- MODAL: ERROR SUMMARY -->
-    <div x-show="errorSummary.open" x-cloak class="fixed inset-0 z-[160] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 flex flex-col shadow-2xl max-h-[80vh]" @click.away="errorSummary.open = false">
-            <div class="px-6 py-4 border-b border-zinc-900 flex justify-between bg-red-950/20">
-                <span class="text-xs font-bold uppercase text-red-500"><i class="fa-solid fa-bug mr-2"></i>Invalid Data Explorer</span>
-                <button @click="errorSummary.open = false" class="text-zinc-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
+    <!-- MODAL: MULTILINE EDITOR -->
+    <div x-show="multilineModal.open" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-3xl rounded-2xl border border-zinc-800 shadow-2xl flex flex-col overflow-hidden h-[80vh]">
+            <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 flex justify-between items-center">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-blue-500">Edit Long Text Content</span>
+                <span class="text-[10px] text-zinc-500 font-mono" x-text="multilineModal.prop"></span>
             </div>
-            <div class="p-4 overflow-y-auto custom-scrollbar">
-                <template x-if="errorList.length === 0">
-                    <p class="text-center py-10 text-zinc-600 text-sm italic">No errors found. Everything is valid!</p>
-                </template>
-                <div class="space-y-2">
-                    <template x-for="err in errorList" :key="err.id + err.prop">
-                        <div @click="goToError(err)" class="bg-zinc-900/50 border border-zinc-800 p-3 rounded-lg hover:border-red-500/50 cursor-pointer group transition-all">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="text-[12px] font-bold text-zinc-200 group-hover:text-blue-400" x-text="err.fileName"></span>
-                                <span class="text-[10px] bg-red-500/10 text-red-400 px-2 py-0.5 rounded uppercase font-bold" x-text="err.issueType"></span>
-                            </div>
-                            <div class="flex items-center gap-2 text-[11px] text-zinc-500 italic">
-                                <span>Column: <span class="text-zinc-300 font-mono" x-text="err.prop"></span></span>
-                                <i class="fa-solid fa-arrow-right text-[8px]"></i>
-                                <span>Value: <span class="text-red-400" x-text="err.value === '' ? '(Empty)' : err.value"></span></span>
-                            </div>
-                            <div class="mt-2 text-[9px] text-zinc-600 uppercase tracking-widest">
-                                <i class="fa-solid fa-folder mr-1"></i> <span x-text="err.folder"></span>
-                            </div>
-                        </div>
-                    </template>
-                </div>
+            <textarea x-model="multilineModal.text" class="flex-1 bg-zinc-950 p-6 text-[13px] text-zinc-300 outline-none resize-none font-mono leading-relaxed" placeholder="Write content here..."></textarea>
+            <div class="px-6 py-4 border-t border-zinc-900 bg-zinc-900/10 flex justify-end gap-3">
+                <button @click="multilineModal.open = false" class="text-xs font-bold text-zinc-500 uppercase px-4">Close</button>
+                <button @click="saveMultiline()" class="btn-action btn-primary !px-8">Update Content</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: CREATE -->
+    <!-- MODAL: CREATE (CLONE + SEARCH) -->
     <div x-show="createModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-lg rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl" @click.away="createModal.open = false">
             <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest">Create New Resource</h3>
-            <input type="text" x-model="createModal.name" class="g-input !h-12 border-zinc-700" placeholder="Resource Name (e.g. item_sword)">
+            <input type="text" x-model="createModal.name" class="g-input !h-12 border-zinc-700" placeholder="Resource Filename">
             <div class="grid grid-cols-2 gap-4">
-                <button @click="createModal.ext = '.tres'" :class="createModal.ext === '.tres' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.tres (Godot)</button>
-                <button @click="createModal.ext = '.json'" :class="createModal.ext === '.json' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.json (Data)</button>
+                <button @click="createModal.ext = '.tres'" :class="createModal.ext === '.tres' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.tres</button>
+                <button @click="createModal.ext = '.json'" :class="createModal.ext === '.json' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.json</button>
+            </div>
+            <div x-show="createModal.ext === '.tres'" class="space-y-2">
+                <label class="text-[10px] font-bold text-zinc-600 uppercase italic">Clone structure from:</label>
+                <input type="text" x-model="createModal.cloneSearch" class="g-input" placeholder="Search templates...">
+                <div class="max-h-32 overflow-y-auto custom-scrollbar border border-zinc-800 rounded-lg bg-black/30">
+                    <template x-for="tpl in filteredTemplates" :key="tpl.id">
+                        <div @click="createModal.targetClone = tpl.id" :class="createModal.targetClone === tpl.id ? 'bg-blue-600/30 text-blue-400' : 'hover:bg-zinc-900 text-zinc-500'" class="px-3 py-2 text-xs cursor-pointer border-b border-zinc-900/50 flex justify-between items-center">
+                            <span x-text="tpl.name"></span><span class="text-[9px] opacity-30" x-text="tpl.scriptName"></span>
+                        </div>
+                    </template>
+                </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-zinc-900">
-                <button @click="createModal.open = false" class="px-4 py-2 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
-                <button @click="confirmCreateFile()" class="btn-action btn-primary !px-8">Create File</button>
+                <button @click="createModal.open = false" class="px-4 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
+                <button @click="confirmCreateFile()" class="btn-action btn-primary !px-8">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD COLUMN -->
+    <div x-show="addPropModal.open" x-cloak class="fixed inset-0 z-[160] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden" @click.away="addPropModal.open = false">
+            <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-blue-500">Configure New Column</div>
+            <div class="p-6 space-y-4">
+                <input type="text" x-model="addPropModal.name" class="g-input !h-12" placeholder="Property Name">
+                <select x-model="addPropModal.type" class="g-input !h-12">
+                    <option value="string">String</option>
+                    <option value="number">Number</option>
+                    <option value="boolean">Boolean</option>
+                </select>
+                <input type="text" x-model="addPropModal.defaultValue" class="g-input !h-12" placeholder="Value">
+            </div>
+            <div class="px-6 py-4 border-t border-zinc-900 flex justify-end gap-3">
+                <button @click="addPropModal.open = false" class="px-4 text-xs font-bold text-zinc-500">CANCEL</button>
+                <button @click="confirmAddProperty()" class="btn-action btn-primary !px-6">CONFIRM</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL: PASTE JSON -->
-    <div x-show="importModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl" @click.away="importModal.open = false">
-            <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest">Paste JSON Data</h3>
-            <textarea x-model="importModal.text" class="g-input !h-64 p-4 font-mono text-[11px] leading-relaxed resize-none" placeholder='{"path/to/file.tres": {"property": "value"}}'></textarea>
-            <div class="flex justify-end gap-3">
+    <div x-show="importModal.open" x-cloak class="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 p-6 shadow-2xl" @click.away="importModal.open = false">
+            <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest mb-4">Paste Database JSON</h3>
+            <textarea x-model="importModal.text" class="g-input !h-80 p-4 font-mono text-[11px] leading-relaxed resize-none" placeholder='{"path/to/file": {"key": "val"}}'></textarea>
+            <div class="flex justify-end gap-3 mt-4">
                 <button @click="importModal.open = false" class="px-4 py-2 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
-                <button @click="processImport(importModal.text); importModal.open = false" class="btn-action btn-primary !px-8">Process Import</button>
+                <button @click="processImport(importModal.text); importModal.open = false" class="btn-action btn-primary !px-8">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ISSUES -->
+    <div x-show="errorSummary.open" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-xl rounded-2xl border border-zinc-800 flex flex-col shadow-2xl max-h-[70vh]" @click.away="errorSummary.open = false">
+            <div class="px-6 py-4 border-b border-zinc-900 flex justify-between items-center bg-red-900/10">
+                <span class="text-xs font-bold uppercase text-red-500">Validation Errors</span>
+                <button @click="errorSummary.open = false" class="text-zinc-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="p-4 overflow-y-auto custom-scrollbar">
+                <template x-for="err in errorList" :key="err.id + err.prop">
+                    <div @click="goToError(err)" class="bg-zinc-900/50 border border-zinc-800 p-3 rounded-lg mb-2 cursor-pointer hover:border-blue-500/50">
+                        <div class="flex justify-between text-[12px] font-bold text-zinc-200">
+                            <span x-text="err.fileName"></span><span class="text-red-400 text-[10px]" x-text="err.issueType"></span>
+                        </div>
+                        <div class="text-[11px] text-zinc-500">Column: <span class="text-zinc-300" x-text="err.prop"></span> - Val: <span class="text-red-400" x-text="err.value"></span></div>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
@@ -240,51 +277,36 @@
                 originalTypes: new Map(),
                 errorSummary: { open: false },
                 createModal: { open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '' },
+                addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
                 importModal: { open: false, text: '' },
+                multilineModal: { open: false, file: null, prop: '', text: '' },
 
                 get errorList() {
                     const list = [];
                     this.allFiles.forEach(f => {
-                        const types = this.originalTypes.get(f.id);
-                        if (!types) return;
                         Object.keys(f.data).forEach(prop => {
-                            if (this.hasIssue(f, prop)) {
-                                const issueType = this.isEmpty(f, prop) ? "Empty" : "Invalid Type";
-                                list.push({ id: f.id, fileName: f.name, prop, value: f.data[prop], folder: f.folder, issueType: issueType });
-                            }
+                            if (this.hasIssue(f, prop)) list.push({ id: f.id, fileName: f.name, prop, value: f.data[prop], folder: f.folder, issueType: "Error" });
                         });
                     });
                     return list;
                 },
                 get errorCount() { return this.errorList.length; },
+                get filteredTemplates() {
+                    const q = this.createModal.cloneSearch.toLowerCase();
+                    return this.allFiles.filter(f => f.type === 'tres' && (f.name.toLowerCase().includes(q) || f.scriptName.toLowerCase().includes(q))).slice(0, 8);
+                },
 
                 async openProject() {
                     try { this.rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' }); await this.loadProjectData(); } catch (e) { }
                 },
                 async reloadProject() {
-                    if (this.dirtyCount > 0 && !confirm("Unsaved changes will be lost. Reload?")) return;
+                    if (this.dirtyCount > 0 && !confirm("Reload and discard changes?")) return;
                     await this.loadProjectData();
                 },
                 async loadProjectData() {
                     this.isSaving = true; this.allFiles = []; this.scripts = {}; this.classMap = {}; this.originalTypes.clear(); this.dirtyCount = 0;
-                    try { await this.scanDir(this.rootHandle, ""); this.buildTree(); this.allFiles = [...this.allFiles]; } finally { this.isSaving = false; }
+                    try { await this.scanDir(this.rootHandle, ""); this.buildTree(); } finally { this.isSaving = false; }
                 },
-
-                // FIXED: HÀM CẬP NHẬT GIÁ TRỊ CÓ ÉP KIỂU (CASTING)
-                updateValue(file, prop, newValue) {
-                    const types = this.originalTypes.get(file.id);
-                    const targetType = types ? types[prop] : 'string';
-
-                    if (targetType === 'number') {
-                        file.data[prop] = newValue === "" ? 0 : (isNaN(newValue) ? newValue : Number(newValue));
-                    } else if (targetType === 'boolean') {
-                        file.data[prop] = (newValue === 'true' || newValue === true);
-                    } else {
-                        file.data[prop] = newValue;
-                    }
-                    this.markDirty(file);
-                },
-
                 async scanDir(handle, path) {
                     for await (const entry of handle.values()) {
                         const curPath = path + entry.name;
@@ -295,13 +317,7 @@
                             else if (entry.name.endsWith('.tres')) {
                                 const { header, body } = this.splitTres(content);
                                 const parsed = this.parseTresBody(body);
-                                this.allFiles.push({ 
-                                    id: curPath, name: entry.name, path: curPath, 
-                                    folder: path.replace(/\/$/, "") || "root", 
-                                    handle: entry, data: parsed, type: 'tres', 
-                                    scriptName: this.getScriptNameFromTres(content), 
-                                    dirty: false, rawHeader: header, rawBody: body 
-                                });
+                                this.allFiles.push({ id: curPath, name: entry.name, path: curPath, folder: path.replace(/\/$/, "") || "root", handle: entry, data: parsed, type: 'tres', scriptName: this.getScriptNameFromTres(content), dirty: false, rawHeader: header, rawBody: body });
                                 this.recordTypes(curPath, parsed);
                             } else if (entry.name.endsWith('.json')) {
                                 try {
@@ -317,115 +333,69 @@
                     }
                 },
                 recordTypes(id, data) {
-                    const types = {}; Object.entries(data).forEach(([k, v]) => types[k] = typeof v);
-                    this.originalTypes.set(id, types);
+                    const t = {}; Object.entries(data).forEach(([k, v]) => t[k] = typeof v);
+                    this.originalTypes.set(id, t);
                 },
-                isEmpty(file, prop) {
-                    const val = file.data[prop];
-                    return val === "" || val === null || val === undefined;
+                updateValue(file, prop, newValue) {
+                    const t = this.originalTypes.get(file.id);
+                    const target = t ? t[prop] : 'string';
+                    if (target === 'number') file.data[prop] = newValue === "" ? 0 : (isNaN(newValue) ? newValue : Number(newValue));
+                    else if (target === 'boolean') file.data[prop] = (newValue === 'true' || newValue === true);
+                    else file.data[prop] = newValue;
+                    this.markDirty(file);
                 },
-                isInvalid(file, prop) {
-                    const val = file.data[prop]; const types = this.originalTypes.get(file.id);
-                    if (!types || !types[prop]) return false;
-                    if (types[prop] === 'number') return isNaN(val) || val === null;
-                    return false;
+                openMultiline(file, prop) {
+                    this.multilineModal = { open: true, file, prop, text: file.data[prop] };
                 },
-                hasIssue(file, prop) { return this.isEmpty(file, prop) || this.isInvalid(file, prop); },
-                getFolderErrorCount(folderPath) {
-                    return this.allFiles.filter(f => f.folder === folderPath && Object.keys(f.data).some(p => this.hasIssue(f, p))).length;
+                saveMultiline() {
+                    this.multilineModal.file.data[this.multilineModal.prop] = this.multilineModal.text;
+                    this.markDirty(this.multilineModal.file);
+                    this.multilineModal.open = false;
                 },
-                goToError(err) { this.activeFolder = err.folder; this.searchQuery = err.fileName; this.errorSummary.open = false; },
-                
-                parseGDScript(content, fileName) {
-                    const hints = {}; const enums = {};
-                    const classNameMatch = content.match(/class_name\s+(\w+)/);
-                    if (classNameMatch) this.classMap[classNameMatch[1]] = fileName;
-                    const extendsMatch = content.match(/extends\s+(?:"res:\/\/([^"]+)"|(\w+))/);
-                    let parent = extendsMatch ? (extendsMatch[1] ? extendsMatch[1].split('/').pop() : extendsMatch[2]) : null;
-                    const enumMatches = content.matchAll(/enum\s+(\w+)\s*\{([\s\S]+?)\}/g);
-                    for (const m of enumMatches) enums[m[1]] = m[2].split(',').map(v => v.trim().split('=')[0].trim()).filter(x => x);
-                    content.split('\n').forEach(line => {
-                        const l = line.trim(); const varMatch = l.match(/var\s+(\w+)/);
-                        if (!varMatch) return; const varName = varMatch[1];
-                        if (l.includes('@export_multiline')) hints[varName] = { type: 'multiline' };
-                        else if (l.includes('@export_enum')) hints[varName] = { type: 'export_enum', options: l.match(/\(([\s\S]+?)\)/)[1].split(',').map(s => s.replace(/["']/g, "").trim()) };
-                        else if (l.includes(': bool')) hints[varName] = { type: 'bool' };
-                        else { for (let e in enums) { if (l.includes(`: ${e}`)) hints[varName] = { type: 'enum', options: enums[e] }; } }
-                    });
-                    this.scripts[fileName] = { hints, parent };
+                openAddPropModal(groupFiles) { this.addPropModal = { open: true, group: groupFiles, name: '', type: 'string', defaultValue: '' }; },
+                confirmAddProperty() {
+                    const { name, type, defaultValue, group } = this.addPropModal; if (!name) return;
+                    let val = type === 'number' ? Number(defaultValue) || 0 : (type === 'boolean' ? (defaultValue === 'true') : String(defaultValue));
+                    group.forEach(f => { if (!(name in f.data)) { f.data[name] = val; this.markDirty(f); this.recordTypes(f.id, f.data); } });
+                    this.addPropModal.open = false;
                 },
-                getScriptNameFromTres(content) {
-                    const scriptRef = content.match(/script\s*=\s*ExtResource\("([^"]+)"\)/);
-                    if (!scriptRef) return "StaticResource";
-                    const id = scriptRef[1];
-                    const extLine = content.split('\n').find(l => l.includes(`id="${id}"`) && l.includes('.gd'));
-                    return extLine?.match(/path="res:\/\/([^"]+)"/)?.[1].split('/').pop() || "StaticResource";
+                hasIssue(file, prop) {
+                    const v = file.data[prop]; const t = this.originalTypes.get(file.id);
+                    return (!t || !t[prop]) ? false : (v === "" || v === null || (t[prop] === 'number' && isNaN(v)));
                 },
-                splitTres(content) {
-                    const marker = "[resource]"; const idx = content.indexOf(marker);
-                    if (idx === -1) return { header: content, body: "" };
-                    return { header: content.substring(0, idx + marker.length), body: content.substring(idx + marker.length) };
-                },
-                parseTresBody(bodyText) {
-                    const data = {};
-                    bodyText.split(/\r?\n/).forEach(line => {
-                        const t = line.trim();
-                        if (t && t.includes('=') && !t.startsWith('[')) {
-                            const [k, ...v] = t.split('='); const key = k.trim(); let val = v.join('=').trim();
-                            if (this.blacklist.includes(key.toLowerCase())) return;
-                            if (this.godotTypes.some(gt => val.startsWith(gt + "("))) return; 
-                            if (val.startsWith('"') && val.endsWith('"')) val = val.substring(1, val.length - 1);
-                            else if (val === "true") val = true; else if (val === "false") val = false;
-                            else if (!isNaN(val) && val !== "") val = Number(val);
-                            data[key] = val;
+                async saveDirtyFiles() {
+                    if (this.dirtyCount === 0 || this.errorCount > 0) return; this.isSaving = true;
+                    try {
+                        const paths = [...new Set(this.allFiles.filter(f => f.dirty).map(f => f.path))];
+                        for (let p of paths) {
+                            const entries = this.allFiles.filter(f => f.path === p); const first = entries[0];
+                            const w = await first.handle.createWritable();
+                            if (first.type === 'tres') {
+                                let lines = first.rawBody.split(/\r?\n/); let up = new Set();
+                                let nl = lines.map(line => {
+                                    const tr = line.trim();
+                                    if (tr && tr.includes('=') && !tr.startsWith('[')) {
+                                        const k = tr.split('=')[0].trim();
+                                        if (first.data.hasOwnProperty(k)) {
+                                            up.add(k); const v = first.data[k];
+                                            let vStr = (typeof v === 'string' && !this.godotTypes.some(gt => v.startsWith(gt + "("))) ? `"${v}"` : v;
+                                            return `${k} = ${vStr}`;
+                                        }
+                                    } return line;
+                                });
+                                Object.keys(first.data).forEach(k => { if (!up.has(k)) { 
+                                    const v = first.data[k]; let vStr = (typeof v === 'string') ? `"${v}"` : v;
+                                    nl.push(`${k} = ${vStr}`);
+                                }});
+                                await w.write(first.rawHeader + "\n" + nl.join('\n')); first.rawBody = nl.join('\n');
+                            } else {
+                                const json = {}; entries.forEach(e => json[e.name] = e.data);
+                                await w.write(JSON.stringify(json, null, "\t"));
+                            }
+                            await w.close(); entries.forEach(e => e.dirty = false);
                         }
-                    });
-                    return data;
-                },
-                getHint(file, prop) {
-                    let combinedHints = {}; let current = file.scriptName; let stack = 0;
-                    while (current && stack < 10) {
-                        let scriptInfo = this.scripts[current] || this.scripts[this.classMap[current]];
-                        if (!scriptInfo) break;
-                        combinedHints = { ...scriptInfo.hints, ...combinedHints };
-                        current = scriptInfo.parent; stack++;
-                    }
-                    return combinedHints[prop] || { type: 'default' };
-                },
-                getFieldType(file, prop) { 
-                    const h = this.getHint(file, prop);
-                    if (h.type !== 'default') return h.type;
-                    return typeof file.data[prop] === 'boolean' ? 'bool' : 'default';
-                },
-                getFieldsForGroup(scriptName, files) {
-                    let keys = new Set();
-                    files.forEach(f => Object.keys(f.data).forEach(k => keys.add(k)));
-                    return Array.from(keys);
-                },
-                get groupedFiles() {
-                    let f = this.searchQuery ? this.allFiles.filter(f => f.name.toLowerCase().includes(this.searchQuery.toLowerCase())) : this.allFiles.filter(f => f.folder === this.activeFolder);
-                    const groups = {}; f.forEach(x => { if (!groups[x.scriptName]) groups[x.scriptName] = []; groups[x.scriptName].push(x); });
-                    return groups;
-                },
-                buildTree() {
-                    const paths = [...new Set(this.allFiles.map(f => f.folder))];
-                    this.folders = paths.sort().map(p => ({ name: p === "root" ? 'Resources' : p.split('/').pop(), fullPath: p, level: p === "root" ? 0 : p.split('/').length }));
-                    if (this.folders.length > 0 && !this.activeFolder) this.activeFolder = this.folders[0].fullPath;
-                },
-                markDirty(f) { if (!f.dirty) { f.dirty = true; this.dirtyCount++; } },
-                addNewEntry(group, scriptName) {
-                    const first = group[0]; const id = prompt("Identifier/Name:"); if (!id) return;
-                    if (first.type === 'json') {
-                        const emptyData = {};
-                        Object.keys(first.data).forEach(key => {
-                            const originalVal = first.data[key];
-                            if (typeof originalVal === 'boolean') emptyData[key] = false;
-                            else if (typeof originalVal === 'number') emptyData[key] = 0;
-                            else emptyData[key] = "";
-                        });
-                        const newObj = { ...first, id: first.path + ":" + id, name: id, data: emptyData, dirty: true };
-                        this.allFiles.push(newObj); this.recordTypes(newObj.id, newObj.data); this.dirtyCount++;
-                    } else this.internalCreate(id, '.tres', first.id);
+                        this.dirtyCount = 0;
+                    } catch(e) { alert("Save failed!"); } finally { this.isSaving = false; }
                 },
                 openCreateModal() { this.createModal = { open: true, name: '', ext: '.tres', targetClone: '', cloneSearch: '' }; },
                 async confirmCreateFile() { if (this.createModal.name) await this.internalCreate(this.createModal.name, this.createModal.ext, this.createModal.targetClone); this.createModal.open = false; },
@@ -434,9 +404,7 @@
                     let dir = this.rootHandle; if (this.activeFolder !== "root") for (let p of this.activeFolder.split('/')) dir = await dir.getDirectoryHandle(p);
                     const handle = await dir.getFileHandle(fullName, { create: true });
                     const path = (this.activeFolder === "root" ? "" : this.activeFolder + "/") + fullName;
-                    let data = {}; let header = `[gd_resource type="Resource" format=3]\n\n[resource]`;
-                    let body = "";
-                    let sName = ext === '.tres' ? "Godot Resource" : fullName;
+                    let data = {}, header = `[gd_resource type="Resource" format=3]\n\n[resource]`, body = "", sName = ext === '.tres' ? "Godot Resource" : fullName;
                     if (ext === '.tres' && templateId) {
                         const src = this.allFiles.find(f => f.id === templateId);
                         if (src) { data = JSON.parse(JSON.stringify(src.data)); header = src.rawHeader; sName = src.scriptName; body = src.rawBody; }
@@ -444,70 +412,86 @@
                     const newFile = { id: path, name: fullName, path, folder: this.activeFolder, handle, data, type: ext.replace('.',''), scriptName: sName, dirty: true, rawHeader: header, rawBody: body };
                     this.allFiles.push(newFile); this.recordTypes(path, data); this.dirtyCount++;
                 },
-                async saveDirtyFiles() {
-                    if (this.dirtyCount === 0 || this.errorCount > 0) return;
-                    this.isSaving = true;
-                    try {
-                        const paths = [...new Set(this.allFiles.filter(f => f.dirty).map(f => f.path))];
-                        for (let p of paths) {
-                            const entries = this.allFiles.filter(f => f.path === p); const first = entries[0];
-                            const w = await first.handle.createWritable();
-                            if (first.type === 'tres') {
-                                let lines = first.rawBody.split(/\r?\n/);
-                                let updatedKeys = new Set();
-                                let newLines = lines.map(line => {
-                                    const trimmed = line.trim();
-                                    if (trimmed && trimmed.includes('=') && !trimmed.startsWith('[')) {
-                                        const key = trimmed.split('=')[0].trim();
-                                        if (first.data.hasOwnProperty(key)) {
-                                            updatedKeys.add(key);
-                                            const v = first.data[key];
-                                            // FIXED: CHỈ THÊM NGOẶC KÉP NẾU LÀ STRING
-                                            let valStr = (typeof v === 'string' && !this.godotTypes.some(t => v.startsWith(t + "("))) ? `"${v}"` : v;
-                                            return `${key} = ${valStr}`;
-                                        }
-                                    }
-                                    return line;
-                                });
-                                await w.write(first.rawHeader + "\n" + newLines.join('\n'));
-                                first.rawBody = newLines.join('\n');
-                            } else {
-                                const json = {}; entries.forEach(e => json[e.name] = e.data);
-                                await w.write(JSON.stringify(json, null, "\t"));
-                            }
-                            await w.close(); entries.forEach(e => e.dirty = false);
-                        }
-                        this.dirtyCount = 0;
-                    } catch(e) { console.error(e); alert("Save failed!"); } finally { this.isSaving = false; }
+                parseGDScript(c, f) {
+                    const hints = {}, enums = {}, classNameMatch = c.match(/class_name\s+(\w+)/);
+                    if (classNameMatch) this.classMap[classNameMatch[1]] = f;
+                    const exMatch = c.match(/extends\s+(?:"res:\/\/([^"]+)"|(\w+))/);
+                    let parent = exMatch ? (exMatch[1] ? exMatch[1].split('/').pop() : exMatch[2]) : null;
+                    const enMatches = c.matchAll(/enum\s+(\w+)\s*\{([\s\S]+?)\}/g);
+                    for (const m of enMatches) enums[m[1]] = m[2].split(',').map(v => v.trim().split('=')[0].trim()).filter(x => x);
+                    c.split('\n').forEach(line => {
+                        const l = line.trim(), varMatch = l.match(/var\s+(\w+)/); if (!varMatch) return; const varName = varMatch[1];
+                        if (l.includes('@export_multiline')) hints[varName] = { type: 'multiline' };
+                        else if (l.includes('@export_enum')) hints[varName] = { type: 'export_enum', options: l.match(/\(([\s\S]+?)\)/)[1].split(',').map(s => s.replace(/["']/g, "").trim()) };
+                        else if (l.includes(': bool')) hints[varName] = { type: 'bool' };
+                        else { for (let e in enums) { if (l.includes(`: ${e}`)) hints[varName] = { type: 'enum', options: enums[e] }; } }
+                    });
+                    this.scripts[f] = { hints, parent };
                 },
-                async deleteEntry(file) {
-                    if (!confirm("Delete permanently?")) return;
-                    if (file.type === 'tres') { await file.handle.remove(); this.allFiles = this.allFiles.filter(f => f.id !== file.id); }
-                    else { const p = file.path; this.allFiles = this.allFiles.filter(f => f.id !== file.id); this.allFiles.filter(f => f.path === p).forEach(f => this.markDirty(f)); }
+                getScriptNameFromTres(c) {
+                    const sr = c.match(/script\s*=\s*ExtResource\("([^"]+)"\)/); if (!sr) return "StaticResource";
+                    return c.split('\n').find(l => l.includes(`id="${sr[1]}"`) && l.includes('.gd'))?.match(/path="res:\/\/([^"]+)"/)?.[1].split('/').pop() || "StaticResource";
+                },
+                splitTres(c) { const m = "[resource]", i = c.indexOf(m); return i === -1 ? { header: c, body: "" } : { header: c.substring(0, i + m.length), body: c.substring(i + m.length) }; },
+                parseTresBody(b) {
+                    const data = {}; b.split(/\r?\n/).forEach(l => {
+                        const t = l.trim(); if (t && t.includes('=') && !t.startsWith('[')) {
+                            const [k, ...v] = t.split('='); const key = k.trim(); let val = v.join('=').trim();
+                            if (this.blacklist.includes(key.toLowerCase()) || this.godotTypes.some(gt => val.startsWith(gt + "("))) return;
+                            if (val.startsWith('"') && val.endsWith('"')) val = val.substring(1, val.length - 1);
+                            else if (val === "true") val = true; else if (val === "false") val = false; else if (!isNaN(val) && val !== "") val = Number(val);
+                            data[key] = val;
+                        }
+                    }); return data;
+                },
+                getHint(f, p) {
+                    let h = {}, cur = f.scriptName, s = 0;
+                    while (cur && s < 10) { let si = this.scripts[cur] || this.scripts[this.classMap[cur]]; if (!si) break; h = { ...si.hints, ...h }; cur = si.parent; s++; }
+                    return h[p] || { type: 'default' };
+                },
+                getFieldType(f, p) { const h = this.getHint(f, p); return h.type !== 'default' ? h.type : (typeof f.data[p] === 'boolean' ? 'bool' : 'default'); },
+                getFieldsForGroup(s, f) { let k = new Set(); f.forEach(x => Object.keys(x.data).forEach(y => k.add(y))); return Array.from(k); },
+                get groupedFiles() {
+                    let f = this.searchQuery ? this.allFiles.filter(x => x.name.toLowerCase().includes(this.searchQuery.toLowerCase())) : this.allFiles.filter(x => x.folder === this.activeFolder);
+                    const groups = {}; f.forEach(x => { if (!groups[x.scriptName]) groups[x.scriptName] = []; groups[x.scriptName].push(x); }); return groups;
+                },
+                buildTree() {
+                    const ps = [...new Set(this.allFiles.map(x => x.folder))];
+                    this.folders = ps.sort().map(p => ({ name: p === "root" ? 'Resources' : p.split('/').pop(), fullPath: p, level: p === "root" ? 0 : p.split('/').length }));
+                    if (this.folders.length > 0 && !this.activeFolder) this.activeFolder = this.folders[0].fullPath;
+                },
+                markDirty(f) { if (!f.dirty) { f.dirty = true; this.dirtyCount++; } },
+                addNewEntry(g, s) {
+                    const f = g[0], id = prompt("Identifier:"); if (!id) return;
+                    if (f.type === 'json') {
+                        const ed = {}; Object.keys(f.data).forEach(k => { const v = f.data[k]; ed[k] = (typeof v === 'boolean' ? false : (typeof v === 'number' ? 0 : "")); });
+                        const n = { ...f, id: f.path + ":" + id, name: id, data: ed, dirty: true }; this.allFiles.push(n); this.recordTypes(n.id, n.data); this.dirtyCount++;
+                    } else this.internalCreate(id, '.tres', f.id);
+                },
+                async deleteEntry(f) {
+                    if (!confirm("Delete?")) return;
+                    if (f.type === 'tres') { await f.handle.remove(); this.allFiles = this.allFiles.filter(x => x.id !== f.id); }
+                    else { const p = f.path; this.allFiles = this.allFiles.filter(x => x.id !== f.id); this.allFiles.filter(x => x.path === p).forEach(x => this.markDirty(x)); }
                     this.buildTree();
                 },
                 exportAllData() {
-                    const bundle = {}; this.allFiles.forEach(f => bundle[f.id] = f.data);
-                    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(bundle, null, 2)], {type:'application/json'}));
+                    const b = {}; this.allFiles.forEach(f => b[f.id] = f.data);
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(b, null, 2)], {type:'application/json'}));
                     a.download = `database_export.json`; a.click();
                 },
                 async importData() {
                     const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
-                    input.onchange = async (e) => { this.processImport(await e.target.files[0].text()); };
-                    input.click();
+                    input.onchange = async (e) => { this.processImport(await e.target.files[0].text()); }; input.click();
                 },
                 processImport(jsonStr) {
                     try {
-                        const imported = JSON.parse(jsonStr);
-                        const fileMap = new Map(); this.allFiles.forEach(f => fileMap.set(f.id, f));
-                        let count = 0;
-                        for (const [id, val] of Object.entries(imported)) {
-                            const target = fileMap.get(id);
-                            if (target && JSON.stringify(target.data) !== JSON.stringify(val)) { target.data = val; this.markDirty(target); count++; }
-                        }
-                        alert(`Synced ${count} items successfully.`); return true;
-                    } catch (e) { alert("Invalid JSON format."); return false; }
-                }
+                        const imported = JSON.parse(jsonStr); let count = 0;
+                        this.allFiles.forEach(f => { if (imported[f.id]) { f.data = imported[f.id]; this.markDirty(f); count++; } });
+                        alert(`Synced ${count} items.`);
+                    } catch (e) { alert("Invalid JSON"); }
+                },
+                getFolderErrorCount(path) { return this.allFiles.filter(f => f.folder === path && Object.keys(f.data).some(p => this.hasIssue(f, p))).length; },
+                goToError(err) { this.activeFolder = err.folder; this.searchQuery = err.fileName; this.errorSummary.open = false; }
             }
         }
     </script>
