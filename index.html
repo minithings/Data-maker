@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
-    <title>Database Game Maker v2.4 - Godot Native Support</title>
+    <title>Database Game Maker v2.7 - Fixed & Clean</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -32,20 +33,20 @@
     <!-- OVERLAY -->
     <div x-show="isSaving" x-cloak class="fixed inset-0 bg-black/80 z-[100] flex flex-col items-center justify-center backdrop-blur-sm">
         <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-        <p class="mt-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Saving Changes...</p>
+        <p class="mt-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Processing...</p>
     </div>
 
     <!-- NAVBAR -->
     <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30">
         <div class="flex items-center gap-4">
-            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V2.4</span></h1>
+            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V2.7</span></h1>
             <button @click="openProject()" class="btn-action !py-1.5"><i class="fa-solid fa-folder-open text-blue-500"></i> Open Project</button>
             <div class="h-4 w-[1px] bg-zinc-800 mx-1"></div>
-            <button @click="exportAllData()" class="btn-action !py-1.5"><i class="fa-solid fa-file-export text-orange-400"></i> Export</button>
+            <button @click="exportAllData()" class="btn-action !py-1.5"><i class="fa-solid fa-file-export text-orange-400"></i> Export JSON</button>
             <button @click="importData()" class="btn-action !py-1.5"><i class="fa-solid fa-file-import text-green-400"></i> Import Sync</button>
         </div>
         <div class="flex items-center gap-4">
-            <input type="text" x-model="searchQuery" placeholder="Search..." class="g-input !w-64">
+            <input type="text" x-model="searchQuery" placeholder="Search identifiers..." class="g-input !w-64">
             <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0" :class="dirtyCount > 0 ? 'btn-primary' : 'opacity-30 cursor-not-allowed'" class="btn-action px-8 uppercase tracking-widest transition-all">
                 Sync (<span x-text="dirtyCount"></span>)
             </button>
@@ -53,6 +54,7 @@
     </nav>
 
     <div class="flex-1 flex overflow-hidden">
+        <!-- SIDEBAR -->
         <aside class="w-64 bg-zinc-950 flex flex-col border-r border-zinc-900 shrink-0">
             <div class="p-4"><button @click="openCreateModal()" class="btn-action btn-primary w-full justify-center"><i class="fa-solid fa-plus-circle"></i> New Resource</button></div>
             <div class="flex-1 overflow-y-auto custom-scrollbar">
@@ -67,12 +69,20 @@
             </div>
         </aside>
 
+        <!-- MAIN -->
         <main class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
             <template x-for="(groupFiles, scriptName) in groupedFiles" :key="scriptName">
                 <div class="data-panel">
-                    <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/20">
-                        <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400" x-text="scriptName"></span>
+                    <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/20 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400" x-text="scriptName"></span>
+                            <button @click="addNewEntry(groupFiles, scriptName)" class="btn-action !py-1 !px-3"><i class="fa-solid fa-plus text-blue-500"></i> New Entry</button>
+                            <template x-if="groupFiles[0].type === 'json'">
+                                <button @click="openAddPropModal(groupFiles)" class="btn-action !py-1 !px-3"><i class="fa-solid fa-columns"></i> Add Column</button>
+                            </template>
+                        </div>
                     </div>
+
                     <div class="overflow-x-auto custom-scrollbar">
                         <table class="w-full text-left border-separate border-spacing-0">
                             <thead>
@@ -114,15 +124,30 @@
         </main>
     </div>
 
+    <!-- MODAL: ADD COLUMN (JSON) -->
+    <div x-show="addPropModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 p-6 space-y-4" @click.away="addPropModal.open = false">
+            <h3 class="text-zinc-400 font-bold uppercase text-[10px]">Add Column (JSON Only)</h3>
+            <input type="text" x-model="addPropModal.name" class="g-input" placeholder="Property Name">
+            <select x-model="addPropModal.type" class="g-input">
+                <option value="string">String</option>
+                <option value="number">Number</option>
+                <option value="boolean">Boolean</option>
+            </select>
+            <input type="text" x-model="addPropModal.defaultValue" class="g-input" placeholder="Default Value">
+            <div class="flex justify-end gap-3"><button @click="confirmAddProperty()" class="btn-action btn-primary">Add Column</button></div>
+        </div>
+    </div>
+
     <script>
         function editor() {
             return {
                 allFiles: [], folders: [], activeFolder: '', searchQuery: '', rootHandle: null,
                 dirtyCount: 0, isSaving: false,
-                // UI Blacklist (vẫn lưu trong file nhưng ẩn khỏi table)
-                blacklist: ['script', 'uid', 'type', 'format', 'load_steps'],
-                // Godot Native Types (Không bao giờ bọc dấu ngoặc kép khi lưu)
+                blacklist: ['script', 'uid', 'type', 'format', 'load_steps', 'atlas', 'texture', 'sprite_frames', 'icon'],
                 godotTypes: ['ExtResource', 'SubResource', 'Rect2', 'Vector2', 'Vector3', 'Color', 'Transform2D'],
+                addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
+                createModal: { open: false, name: '', ext: '.tres' },
 
                 async openProject() {
                     try {
@@ -142,23 +167,12 @@
                             const content = await file.text();
                             if (entry.name.endsWith('.tres')) {
                                 const { header, body } = this.splitTres(content);
-                                this.allFiles.push({ 
-                                    id: curPath, name: entry.name, path: curPath, 
-                                    folder: path.replace(/\/$/, "") || "root", 
-                                    handle: entry, data: this.parseTresBody(body), 
-                                    type: 'tres', scriptName: "Godot Resource", 
-                                    dirty: false, rawHeader: header 
-                                });
+                                this.allFiles.push({ id: curPath, name: entry.name, path: curPath, folder: path.replace(/\/$/, "") || "root", handle: entry, data: this.parseTresBody(body), type: 'tres', scriptName: "Godot Resource", dirty: false, rawHeader: header });
                             } else if (entry.name.endsWith('.json')) {
                                 try {
                                     const json = JSON.parse(content);
                                     for (let [id, val] of Object.entries(json)) {
-                                        this.allFiles.push({ 
-                                            id: curPath + ":" + id, name: id, path: curPath, 
-                                            folder: path.replace(/\/$/, "") || "root", 
-                                            handle: entry, data: val, type: 'json', 
-                                            scriptName: entry.name, dirty: false 
-                                        });
+                                        this.allFiles.push({ id: curPath + ":" + id, name: id, path: curPath, folder: path.replace(/\/$/, "") || "root", handle: entry, data: val, type: 'json', scriptName: entry.name, dirty: false });
                                     }
                                 } catch (e) {}
                             }
@@ -170,10 +184,7 @@
                     const marker = "[resource]";
                     const index = content.indexOf(marker);
                     if (index === -1) return { header: content, body: "" };
-                    return {
-                        header: content.substring(0, index + marker.length),
-                        body: content.substring(index + marker.length)
-                    };
+                    return { header: content.substring(0, index + marker.length), body: content.substring(index + marker.length) };
                 },
 
                 parseTresBody(bodyText) {
@@ -184,8 +195,7 @@
                             const [k, ...v] = t.split('=');
                             const key = k.trim();
                             let val = v.join('=').trim();
-                            // Chỉ remove ngoặc kép nếu nó bao bọc toàn bộ chuỗi
-                            if (val.startsWith('"') && val.endsWith('"')) val = val.substring(1, val.length -1);
+                            if (val.startsWith('"') && val.endsWith('"')) val = val.substring(1, val.length - 1);
                             else if (val === "true") val = true;
                             else if (val === "false") val = false;
                             else if (!isNaN(val) && val !== "") val = Number(val);
@@ -193,6 +203,24 @@
                         }
                     });
                     return data;
+                },
+
+                isProtected(key, value) {
+                    if (this.blacklist.includes(key.toLowerCase())) return true;
+                    if (typeof value === 'string') {
+                        return this.godotTypes.some(type => value.startsWith(type + "("));
+                    }
+                    return false;
+                },
+
+                getFieldsForGroup(script, files) {
+                    let keys = new Set();
+                    files.forEach(f => {
+                        Object.entries(f.data).forEach(([k, v]) => { // Fixed syntax here
+                            if (!this.isProtected(k, v)) keys.add(k);
+                        });
+                    });
+                    return Array.from(keys);
                 },
 
                 async saveDirtyFiles() {
@@ -204,13 +232,11 @@
                             const entries = this.allFiles.filter(f => f.path === p);
                             const first = entries[0];
                             const w = await first.handle.createWritable();
-
                             if (first.type === 'tres') {
                                 let content = first.rawHeader + "\n";
                                 for (const [k, v] of Object.entries(first.data)) {
                                     let valStr = v;
                                     if (typeof v === 'string') {
-                                        // Kiểm tra nếu là Godot Native Type thì KHÔNG thêm ngoặc kép
                                         const isNative = this.godotTypes.some(type => v.startsWith(type + "("));
                                         if (!isNative) valStr = `"${v}"`;
                                     }
@@ -231,7 +257,7 @@
                 },
 
                 async importData() {
-                    if (this.allFiles.length === 0) return alert("Open project first!");
+                    if (this.allFiles.length === 0) return;
                     const input = document.createElement('input');
                     input.type = 'file'; input.accept = '.json';
                     input.onchange = async (e) => {
@@ -241,23 +267,20 @@
                             const imported = JSON.parse(await file.text());
                             const fileMap = new Map();
                             this.allFiles.forEach(f => { fileMap.set(f.id, f); fileMap.set(f.name, f); });
-
                             let changedCount = 0;
-                            for (const [key, newVal] of Object.entries(imported)) {
+                            for (const [key, newValObj] of Object.entries(imported)) {
                                 const target = fileMap.get(key);
                                 if (target) {
                                     let localChanged = false;
-                                    for (const p in newVal) {
-                                        // CHỈ UPDATE NẾU GIÁ TRỊ THAY ĐỔI VÀ KHÔNG GHI ĐÈ BỪA BÃI
-                                        if (JSON.stringify(target.data[p]) !== JSON.stringify(newVal[p])) {
-                                            target.data[p] = newVal[p];
-                                            localChanged = true;
+                                    for (const p in newValObj) {
+                                        if (!this.isProtected(p, target.data[p])) {
+                                            if (JSON.stringify(target.data[p]) !== JSON.stringify(newValObj[p])) {
+                                                target.data[p] = newValObj[p];
+                                                localChanged = true;
+                                            }
                                         }
                                     }
-                                    if (localChanged) {
-                                        this.markDirty(target);
-                                        changedCount++;
-                                    }
+                                    if (localChanged) { this.markDirty(target); changedCount++; }
                                 }
                             }
                             alert(`Sync: ${changedCount} items updated.`);
@@ -268,10 +291,16 @@
 
                 exportAllData() {
                     const bundle = {};
-                    this.allFiles.forEach(f => bundle[f.id] = f.data);
+                    this.allFiles.forEach(f => {
+                        const cleanData = {};
+                        for (const [k, v] of Object.entries(f.data)) {
+                            if (!this.isProtected(k, v)) cleanData[k] = v;
+                        }
+                        bundle[f.id] = cleanData;
+                    });
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(new Blob([JSON.stringify(bundle, null, 2)], {type:'application/json'}));
-                    a.download = `db_export.json`;
+                    a.download = `db_bundle.json`;
                     a.click();
                 },
 
@@ -280,37 +309,62 @@
                     this.folders = paths.sort().map(p => ({ name: p === "root" ? 'Root' : p.split('/').pop(), fullPath: p, level: p === "root" ? 0 : p.split('/').length }));
                     this.activeFolder = this.folders[0]?.fullPath || '';
                 },
+
                 get groupedFiles() {
                     let f = this.searchQuery ? this.allFiles.filter(f => f.name.toLowerCase().includes(this.searchQuery.toLowerCase())) : this.allFiles.filter(f => f.folder === this.activeFolder);
                     const groups = {};
                     f.forEach(x => { if (!groups[x.scriptName]) groups[x.scriptName] = []; groups[x.scriptName].push(x); });
                     return groups;
                 },
-                getFieldsForGroup(script, files) {
-                    let keys = new Set();
-                    files.forEach(f => Object.keys(f.data).forEach(k => { if(!this.blacklist.includes(k)) keys.add(k); }));
-                    return Array.from(keys);
-                },
+
                 markDirty(f) { if (!f.dirty) { f.dirty = true; this.dirtyCount++; } },
+
                 async deleteEntry(file) {
-                    if (!confirm("Delete?")) return;
+                    if (!confirm("Delete this?")) return;
                     if (file.type === 'tres') { await file.handle.remove(); this.allFiles = this.allFiles.filter(f => f.id !== file.id); }
                     else { 
                         const p = file.path; this.allFiles = this.allFiles.filter(f => f.id !== file.id);
                         this.allFiles.filter(f => f.path === p).forEach(f => this.markDirty(f));
+                        if (this.allFiles.filter(f => f.path === p).length === 0) this.dirtyCount++;
                     }
                     this.buildTree();
                 },
-                createModal: { open: false, name: '', ext: '.tres' },
+
+                addNewEntry(group, scriptName) {
+                    const first = group[0];
+                    if (first.type === 'json') {
+                        const id = prompt("New Entry ID:");
+                        if (!id) return;
+                        this.allFiles.push({ ...first, id: first.path + ":" + id, name: id, data: JSON.parse(JSON.stringify(first.data)), dirty: true });
+                        this.dirtyCount++;
+                    } else {
+                        const name = prompt("Filename:");
+                        if (name) this.internalCreate(name, '.tres');
+                    }
+                },
+
+                openAddPropModal(g) { this.addPropModal = { open: true, group: g, name: '', type: 'string', defaultValue: '' }; },
+                confirmAddProperty() {
+                    const { name, type, defaultValue, group } = this.addPropModal;
+                    let val = type === 'number' ? Number(defaultValue) : (type === 'boolean' ? (defaultValue === 'true') : String(defaultValue));
+                    group.forEach(f => { if (!(name in f.data)) { f.data[name] = val; this.markDirty(f); } });
+                    this.addPropModal.open = false;
+                },
+
                 openCreateModal() { this.createModal = { open: true, name: '', ext: '.tres' }; },
                 async confirmCreateFile() {
-                    const fullName = this.createModal.name + this.createModal.ext;
+                    if (this.createModal.name) await this.internalCreate(this.createModal.name, this.createModal.ext);
+                    this.createModal.open = false;
+                },
+
+                async internalCreate(name, ext) {
+                    const fullName = name + ext;
                     let dir = this.rootHandle;
                     if (this.activeFolder !== "root") for (let p of this.activeFolder.split('/')) dir = await dir.getDirectoryHandle(p);
                     const handle = await dir.getFileHandle(fullName, { create: true });
                     const path = (this.activeFolder === "root" ? "" : this.activeFolder + "/") + fullName;
-                    this.allFiles.push({ id: path, name: fullName, path, folder: this.activeFolder, handle, data: {}, type: this.createModal.ext.replace('.',''), scriptName: fullName, dirty: true, rawHeader: `[gd_resource type="Resource" format=3]\n\n[resource]` });
-                    this.dirtyCount++; this.createModal.open = false;
+                    this.allFiles.push({ id: path, name: fullName, path, folder: this.activeFolder, handle, data: {}, type: ext.replace('.',''), scriptName: ext === '.tres' ? "Godot Resource" : fullName, dirty: true, rawHeader: `[gd_resource type="Resource" format=3]\n\n[resource]` });
+                    this.dirtyCount++;
                 }
             }
         }
