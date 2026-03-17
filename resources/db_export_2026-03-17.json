@@ -1,0 +1,421 @@
+{
+  "items/seed/seed_wheat.tres": {
+    "crop_code": "crop_wheat",
+    "code": "seed_wheat",
+    "name": "Hạt giống lúa mì",
+    "description": "Hạt giống để trồng lúa mì. Mọc nhanh, thu hoạch sau 1 ngày.",
+    "sell_price": 5,
+    "buy_price": 10
+  },
+  "items/seed/seed_pumpkin.tres": {
+    "crop_code": "crop_pumpkin",
+    "code": "seed_pumpkin",
+    "name": "Hạt giống bí ngô",
+    "description": "Hạt giống để trồng bí ngô. Thu hoạch sau 5 ngày, cho quả to và giàu dinh dưỡng.",
+    "sell_price": 20,
+    "buy_price": 40
+  },
+  "items/seed/seed_grape.tres": {
+    "crop_code": "crop_grape",
+    "code": "seed_grape",
+    "name": "Hạt giống nho",
+    "description": "Hạt giống để trồng nho. Có thể thu hoạch nhiều lần sau khi trưởng thành.",
+    "sell_price": 30,
+    "buy_price": 60
+  },
+  "items/seed/seed_beetroot.tres": {
+    "crop_code": "crop_beetroot",
+    "code": "seed_beetroot",
+    "name": "Hạt giống củ dền",
+    "description": "Hạt giống để trồng củ dền. Thu hoạch sau 7 ngày, cho nhiều sản phẩm.",
+    "sell_price": 15,
+    "buy_price": 30
+  },
+  "items/seed/seed_watermelon.tres": {
+    "crop_code": "crop_watermelon",
+    "code": "seed_watermelon",
+    "name": "Hạt giống dưa hấu",
+    "description": "Hạt giống để trồng dưa hấu. Thích hợp trồng vào mùa hè.",
+    "sell_price": 25,
+    "buy_price": 50
+  },
+  "items/food/meat/egg_white.tres": {
+    "energy_restore": 15,
+    "hunger_restore": 80,
+    "code": "egg_white",
+    "name": "Trứng trắng",
+    "description": "Trứng gà trắng tươi ngon. Nguồn cung cấp protein cơ bản cho các bữa ăn.",
+    "sell_price": 25,
+    "buy_price": 50,
+    "category_type": "Consumable"
+  },
+  "items/food/meat/egg_brown_large.tres": {
+    "energy_restore": 20,
+    "hunger_restore": 90,
+    "code": "egg_brown_large",
+    "name": "Trứng Nâu (Lớn)",
+    "description": "Trứng gà nâu cỡ lớn, chất lượng cao. Rất phù hợp để làm bánh hoặc nấu nướng.",
+    "sell_price": 30,
+    "buy_price": 60,
+    "category_type": "Consumable"
+  },
+  "items/food/meat/egg_brown_small.tres": {
+    "energy_restore": 15,
+    "hunger_restore": 75,
+    "code": "egg_brown_small",
+    "name": "Trứng Nâu (Nhỏ)",
+    "description": "Trứng gà nâu cỡ nhỏ. Tiện lợi và giàu dinh dưỡng.",
+    "sell_price": 20,
+    "buy_price": 40,
+    "category_type": "Consumable"
+  },
+  "items/food/meat/meat_bacon.tres": {
+    "energy_restore": 25,
+    "hunger_restore": 100,
+    "code": "meat_bacon",
+    "name": "Thịt Xông Khói",
+    "description": "Những lát thịt heo được hun khói thơm lừng. Cung cấp nhiều năng lượng nhưng dễ gây khát nước.",
+    "sell_price": 40,
+    "buy_price": 80,
+    "category_type": "Consumable"
+  },
+  "items/food/meat/meat_turkey_leg.tres": {
+    "energy_restore": 40,
+    "hunger_restore": 150,
+    "code": "meat_turkey_leg",
+    "name": "Đùi Gà Tây",
+    "description": "Chiếc đùi gà tây khổng lồ, phần thưởng xứng đáng sau một ngày làm việc vất vả.",
+    "sell_price": 60,
+    "buy_price": 120,
+    "category_type": "Consumable"
+  },
+  "items/food/meat/meat_steak.tres": {
+    "energy_restore": 50,
+    "hunger_restore": 180,
+    "code": "meat_steak",
+    "name": "Thịt Bò Tươi",
+    "description": "Miếng thịt bò thượng hạng. Nấu chín sẽ trở thành một món ăn tuyệt hảo phục hồi nhiều thể lực.",
+    "sell_price": 70,
+    "buy_price": 140,
+    "category_type": "Consumable"
+  },
+  "items/food/meat/quail_egg.tres": {
+    "energy_restore": 10,
+    "hunger_restore": 40,
+    "code": "quail_egg",
+    "name": "Trứng Cút",
+    "description": "Trứng cút nhỏ nhưng chứa nhiều dưỡng chất. Thường dùng như một món ăn kèm.",
+    "sell_price": 15,
+    "buy_price": 30,
+    "category_type": "Consumable"
+  },
+  "items/food/meat/meat_drumstick.tres": {
+    "energy_restore": 30,
+    "hunger_restore": 120,
+    "code": "meat_drumstick",
+    "name": "Đùi Gà",
+    "description": "Đùi gà tươi sống. Cần được nấu chín trước khi ăn để đảm bảo sức khỏe.",
+    "sell_price": 35,
+    "buy_price": 70,
+    "category_type": "Consumable"
+  },
+  "items/food/meat/egg_white_small.tres": {
+    "energy_restore": 10,
+    "hunger_restore": 70,
+    "code": "egg_white_small",
+    "name": "Trứng Trắng (Nhỏ)",
+    "description": "Trứng gà trắng cỡ nhỏ. Tốt cho các bữa ăn nhẹ.",
+    "sell_price": 20,
+    "buy_price": 40,
+    "category_type": "Consumable"
+  },
+  "items/food/meat/egg_white_large.tres": {
+    "energy_restore": 20,
+    "hunger_restore": 90,
+    "code": "egg_white_large",
+    "name": "Trứng Trắng (Lớn)",
+    "description": "Trứng gà trắng cỡ lớn. Chứa nhiều lòng đỏ và dưỡng chất hơn.",
+    "sell_price": 30,
+    "buy_price": 60,
+    "category_type": "Consumable"
+  },
+  "items/food/crops/fruits/grape.tres": {
+    "energy_restore": 20,
+    "hunger_restore": 80,
+    "code": "grape",
+    "name": "Nho",
+    "description": "Chùm nho mọng nước ngọt ngào. Ăn ngay để lấy lại năng lượng nhanh chóng.",
+    "sell_price": 30,
+    "buy_price": 60,
+    "category_type": "Consumable",
+    "health_restore": 1
+  },
+  "items/food/crops/fruits/watermelon.tres": {
+    "health_restore": 5,
+    "energy_restore": 30,
+    "code": "watermelon",
+    "name": "Dưa hấu",
+    "description": "To, tròn, mọng nước. Món giải khát tuyệt vời cho mùa hè, giúp phục hồi năng lượng nhanh.",
+    "sell_price": 40,
+    "buy_price": 80,
+    "category_type": "Consumable",
+    "hunger_restore": 0
+  },
+  "items/food/crops/pumpkin.tres": {
+    "energy_restore": 20,
+    "hunger_restore": 100,
+    "code": "pumpkin",
+    "name": "Bí ngô",
+    "description": "Bí ngô to chắc, giàu dinh dưỡng. Có thể nấu thành nhiều món ăn ngon và tốt cho sức khỏe.",
+    "sell_price": 35,
+    "buy_price": 70,
+    "category_type": "Consumable"
+  },
+  "items/food/crops/wheat.tres": {
+    "energy_restore": 50,
+    "hunger_restore": 20,
+    "code": "wheat",
+    "name": "Lúa mì",
+    "description": "Hạt lúa mì thu hoạch từ đồng. Nguyên liệu để làm bánh mì và nhiều món khác. Có thể ăn trực tiếp nhưng không bằng bánh mì.",
+    "buy_price": 20,
+    "category_type": "Consumable",
+    "sell_price": 10
+  },
+  "items/food/crops/beetroot.tres": {
+    "energy_restore": 20,
+    "hunger_restore": 76,
+    "code": "beetroot",
+    "name": "Củ dền",
+    "description": "Củ dền tươi giàu vitamin và khoáng chất. Có thể ăn trực tiếp hoặc dùng để nấu ăn.",
+    "sell_price": 75,
+    "buy_price": 52,
+    "category_type": "Consumable"
+  },
+  "items/food/dairy/cheese_wheel.tres": {
+    "energy_restore": 25,
+    "hunger_restore": 120,
+    "code": "cheese_wheel",
+    "name": "Phô Mai Khối",
+    "description": "Khối phô mai lớn được ủ kỹ. Cung cấp lượng lớn dưỡng chất và có thể bán với giá cao.",
+    "buy_price": 100,
+    "sell_price": 50,
+    "category_type": "Consumable"
+  },
+  "items/food/dairy/milk_small.tres": {
+    "energy_restore": 15,
+    "hunger_restore": 80,
+    "code": "milk_small",
+    "name": "Sữa Bò (Nhỏ)",
+    "description": "Bình sữa bò tươi nguyên chất cỡ nhỏ. Uống trực tiếp để giải khát và phục hồi thể lực.",
+    "sell_price": 25,
+    "buy_price": 50,
+    "category_type": "Consumable"
+  },
+  "items/food/dairy/butter.tres": {
+    "energy_restore": 10,
+    "hunger_restore": 40,
+    "code": "butter",
+    "name": "Thỏi Bơ",
+    "description": "Bơ béo ngậy được đánh từ sữa tươi. Thường dùng như một nguyên liệu để gia tăng hương vị món ăn.",
+    "sell_price": 30,
+    "buy_price": 60,
+    "category_type": "Consumable"
+  },
+  "items/food/dairy/milk_goat_small.tres": {
+    "energy_restore": 15,
+    "hunger_restore": 80,
+    "code": "milk_goat_small",
+    "name": "Sữa Dê (Nhỏ)",
+    "description": "Sữa dê tươi cỡ nhỏ, chứa nhiều loại vitamin khác biệt so với sữa bò.",
+    "sell_price": 25,
+    "buy_price": 50,
+    "category_type": "Consumable"
+  },
+  "items/food/dairy/cheese_wedge.tres": {
+    "energy_restore": 10,
+    "hunger_restore": 40,
+    "code": "cheese_wedge",
+    "name": "Miếng Phô Mai",
+    "description": "Một lát phô mai được cắt ra từ khối lớn. Ngon tuyệt khi ăn kèm với bánh mì.",
+    "sell_price": 15,
+    "buy_price": 30,
+    "category_type": "Consumable"
+  },
+  "items/food/dairy/milk_large.tres": {
+    "energy_restore": 30,
+    "hunger_restore": 150,
+    "code": "milk_large",
+    "name": "Sữa Bò (Lớn)",
+    "description": "Bình sữa bò tươi cỡ lớn. Dùng để uống, làm phô mai hoặc bơ.",
+    "sell_price": 45,
+    "buy_price": 90,
+    "category_type": "Consumable"
+  },
+  "items/food/dairy/milk_goat_large.tres": {
+    "energy_restore": 30,
+    "hunger_restore": 150,
+    "code": "milk_goat_large",
+    "name": "Sữa Dê (Lớn)",
+    "description": "Bình sữa dê cỡ lớn. Nguồn thu nhập ổn định cho nông trại của bạn.",
+    "sell_price": 50,
+    "buy_price": 100,
+    "category_type": "Consumable"
+  },
+  "items/food/processed/chao.tres": {
+    "health_restore": 15,
+    "energy_restore": 80,
+    "hunger_restore": 150,
+    "code": "chao",
+    "name": "Cháo",
+    "description": "Tô cháo nóng hổi, dễ tiêu hóa. Giúp hồi phục sức khỏe cực kỳ tốt vào những ngày lạnh giá.",
+    "sell_price": 40,
+    "buy_price": 80,
+    "rarity": 1,
+    "category_type": "Consumable"
+  },
+  "items/food/processed/bread.tres": {
+    "health_restore": 10,
+    "energy_restore": 100,
+    "hunger_restore": 200,
+    "code": "bread",
+    "name": "Bánh mì",
+    "description": "Bánh mì thơm ngon làm từ lúa mì. Thực phẩm cơ bản giúp no bụng lâu và phục hồi sức lực hiệu quả.",
+    "sell_price": 50,
+    "buy_price": 100,
+    "rarity": 1,
+    "category_type": "Consumable"
+  },
+  "items/food/raw/honeycomb.tres": {
+    "energy_restore": 15,
+    "hunger_restore": 30,
+    "code": "honeycomb",
+    "name": "Sáp Ong",
+    "description": "Mảnh sáp ong thu được từ tổ. Có thể nhai trực tiếp hoặc đem chế biến.",
+    "sell_price": 40,
+    "buy_price": 80,
+    "category_type": "Consumable"
+  },
+  "items/food/raw/honey_jar.tres": {
+    "energy_restore": 30,
+    "hunger_restore": 50,
+    "code": "honey_jar",
+    "name": "Hũ mật ong",
+    "description": "Hũ mật ong đặc sánh, vàng ươm. Ngọt ngào và mang lại cảm giác dễ chịu tức thì.",
+    "sell_price": 60,
+    "buy_price": 120,
+    "category_type": "Consumable"
+  },
+  "items/food/raw/mayonnaise.tres": {
+    "energy_restore": 5,
+    "hunger_restore": 40,
+    "code": "mayonnaise",
+    "name": "Sốt Mayonnaise",
+    "description": "Loại nước sốt béo ngậy được đánh bông từ trứng. Làm tăng độ ngon cho các món salad.",
+    "sell_price": 45,
+    "buy_price": 90,
+    "category_type": "Consumable"
+  },
+  "items/tool/tool_shovel_t1.tres": {
+    "tool_type": "shovel",
+    "code": "tool_shovel_t1",
+    "name": "Xẻng gỗ",
+    "description": "Xẻng gỗ cơ bản dùng để di dời và phá bỏ các công trình đã xây dựng.",
+    "max_stack_size": 1
+  },
+  "items/tool/tool_scythe_t1.tres": {
+    "tool_type": "sickle",
+    "code": "tool_scythe_t1",
+    "name": "Liềm gỗ",
+    "description": "Liềm gỗ cơ bản để thu hoạch nông sản. Cắt cây trồng nhanh và hiệu quả.",
+    "max_stack_size": 1
+  },
+  "items/tool/tool_axe_t1.tres": {
+    "tool_type": "axe",
+    "code": "tool_axe_t1",
+    "name": "Rìu gỗ",
+    "description": "Rìu gỗ cơ bản dùng để chặt cây. Thu thập gỗ để chế tạo công cụ và xây dựng nông trại.",
+    "max_stack_size": 1
+  },
+  "items/tool/tool_hoe_t1.tres": {
+    "code": "tool_hoe_t1",
+    "name": "Cuốc gỗ",
+    "description": "Cuốc gỗ cơ bản để cày đất. Chuẩn bị đất trước khi gieo hạt giống xuống ruộng.",
+    "max_stack_size": 1
+  },
+  "items/tool/tool_pickaxe_t1.tres": {
+    "tool_type": "pickaxe",
+    "code": "tool_pickaxe_t1",
+    "name": "Cuốc chim gỗ",
+    "description": "Cuốc chim cơ bản bằng gỗ để khai thác đá và quặng. Công cụ đầu tiên cho việc đào mỏ.",
+    "max_stack_size": 1
+  },
+  "items/tool/tool_watering_can_t1.tres": {
+    "tool_type": "watering_can",
+    "code": "tool_watering_can_t1",
+    "name": "Bình tưới nước",
+    "description": "Bình tưới nước cơ bản. Tưới nước cho cây trồng mỗi ngày để cây phát triển và cho nhiều sản phẩm hơn.",
+    "max_stack_size": 1
+  },
+  "items/wool.tres": {
+    "code": "wool",
+    "name": "Cuộn lông cừu",
+    "description": "Lông cừu mềm mại thu hoạch từ trang trại. Dùng làm nguyên liệu dệt vải hoặc bán lấy tiền.",
+    "max_stack_size": 1000,
+    "sell_price": 5,
+    "buy_price": 10
+  },
+  "items/fertilizer.tres": {
+    "code": "fertilizer",
+    "name": "Phân bón",
+    "description": "Bón vào đất đã cuốc để tăng sản lượng và chất lượng cây trồng.",
+    "sell_price": 25,
+    "buy_price": 50,
+    "max_stack_size": 100
+  },
+  "items/ash.tres": {
+    "code": "ash",
+    "name": "Tro",
+    "description": "Tro còn lại sau khi đốt. Có thể dùng để cải tạo đất nông nghiệp hoặc bán cho thương nhân.",
+    "max_stack_size": 100,
+    "sell_price": 3,
+    "buy_price": 8
+  },
+  "items/wood.tres": {
+    "code": "wood",
+    "name": "Gỗ",
+    "description": "Gỗ thô chặt từ cây cối. Nguyên liệu cơ bản để chế tạo công cụ và xây dựng nông trại.",
+    "max_stack_size": 1000,
+    "sell_price": 5,
+    "buy_price": 10
+  },
+  "items/fertilizer_quality.tres": {
+    "code": "fertilizer_quality",
+    "name": "Phân bón cao cấp",
+    "description": "Phân bón chất lượng cao. Tăng mạnh sản lượng và cơ hội nhận sản phẩm chất lượng cao.",
+    "sell_price": 75,
+    "buy_price": 150,
+    "max_stack_size": 100
+  },
+  "items/stone.tres": {
+    "code": "stone",
+    "name": "Đá",
+    "description": "Đá thô khai thác từ các mỏ đá. Nguyên liệu cơ bản để xây dựng công trình và chế tạo công cụ.",
+    "max_stack_size": 1000,
+    "sell_price": 5,
+    "buy_price": 10
+  },
+  "data_json/items.json:tool_axe_t1": {
+    "name": "Hatchet",
+    "description": "Rìu đốn củi cơ bản.",
+    "max_stackable": 1,
+    "price": 12,
+    "is_active": false
+  },
+  "data_json/items.json:tool_pickaxe_t1": {
+    "name": "Pickaxe",
+    "description": "Cuốc chim khai thác khoáng sản cơ bản.",
+    "max_stackable": 1,
+    "price": 12,
+    "is_active": false
+  }
+}
