@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Database Game Maker v3.8 - Pro Workflow</title>
+    <title>Database Game Maker v4.1 - Beta valid rows</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,7 +25,6 @@
         .btn-primary:hover { background: #3b82f6; }
         .dirty-row { border-left: 3px solid #f59e0b !important; }
         .col-id { width: 220px; min-width: 220px; position: sticky; left: 0; z-index: 20; background: var(--bg-panel); border-right: 1px solid var(--border); }
-        /* Hiệu ứng rung nhẹ khi có lỗi */
         .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-2px, 0, 0); } 40%, 60% { transform: translate3d(2px, 0, 0); } }
     </style>
@@ -36,13 +35,13 @@
     <!-- LOADING OVERLAY -->
     <div x-show="isSaving" x-cloak class="fixed inset-0 bg-black/80 z-[200] flex flex-col items-center justify-center backdrop-blur-sm">
         <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-        <p class="mt-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Processing changes...</p>
+        <p class="mt-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Processing everything...</p>
     </div>
 
     <!-- NAVBAR -->
     <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30">
         <div class="flex items-center gap-4">
-            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V3.8</span></h1>
+            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V3.9</span></h1>
             <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i> Open</button>
             <button @click="reloadProject()" class="btn-action" :disabled="!rootHandle" :class="!rootHandle && 'opacity-20'"><i class="fa-solid fa-rotate text-green-500"></i> Reload</button>
             <div class="h-4 w-[1px] bg-zinc-800 mx-1"></div>
@@ -54,10 +53,10 @@
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <!-- ERROR INDICATOR -->
-            <div @click="scrollToFirstError()" class="cursor-pointer text-[10px] font-bold text-red-500 bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20 animate-pulse" x-show="errorCount > 0">
-                <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span x-text="errorCount"></span> INVALID DATA
-            </div>
+            <!-- CLICKABLE ERROR INDICATOR: NOW AUTO-UPDATES -->
+            <button @click="errorSummary.open = true" class="text-[10px] font-bold text-red-500 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition-all" x-show="errorCount > 0">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span x-text="errorCount"></span> ISSUES FOUND
+            </button>
             <input type="text" x-model="searchQuery" placeholder="Search everywhere..." class="g-input !w-64">
             <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0 || errorCount > 0" :class="(dirtyCount > 0 && errorCount === 0) ? 'btn-primary' : 'opacity-30'" class="btn-action px-8 uppercase tracking-widest transition-all shadow-lg">
                 Sync (<span x-text="dirtyCount"></span>)
@@ -76,15 +75,22 @@
                     <div @click="activeFolder = folder.fullPath; searchQuery = ''" 
                          :style="'padding-left: ' + (folder.level * 12 + 16) + 'px'" 
                          :class="activeFolder === folder.fullPath && !searchQuery ? 'sidebar-active' : 'text-zinc-500 hover:text-zinc-300'" 
-                         class="py-2.5 px-3 cursor-pointer text-[13px] font-medium truncate flex items-center gap-2 transition-colors">
-                        <i class="fa-solid fa-folder text-[11px] opacity-40"></i> <span x-text="folder.name"></span>
+                         class="py-2.5 px-3 cursor-pointer text-[13px] font-medium truncate flex items-center justify-between group transition-colors">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <i class="fa-solid fa-folder text-[11px] opacity-40"></i> 
+                            <span class="truncate" x-text="folder.name"></span>
+                        </div>
+                        <!-- Badge báo lỗi ở sidebar luôn đúng dù chưa click vào folder -->
+                        <span x-show="getFolderErrorCount(folder.fullPath) > 0" 
+                              class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center"
+                              x-text="getFolderErrorCount(folder.fullPath)"></span>
                     </div>
                 </template>
             </div>
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main id="main-scroll-area" class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
+        <main class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
             <template x-for="(groupFiles, scriptName) in groupedFiles" :key="scriptName">
                 <div class="data-panel shadow-2xl">
                     <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between">
@@ -92,9 +98,6 @@
                             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
                             <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400" x-text="scriptName"></span>
                             <button @click="addNewEntry(groupFiles, scriptName)" class="btn-action !py-1 !px-3 hover:text-blue-400"><i class="fa-solid fa-plus"></i> Add Entry</button>
-                            <template x-if="groupFiles[0].type === 'json'">
-                                <button @click="openAddPropModal(groupFiles)" class="btn-action !py-1 !px-3 hover:text-green-400"><i class="fa-solid fa-columns"></i> Add Column</button>
-                            </template>
                         </div>
                     </div>
 
@@ -118,15 +121,12 @@
                                         <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
                                             <td class="px-2">
                                                 <div class="min-w-[140px] flex items-center gap-1 group/field relative">
-                                                    
-                                                    <!-- UI FOR DIFFERENT TYPES -->
                                                     <template x-if="getFieldType(file, prop) === 'bool'">
                                                         <button @click="file.data[prop] = !file.data[prop]; markDirty(file)" 
                                                                 :class="file.data[prop] ? 'bg-blue-600' : 'bg-zinc-800'" class="w-9 h-5 rounded-full px-0.5 flex items-center transition-all">
                                                             <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'" class="w-4 h-4 bg-white rounded-full transition-all"></div>
                                                         </button>
                                                     </template>
-
                                                     <template x-if="getFieldType(file, prop) === 'enum' || getFieldType(file, prop) === 'export_enum'">
                                                         <select x-model="file.data[prop]" @change="markDirty(file)" class="g-input !h-8 text-xs appearance-none cursor-pointer">
                                                             <template x-for="(val, idx) in getHint(file, prop).options">
@@ -134,28 +134,14 @@
                                                             </template>
                                                         </select>
                                                     </template>
-
-                                                    <template x-if="getFieldType(file, prop) === 'multiline'">
-                                                        <div @click="openTextEditor(file, prop)" class="g-input !h-8 flex items-center cursor-pointer hover:bg-zinc-900 group">
-                                                            <span class="truncate italic text-zinc-500 text-[11px] flex-1" x-text="file.data[prop] || 'Edit text...'"></span>
-                                                            <i class="fa-solid fa-expand text-[10px] text-zinc-700 group-hover:text-blue-500"></i>
-                                                        </div>
-                                                    </template>
-
-                                                    <template x-if="['bool', 'enum', 'export_enum', 'multiline'].indexOf(getFieldType(file, prop)) === -1">
+                                                    <template x-if="['bool', 'enum', 'export_enum'].indexOf(getFieldType(file, prop)) === -1">
                                                         <div class="relative w-full">
                                                             <input type="text" x-model="file.data[prop]" @input="markDirty(file)" 
-                                                                   :class="isInvalid(file, prop) && 'input-error shake-error'"
+                                                                   :class="hasIssue(file, prop) && 'input-error shake-error'"
                                                                    class="g-input !h-8 focus:bg-zinc-950" placeholder="...">
-                                                            
-                                                            <!-- ERROR ICON INDICATOR -->
-                                                            <div x-show="isInvalid(file, prop)" class="absolute -right-1.5 -top-1.5 z-10">
+                                                            <div x-show="hasIssue(file, prop)" class="absolute -right-1.5 -top-1.5 z-10">
                                                                 <i class="fa-solid fa-circle-exclamation text-red-500 text-[10px] bg-zinc-950 rounded-full"></i>
                                                             </div>
-
-                                                            <button @click="openTextEditor(file, prop)" class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-700 opacity-0 group-hover/field:opacity-100 transition-opacity">
-                                                                <i class="fa-solid fa-expand text-[10px]"></i>
-                                                            </button>
                                                         </div>
                                                     </template>
                                                 </div>
@@ -174,7 +160,43 @@
         </main>
     </div>
 
-    <!-- MODAL: NEW RESOURCE -->
+    <!-- MODAL: ERROR SUMMARY -->
+    <div x-show="errorSummary.open" x-cloak class="fixed inset-0 z-[160] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 flex flex-col shadow-2xl max-h-[80vh]" @click.away="errorSummary.open = false">
+            <div class="px-6 py-4 border-b border-zinc-900 flex justify-between bg-red-950/20">
+                <span class="text-xs font-bold uppercase text-red-500"><i class="fa-solid fa-bug mr-2"></i>Invalid Data Explorer</span>
+                <button @click="errorSummary.open = false" class="text-zinc-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="p-4 overflow-y-auto custom-scrollbar">
+                <template x-if="errorList.length === 0">
+                    <p class="text-center py-10 text-zinc-600 text-sm italic">No errors found. Everything is valid!</p>
+                </template>
+                <div class="space-y-2">
+                    <template x-for="err in errorList" :key="err.id + err.prop">
+                        <div @click="goToError(err)" class="bg-zinc-900/50 border border-zinc-800 p-3 rounded-lg hover:border-red-500/50 cursor-pointer group transition-all">
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="text-[12px] font-bold text-zinc-200 group-hover:text-blue-400" x-text="err.fileName"></span>
+                                <span class="text-[10px] bg-red-500/10 text-red-400 px-2 py-0.5 rounded uppercase font-bold" x-text="err.issueType"></span>
+                            </div>
+                            <div class="flex items-center gap-2 text-[11px] text-zinc-500 italic">
+                                <span>Column: <span class="text-zinc-300 font-mono" x-text="err.prop"></span></span>
+                                <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                                <span>Value: <span class="text-red-400" x-text="err.value === '' ? '(Empty)' : err.value"></span></span>
+                            </div>
+                            <div class="mt-2 text-[9px] text-zinc-600 uppercase tracking-widest">
+                                <i class="fa-solid fa-folder mr-1"></i> <span x-text="err.folder"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-zinc-900 flex justify-end bg-zinc-900/10 text-[10px] text-zinc-500 italic">
+                Click on any item to jump to the resource.
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE -->
     <div x-show="createModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-lg rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl" @click.away="createModal.open = false">
             <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest">Create New Resource</h3>
@@ -183,26 +205,6 @@
                 <button @click="createModal.ext = '.tres'" :class="createModal.ext === '.tres' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.tres (Godot)</button>
                 <button @click="createModal.ext = '.json'" :class="createModal.ext === '.json' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.json (Data)</button>
             </div>
-            
-            <template x-if="createModal.ext === '.tres'">
-                <div class="pt-3 space-y-3">
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase flex justify-between">
-                        <span>Clone Template</span>
-                        <span class="text-zinc-700">Search to filter...</span>
-                    </label>
-                    <div class="relative">
-                        <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 text-xs"></i>
-                        <input type="text" x-model="createModal.cloneSearch" class="g-input !h-9 !pl-9 bg-zinc-900 border-zinc-800 text-xs" placeholder="Search tres files...">
-                    </div>
-                    <div class="h-48 overflow-y-auto custom-scrollbar border border-zinc-900 rounded-lg p-1 bg-zinc-900/30">
-                        <div @click="createModal.targetClone = ''" :class="!createModal.targetClone ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-zinc-500'" class="p-2 rounded text-[12px] cursor-pointer mb-1 italic transition-all">-- Empty Resource --</div>
-                        <template x-for="f in filteredCloneFiles" :key="f.id">
-                            <div @click="createModal.targetClone = f.id" :class="createModal.targetClone === f.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-zinc-400 hover:bg-white/5'" class="p-2 rounded text-[12px] cursor-pointer truncate transition-all" x-text="f.name"></div>
-                        </template>
-                    </div>
-                </div>
-            </template>
-
             <div class="flex justify-end gap-3 pt-4 border-t border-zinc-900">
                 <button @click="createModal.open = false" class="px-4 py-2 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
                 <button @click="confirmCreateFile()" class="btn-action btn-primary !px-8">Create File</button>
@@ -210,48 +212,37 @@
         </div>
     </div>
 
-    <!-- MODAL: PASTE IMPORT -->
-    <div x-show="importModal.open" x-cloak class="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 flex flex-col shadow-2xl overflow-hidden" @click.away="importModal.open = false">
-            <div class="px-6 py-4 border-b border-zinc-900 flex justify-between bg-zinc-900/30">
-                <span class="text-xs font-bold uppercase text-blue-500"><i class="fa-solid fa-paste mr-2"></i>Paste JSON Content</span>
-                <button @click="importModal.open = false" class="text-zinc-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div class="p-6 bg-zinc-950">
-                <p class="text-[11px] text-zinc-500 mb-4 leading-relaxed">Paste a JSON object where keys are File IDs and values are data objects. This will sync existing resources in your project.</p>
-                <textarea x-model="importModal.text" class="w-full h-80 bg-black border border-zinc-800 p-6 text-zinc-300 outline-none font-mono text-sm leading-relaxed custom-scrollbar resize-none rounded-xl" placeholder='{ "res://items/sword.tres": { "price": 100 }, ... }'></textarea>
-            </div>
-            <div class="px-6 py-4 border-t border-zinc-900 flex justify-end gap-3 bg-zinc-900/10">
-                <button @click="importModal.open = false" class="px-6 py-2 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
-                <button @click="confirmPasteImport()" class="btn-action btn-primary !px-10">Sync Data</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- TEXT EDITOR MODAL -->
-    <div x-show="textEditor.open" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-4xl rounded-2xl border border-zinc-800 flex flex-col shadow-2xl overflow-hidden" @click.away="textEditor.open = false">
-            <div class="px-6 py-4 border-b border-zinc-900 flex justify-between bg-zinc-900/30">
-                <span class="text-xs font-bold uppercase text-zinc-400">Editing: <span class="text-blue-500" x-text="textEditor.key"></span></span>
-                <button @click="textEditor.open = false"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <textarea x-model="textEditor.tempValue" class="flex-1 bg-transparent p-6 text-zinc-300 outline-none font-mono text-sm leading-relaxed custom-scrollbar min-h-[400px] resize-none"></textarea>
-            <div class="px-6 py-4 border-t border-zinc-900 flex justify-end gap-3 bg-zinc-900/10"><button @click="saveTextEditor()" class="btn-action btn-primary !px-10">Save Changes</button></div>
-        </div>
-    </div>
-
     <script>
         function editor() {
             return {
                 allFiles: [], folders: [], scripts: {}, classMap: {}, activeFolder: '', searchQuery: '',
-                rootHandle: null, dirtyCount: 0, errorCount: 0, isSaving: false,
+                rootHandle: null, dirtyCount: 0, isSaving: false,
                 blacklist: ['script', 'uid', 'format', 'load_steps', 'atlas', 'texture', 'sprite_frames', 'icon'],
                 godotTypes: ['ExtResource', 'SubResource', 'Rect2', 'Vector2', 'Vector3', 'Color', 'Transform2D'],
-                originalTypes: new Map(), // Lưu trữ kiểu dữ liệu gốc để check invalid
-                textEditor: { open: false, file: null, key: '', tempValue: '' },
+                originalTypes: new Map(),
+                errorSummary: { open: false },
                 createModal: { open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '' },
                 importModal: { open: false, text: '' },
-                addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
+
+                // CẢI TIẾN: Sử dụng Getter để Alpine luôn tính toán lại lỗi trên TOÀN BỘ project
+                get errorList() {
+                    const list = [];
+                    this.allFiles.forEach(f => {
+                        const types = this.originalTypes.get(f.id);
+                        if (!types) return;
+                        Object.keys(f.data).forEach(prop => {
+                            if (this.hasIssue(f, prop)) {
+                                const issueType = this.isEmpty(f, prop) ? "Empty" : "Invalid Type";
+                                list.push({ id: f.id, fileName: f.name, prop, value: f.data[prop], folder: f.folder, issueType: issueType });
+                            }
+                        });
+                    });
+                    return list;
+                },
+
+                get errorCount() {
+                    return this.errorList.length;
+                },
 
                 async openProject() {
                     try { this.rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' }); await this.loadProjectData(); } catch (e) { }
@@ -262,8 +253,15 @@
                 },
                 async loadProjectData() {
                     this.isSaving = true; this.allFiles = []; this.scripts = {}; this.classMap = {}; this.originalTypes.clear();
-                    this.dirtyCount = 0; this.errorCount = 0;
-                    try { await this.scanDir(this.rootHandle, ""); this.buildTree(); } finally { this.isSaving = false; }
+                    this.dirtyCount = 0;
+                    try { 
+                        // Bước 1: Quét toàn bộ file
+                        await this.scanDir(this.rootHandle, ""); 
+                        // Bước 2: Dựng cây folder
+                        this.buildTree(); 
+                        // Bước 3: Ép Alpine nhận diện dữ liệu mới
+                        this.allFiles = [...this.allFiles];
+                    } finally { this.isSaving = false; }
                 },
                 async scanDir(handle, path) {
                     for await (const entry of handle.values()) {
@@ -274,9 +272,14 @@
                             if (entry.name.endsWith('.gd')) this.parseGDScript(content, entry.name);
                             else if (entry.name.endsWith('.tres')) {
                                 const { header, body } = this.splitTres(content);
-                                const scriptName = this.getScriptNameFromTres(content);
                                 const parsed = this.parseTresBody(body);
-                                this.allFiles.push({ id: curPath, name: entry.name, path: curPath, folder: path.replace(/\/$/, "") || "root", handle: entry, data: parsed, type: 'tres', scriptName, dirty: false, rawHeader: header });
+                                this.allFiles.push({ 
+                                    id: curPath, name: entry.name, path: curPath, 
+                                    folder: path.replace(/\/$/, "") || "root", 
+                                    handle: entry, data: parsed, type: 'tres', 
+                                    scriptName: this.getScriptNameFromTres(content), 
+                                    dirty: false, rawHeader: header, rawBody: body 
+                                });
                                 this.recordTypes(curPath, parsed);
                             } else if (entry.name.endsWith('.json')) {
                                 try {
@@ -316,16 +319,6 @@
                     const extLine = content.split('\n').find(l => l.includes(`id="${id}"`) && l.includes('.gd'));
                     return extLine?.match(/path="res:\/\/([^"]+)"/)?.[1].split('/').pop() || "StaticResource";
                 },
-                getInheritedHints(scriptName) {
-                    let combinedHints = {}; let current = scriptName; let stack = 0;
-                    while (current && stack < 10) {
-                        let scriptInfo = this.scripts[current] || this.scripts[this.classMap[current]];
-                        if (!scriptInfo) break;
-                        combinedHints = { ...scriptInfo.hints, ...combinedHints };
-                        current = scriptInfo.parent; stack++;
-                    }
-                    return combinedHints;
-                },
                 splitTres(content) {
                     const marker = "[resource]"; const idx = content.indexOf(marker);
                     if (idx === -1) return { header: content, body: "" };
@@ -338,6 +331,7 @@
                         if (t && t.includes('=') && !t.startsWith('[')) {
                             const [k, ...v] = t.split('='); const key = k.trim(); let val = v.join('=').trim();
                             if (this.blacklist.includes(key.toLowerCase())) return;
+                            if (this.godotTypes.some(gt => val.startsWith(gt + "("))) return; 
                             if (val.startsWith('"') && val.endsWith('"')) val = val.substring(1, val.length - 1);
                             else if (val === "true") val = true; else if (val === "false") val = false;
                             else if (!isNaN(val) && val !== "") val = Number(val);
@@ -350,32 +344,41 @@
                     const types = {}; Object.entries(data).forEach(([k, v]) => types[k] = typeof v);
                     this.originalTypes.set(id, types);
                 },
-                // NÂNG CẤP KIỂM TRA LỖI DỮ LIỆU
+
+                // VALIDATION LOGIC
+                isEmpty(file, prop) {
+                    const val = file.data[prop];
+                    return val === "" || val === null || val === undefined;
+                },
                 isInvalid(file, prop) {
-                    const val = file.data[prop]; 
-                    const types = this.originalTypes.get(file.id);
+                    const val = file.data[prop]; const types = this.originalTypes.get(file.id);
                     if (!types || !types[prop]) return false;
-                    
                     const targetType = types[prop];
-                    if (targetType === 'number') {
-                        return isNaN(val) || val === "" || val === null;
-                    }
-                    if (targetType === 'boolean') {
-                        return typeof val !== 'boolean' && val !== 'true' && val !== 'false';
-                    }
+                    if (targetType === 'number') return isNaN(val) || val === null;
+                    if (targetType === 'boolean') return typeof val !== 'boolean' && val !== 'true' && val !== 'false';
                     return false;
                 },
-                checkGlobalErrors() {
-                    let count = 0; this.allFiles.forEach(f => {
-                        Object.keys(f.data).forEach(p => { if (this.isInvalid(f, p)) count++; });
-                    });
-                    this.errorCount = count;
+                hasIssue(file, prop) {
+                    return this.isEmpty(file, prop) || this.isInvalid(file, prop);
                 },
-                scrollToFirstError() {
-                    const firstError = document.querySelector('.input-error');
-                    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                getFolderErrorCount(folderPath) {
+                    return this.allFiles.filter(f => f.folder === folderPath && Object.keys(f.data).some(p => this.hasIssue(f, p))).length;
                 },
-                getHint(file, prop) { return this.getInheritedHints(file.scriptName)[prop] || { type: 'default' }; },
+                goToError(err) {
+                    this.activeFolder = err.folder;
+                    this.searchQuery = err.fileName;
+                    this.errorSummary.open = false;
+                },
+                getHint(file, prop) {
+                    let combinedHints = {}; let current = file.scriptName; let stack = 0;
+                    while (current && stack < 10) {
+                        let scriptInfo = this.scripts[current] || this.scripts[this.classMap[current]];
+                        if (!scriptInfo) break;
+                        combinedHints = { ...scriptInfo.hints, ...combinedHints };
+                        current = scriptInfo.parent; stack++;
+                    }
+                    return combinedHints[prop] || { type: 'default' };
+                },
                 getFieldType(file, prop) { 
                     const h = this.getHint(file, prop);
                     if (h.type !== 'default') return h.type;
@@ -384,11 +387,8 @@
                 getFieldsForGroup(scriptName, files) {
                     let keys = new Set();
                     files.forEach(f => Object.keys(f.data).forEach(k => {
-                        if (typeof f.data[k] === 'string' && this.godotTypes.some(t => f.data[k].startsWith(t + "("))) return;
                         keys.add(k);
                     }));
-                    const allHints = this.getInheritedHints(scriptName);
-                    Object.keys(allHints).forEach(k => { if (!this.blacklist.includes(k.toLowerCase())) keys.add(k); });
                     return Array.from(keys);
                 },
                 get groupedFiles() {
@@ -396,56 +396,12 @@
                     const groups = {}; f.forEach(x => { if (!groups[x.scriptName]) groups[x.scriptName] = []; groups[x.scriptName].push(x); });
                     return groups;
                 },
-                get filteredCloneFiles() {
-                    let list = this.allFiles.filter(f => f.type === 'tres');
-                    if (this.createModal.cloneSearch) {
-                        const q = this.createModal.cloneSearch.toLowerCase();
-                        list = list.filter(f => f.name.toLowerCase().includes(q));
-                    }
-                    return list;
-                },
                 buildTree() {
                     const paths = [...new Set(this.allFiles.map(f => f.folder))];
                     this.folders = paths.sort().map(p => ({ name: p === "root" ? 'Resources' : p.split('/').pop(), fullPath: p, level: p === "root" ? 0 : p.split('/').length }));
                     if (this.folders.length > 0 && !this.activeFolder) this.activeFolder = this.folders[0].fullPath;
                 },
-                markDirty(f) { if (!f.dirty) { f.dirty = true; this.dirtyCount++; } this.checkGlobalErrors(); },
-                openTextEditor(file, key) { this.textEditor = { open: true, file, key, tempValue: file.data[key] }; },
-                saveTextEditor() {
-                    this.textEditor.file.data[this.textEditor.key] = this.textEditor.tempValue;
-                    this.markDirty(this.textEditor.file); this.textEditor.open = false;
-                },
-                async saveDirtyFiles() {
-                    if (this.dirtyCount === 0 || this.errorCount > 0) return;
-                    this.isSaving = true;
-                    try {
-                        const paths = [...new Set(this.allFiles.filter(f => f.dirty).map(f => f.path))];
-                        for (let p of paths) {
-                            const entries = this.allFiles.filter(f => f.path === p); const first = entries[0];
-                            const w = await first.handle.createWritable();
-                            if (first.type === 'tres') {
-                                let content = first.rawHeader + "\n";
-                                for (const [k, v] of Object.entries(first.data)) {
-                                    let valStr = (typeof v === 'string' && !this.godotTypes.some(t => v.startsWith(t + "("))) ? `"${v}"` : v;
-                                    content += `${k} = ${valStr}\n`;
-                                }
-                                await w.write(content);
-                            } else {
-                                const json = {}; entries.forEach(e => json[e.name] = e.data);
-                                await w.write(JSON.stringify(json, null, "\t"));
-                            }
-                            await w.close(); entries.forEach(e => e.dirty = false);
-                        }
-                        this.dirtyCount = 0;
-                    } finally { this.isSaving = false; }
-                },
-                async deleteEntry(file) {
-                    if (!confirm("Delete permanently?")) return;
-                    if (file.type === 'tres') { await file.handle.remove(); this.allFiles = this.allFiles.filter(f => f.id !== file.id); }
-                    else { const p = file.path; this.allFiles = this.allFiles.filter(f => f.id !== file.id); this.allFiles.filter(f => f.path === p).forEach(f => this.markDirty(f)); }
-                    this.buildTree();
-                },
-                // NÂNG CẤP ADD ENTRY CHO JSON: TẠO TRỐNG DỮ LIỆU
+                markDirty(f) { if (!f.dirty) { f.dirty = true; this.dirtyCount++; } },
                 addNewEntry(group, scriptName) {
                     const first = group[0]; const id = prompt("Identifier/Name:"); if (!id) return;
                     if (first.type === 'json') {
@@ -468,20 +424,62 @@
                     const handle = await dir.getFileHandle(fullName, { create: true });
                     const path = (this.activeFolder === "root" ? "" : this.activeFolder + "/") + fullName;
                     let data = {}; let header = `[gd_resource type="Resource" format=3]\n\n[resource]`;
+                    let body = "";
                     let sName = ext === '.tres' ? "Godot Resource" : fullName;
                     if (ext === '.tres' && templateId) {
                         const src = this.allFiles.find(f => f.id === templateId);
-                        if (src) { data = JSON.parse(JSON.stringify(src.data)); header = src.rawHeader; sName = src.scriptName; }
+                        if (src) { data = JSON.parse(JSON.stringify(src.data)); header = src.rawHeader; sName = src.scriptName; body = src.rawBody; }
                     }
-                    const newFile = { id: path, name: fullName, path, folder: this.activeFolder, handle, data, type: ext.replace('.',''), scriptName: sName, dirty: true, rawHeader: header };
+                    const newFile = { id: path, name: fullName, path, folder: this.activeFolder, handle, data, type: ext.replace('.',''), scriptName: sName, dirty: true, rawHeader: header, rawBody: body };
                     this.allFiles.push(newFile); this.recordTypes(path, data); this.dirtyCount++;
                 },
-                openAddPropModal(g) { this.addPropModal = { open: true, group: g, name: '', type: 'string', defaultValue: '' }; },
-                confirmAddProperty() {
-                    const { name, type, defaultValue, group } = this.addPropModal; if (!name) return;
-                    let val = type === 'number' ? Number(defaultValue) : (type === 'boolean' ? (defaultValue === 'true') : String(defaultValue));
-                    group.forEach(f => { if (!(name in f.data)) { f.data[name] = val; this.markDirty(f); let tps = this.originalTypes.get(f.id) || {}; tps[name] = typeof val; this.originalTypes.set(f.id, tps); } });
-                    this.addPropModal.open = false;
+                async saveDirtyFiles() {
+                    if (this.dirtyCount === 0 || this.errorCount > 0) return;
+                    this.isSaving = true;
+                    try {
+                        const paths = [...new Set(this.allFiles.filter(f => f.dirty).map(f => f.path))];
+                        for (let p of paths) {
+                            const entries = this.allFiles.filter(f => f.path === p); const first = entries[0];
+                            const w = await first.handle.createWritable();
+                            if (first.type === 'tres') {
+                                let lines = first.rawBody.split(/\r?\n/);
+                                let updatedKeys = new Set();
+                                let newLines = lines.map(line => {
+                                    const trimmed = line.trim();
+                                    if (trimmed && trimmed.includes('=') && !trimmed.startsWith('[')) {
+                                        const key = trimmed.split('=')[0].trim();
+                                        if (first.data.hasOwnProperty(key)) {
+                                            updatedKeys.add(key);
+                                            const v = first.data[key];
+                                            let valStr = (typeof v === 'string' && !this.godotTypes.some(t => v.startsWith(t + "("))) ? `"${v}"` : v;
+                                            return `${key} = ${valStr}`;
+                                        }
+                                    }
+                                    return line;
+                                });
+                                Object.keys(first.data).forEach(k => {
+                                    if (!updatedKeys.has(k)) {
+                                        const v = first.data[k];
+                                        let valStr = (typeof v === 'string' && !this.godotTypes.some(t => v.startsWith(t + "("))) ? `"${v}"` : v;
+                                        newLines.push(`${k} = ${valStr}`);
+                                    }
+                                });
+                                await w.write(first.rawHeader + "\n" + newLines.join('\n'));
+                                first.rawBody = newLines.join('\n');
+                            } else {
+                                const json = {}; entries.forEach(e => json[e.name] = e.data);
+                                await w.write(JSON.stringify(json, null, "\t"));
+                            }
+                            await w.close(); entries.forEach(e => e.dirty = false);
+                        }
+                        this.dirtyCount = 0;
+                    } catch(e) { console.error(e); alert("Save failed!"); } finally { this.isSaving = false; }
+                },
+                async deleteEntry(file) {
+                    if (!confirm("Delete permanently?")) return;
+                    if (file.type === 'tres') { await file.handle.remove(); this.allFiles = this.allFiles.filter(f => f.id !== file.id); }
+                    else { const p = file.path; this.allFiles = this.allFiles.filter(f => f.id !== file.id); this.allFiles.filter(f => f.path === p).forEach(f => this.markDirty(f)); }
+                    this.buildTree();
                 },
                 exportAllData() {
                     const bundle = {}; this.allFiles.forEach(f => bundle[f.id] = f.data);
@@ -492,9 +490,6 @@
                     const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
                     input.onchange = async (e) => { this.processImport(await e.target.files[0].text()); };
                     input.click();
-                },
-                confirmPasteImport() {
-                    if (this.processImport(this.importModal.text)) { this.importModal.open = false; this.importModal.text = ''; }
                 },
                 processImport(jsonStr) {
                     try {
