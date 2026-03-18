@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Database Game Maker v4.1 - Pro Max Workflow</title>
+    <title>Database Maker v4.1 - Pro Max Workflow</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -198,6 +198,8 @@
                 <button @click="createModal.ext = '.tres'" :class="createModal.ext === '.tres' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.tres</button>
                 <button @click="createModal.ext = '.json'" :class="createModal.ext === '.json' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.json</button>
             </div>
+
+            <!-- TRES SPECIFIC: CLONE STRUCTURE -->
             <div x-show="createModal.ext === '.tres'" class="space-y-2">
                 <label class="text-[10px] font-bold text-zinc-600 uppercase italic">Clone structure from:</label>
                 <input type="text" x-model="createModal.cloneSearch" class="g-input" placeholder="Search templates...">
@@ -209,6 +211,39 @@
                     </template>
                 </div>
             </div>
+
+            <!-- JSON SPECIFIC: NEW STRUCTURE DEFINITION -->
+            <div x-show="createModal.ext === '.json'" class="space-y-3 pt-2 border-t border-zinc-900">
+                <label class="text-[10px] font-bold text-zinc-600 uppercase italic">Define Initial Object Schema:</label>
+                
+                <!-- Input Add Prop -->
+                <div class="flex gap-2">
+                    <input type="text" x-model="createModal.jsonNewPropName" class="g-input flex-1" placeholder="Prop Name">
+                    <select x-model="createModal.jsonNewPropType" class="g-input !w-24">
+                        <option value="string">String</option>
+                        <option value="number">Number</option>
+                        <option value="boolean">Bool</option>
+                    </select>
+                    <button @click="addJsonPropToSchema()" class="btn-action !bg-blue-600 text-white border-none"><i class="fa-solid fa-plus"></i></button>
+                </div>
+
+                <!-- List of added props -->
+                <div class="space-y-1 max-h-32 overflow-y-auto custom-scrollbar bg-black/20 rounded-lg p-2 border border-zinc-900">
+                    <template x-if="createModal.jsonSchema.length === 0">
+                        <div class="text-[10px] text-zinc-600 text-center py-2 uppercase tracking-tighter">No properties added (Empty Object)</div>
+                    </template>
+                    <template x-for="(p, index) in createModal.jsonSchema" :key="index">
+                        <div class="flex items-center justify-between bg-zinc-900/50 px-3 py-1.5 rounded border border-zinc-800 group">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-mono text-blue-400" x-text="p.name"></span>
+                                <span class="text-[9px] px-1.5 bg-zinc-800 text-zinc-500 rounded uppercase" x-text="p.type"></span>
+                            </div>
+                            <button @click="createModal.jsonSchema.splice(index, 1)" class="text-zinc-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
             <div class="flex justify-end gap-3 pt-4 border-t border-zinc-900">
                 <button @click="createModal.open = false" class="px-4 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
                 <button @click="confirmCreateFile()" class="btn-action btn-primary !px-8">Create</button>
@@ -274,7 +309,13 @@
                 godotTypes: ['ExtResource', 'SubResource', 'Rect2', 'Vector2', 'Vector3', 'Color', 'Transform2D'],
                 originalTypes: new Map(),
                 errorSummary: { open: false },
-                createModal: { open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '' },
+                
+                // MỞ RỘNG createModal ĐỂ HỖ TRỢ JSON SCHEMA
+                createModal: { 
+                    open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '',
+                    jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string'
+                },
+
                 addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
                 importModal: { open: false, text: '' },
                 multilineModal: { open: false, file: null, prop: '', text: '' },
@@ -292,6 +333,16 @@
                 get filteredTemplates() {
                     const q = this.createModal.cloneSearch.toLowerCase();
                     return this.allFiles.filter(f => f.type === 'tres' && (f.name.toLowerCase().includes(q) || f.scriptName.toLowerCase().includes(q))).slice(0, 8);
+                },
+
+                // NEW LOGIC: THÊM PROPERTY VÀO SCHEMA KHI TẠO JSON
+                addJsonPropToSchema() {
+                    if (!this.createModal.jsonNewPropName.trim()) return;
+                    this.createModal.jsonSchema.push({
+                        name: this.createModal.jsonNewPropName.trim(),
+                        type: this.createModal.jsonNewPropType
+                    });
+                    this.createModal.jsonNewPropName = '';
                 },
 
                 async openProject() {
@@ -395,20 +446,66 @@
                         this.dirtyCount = 0;
                     } catch(e) { alert("Save failed!"); } finally { this.isSaving = false; }
                 },
-                openCreateModal() { this.createModal = { open: true, name: '', ext: '.tres', targetClone: '', cloneSearch: '' }; },
-                async confirmCreateFile() { if (this.createModal.name) await this.internalCreate(this.createModal.name, this.createModal.ext, this.createModal.targetClone); this.createModal.open = false; },
-                async internalCreate(name, ext, templateId = null) {
+                openCreateModal() { 
+                    this.createModal = { 
+                        open: true, name: '', ext: '.tres', targetClone: '', cloneSearch: '',
+                        jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string'
+                    }; 
+                },
+                async confirmCreateFile() { 
+                    if (!this.createModal.name) return;
+                    
+                    // NẾU LÀ JSON, TẠO DỮ LIỆU MẪU TỪ SCHEMA
+                    let initialData = {};
+                    if (this.createModal.ext === '.json') {
+                        this.createModal.jsonSchema.forEach(p => {
+                            if (p.type === 'number') initialData[p.name] = 0;
+                            else if (p.type === 'boolean') initialData[p.name] = false;
+                            else initialData[p.name] = "";
+                        });
+                        await this.internalCreate(this.createModal.name, this.createModal.ext, null, initialData);
+                    } else {
+                        await this.internalCreate(this.createModal.name, this.createModal.ext, this.createModal.targetClone); 
+                    }
+                    
+                    this.createModal.open = false; 
+                },
+
+                // UPDATE internalCreate ĐỂ NHẬN DỮ LIỆU BAN ĐẦU (DÀNH CHO JSON NEW)
+                async internalCreate(name, ext, templateId = null, initialData = null) {
                     const fullName = name.endsWith(ext) ? name : name + ext;
                     let dir = this.rootHandle; if (this.activeFolder !== "root") for (let p of this.activeFolder.split('/')) dir = await dir.getDirectoryHandle(p);
                     const handle = await dir.getFileHandle(fullName, { create: true });
                     const path = (this.activeFolder === "root" ? "" : this.activeFolder + "/") + fullName;
+                    
                     let data = {}, header = `[gd_resource type="Resource" format=3]\n\n[resource]`, body = "", sName = ext === '.tres' ? "Godot Resource" : fullName;
+                    
                     if (ext === '.tres' && templateId) {
                         const src = this.allFiles.find(f => f.id === templateId);
                         if (src) { data = JSON.parse(JSON.stringify(src.data)); header = src.rawHeader; sName = src.scriptName; body = src.rawBody; }
+                    } else if (ext === '.json' && initialData) {
+                        // TẠO FILE JSON VỚI 1 ENTRY MẶC ĐỊNH LÀ 'default' ĐỂ DATABASE HIỂN THỊ ĐƯỢC
+                        data = initialData;
+                        const defaultEntryName = "new_entry_1";
+                        const jsonPayload = {};
+                        jsonPayload[defaultEntryName] = data;
+                        
+                        // LƯU FILE LUÔN
+                        const w = await handle.createWritable();
+                        await w.write(JSON.stringify(jsonPayload, null, "\t"));
+                        await w.close();
+
+                        // ADD VÀO LIST HIỆN TẠI
+                        const eid = path + ":" + defaultEntryName;
+                        const newFile = { id: eid, name: defaultEntryName, path, folder: this.activeFolder, handle, data: JSON.parse(JSON.stringify(data)), type: 'json', scriptName: fullName, dirty: false };
+                        this.allFiles.push(newFile); this.recordTypes(eid, data);
+                        this.buildTree();
+                        return;
                     }
+
                     const newFile = { id: path, name: fullName, path, folder: this.activeFolder, handle, data, type: ext.replace('.',''), scriptName: sName, dirty: true, rawHeader: header, rawBody: body };
                     this.allFiles.push(newFile); this.recordTypes(path, data); this.dirtyCount++;
+                    this.buildTree();
                 },
                 parseGDScript(c, f) {
                     const hints = {}, enums = {}, classNameMatch = c.match(/class_name\s+(\w+)/);
@@ -430,7 +527,7 @@
                     const sr = c.match(/script\s*=\s*ExtResource\("([^"]+)"\)/); if (!sr) return "StaticResource";
                     return c.split('\n').find(l => l.includes(`id="${sr[1]}"`) && l.includes('.gd'))?.match(/path="res:\/\/([^"]+)"/)?.[1].split('/').pop() || "StaticResource";
                 },
-                splitTres(c) { const m = "[resource]", i = c.indexOf(m); return i === -1 ? { header: c, body: "" } : { header: c.substring(0, i + m.length), body: c.substring(i + m.length) }; },
+                splitTres(c) { const m = "[resource]", i = c.indexOf(m); return i === -1 ? { header: c, body: "" } : { header: c.substring(0, i + m.length), body: i === -1 ? "" : c.substring(i + m.length) }; },
                 parseTresBody(b) {
                     const data = {}; b.split(/\r?\n/).forEach(l => {
                         const t = l.trim(); if (t && t.includes('=') && !t.startsWith('[')) {
