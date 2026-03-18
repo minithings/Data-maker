@@ -199,13 +199,11 @@
             </button>
             <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span
                     class="text-blue-500 font-black">V1.0</span></h1>
-            
-            <button @click="openProject()" class="btn-action">
-                <i class="fa-solid fa-folder-open text-blue-500"></i> Open
-            </button>
 
-            <!-- Nút Restore dự án cũ (Chỉ hiện khi có dữ liệu trong IndexedDB) -->
-            <button x-show="canRestore" @click="restoreLastProject()" class="btn-action bg-blue-900/20 border-blue-500/30 text-blue-400">
+            <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i>
+                Open</button>
+            <button x-show="canRestore" @click="restoreLastProject()"
+                class="btn-action bg-blue-900/20 border-blue-500/30 text-blue-400">
                 <i class="fa-solid fa-clock-rotate-left"></i> Restore: <span x-text="savedName"></span>
             </button>
 
@@ -299,14 +297,12 @@
                                                     class="flex items-center opacity-0 group-hover/h:opacity-100 transition-all bg-zinc-900 rounded-md p-0.5 border border-zinc-800">
                                                     <button @click="openRenamePropModal(prop, groupFiles)"
                                                         class="w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors"
-                                                        title="Rename Property">
-                                                        <i class="fa-solid fa-pen-nib text-[12px]"></i>
-                                                    </button>
+                                                        title="Rename Property"><i
+                                                            class="fa-solid fa-pen-nib text-[12px]"></i></button>
                                                     <button @click="openChangeTypeModal(prop, groupFiles)"
                                                         class="w-7 h-7 flex items-center justify-center text-blue-500 hover:text-blue-300 hover:bg-zinc-800 rounded transition-colors"
-                                                        title="Change Data Type">
-                                                        <i class="fa-solid fa-gear text-[14px]"></i>
-                                                    </button>
+                                                        title="Change Data Type"><i
+                                                            class="fa-solid fa-gear text-[14px]"></i></button>
                                                 </div>
                                             </div>
                                         </th>
@@ -323,9 +319,8 @@
                                                     class="text-[13px] font-semibold text-zinc-300 group-hover:text-white truncate"
                                                     x-text="file.name"></span>
                                                 <button @click="renameEntry(file)"
-                                                    class="opacity-0 group-hover/id:opacity-100 p-1 text-zinc-600 hover:text-blue-500 transition-all">
-                                                    <i class="fa-solid fa-pen-to-square text-[11px]"></i>
-                                                </button>
+                                                    class="opacity-0 group-hover/id:opacity-100 p-1 text-zinc-600 hover:text-blue-500 transition-all"><i
+                                                        class="fa-solid fa-pen-to-square text-[11px]"></i></button>
                                             </div>
                                         </td>
                                         <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
@@ -399,7 +394,7 @@
         </main>
     </div>
 
-    <!-- CÁC MODAL GIỮ NGUYÊN 100% -->
+    <!-- MODALS -->
     <div x-show="renamePropModal.open" x-cloak
         class="fixed inset-0 z-[260] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden"
@@ -611,38 +606,22 @@
                 godotTypes: ['ExtResource', 'SubResource', 'Rect2', 'Vector2', 'Vector3', 'Color', 'Transform2D'],
                 originalTypes: new Map(),
                 errorSummary: { open: false },
-                createModal: {
-                    open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '',
-                    jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string'
-                },
+                createModal: { open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '', jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string' },
                 addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
                 changeTypeModal: { open: false, prop: '', group: null, newType: 'string' },
                 renamePropModal: { open: false, oldName: '', group: null, newName: '' },
                 importModal: { open: false, text: '' },
                 multilineModal: { open: false, file: null, prop: '', text: '' },
-
-                // CÁC BIẾN CHO TÍNH NĂNG NHỚ ĐƯỜNG DẪN
-                canRestore: false,
-                savedName: '',
-                savedHandle: null,
+                canRestore: false, savedName: '', savedHandle: null,
 
                 async init() {
-                    // Kiểm tra xem có dự án nào đã mở trước đó không
                     const saved = await this.getStoredHandle();
-                    if (saved) {
-                        this.savedHandle = saved;
-                        this.savedName = saved.name;
-                        this.canRestore = true;
-                    }
+                    if (saved) { this.savedHandle = saved; this.savedName = saved.name; this.canRestore = true; }
                 },
-
-                // Lô-gic IndexedDB để lưu Handle
                 async openDB() {
                     return new Promise((resolve) => {
                         const request = indexedDB.open("DatabaseMakerDB", 1);
-                        request.onupgradeneeded = (e) => {
-                            e.target.result.createObjectStore("handles");
-                        };
+                        request.onupgradeneeded = (e) => { e.target.result.createObjectStore("handles"); };
                         request.onsuccess = (e) => resolve(e.target.result);
                     });
                 },
@@ -661,7 +640,6 @@
                         });
                     } catch (e) { return null; }
                 },
-
                 get errorList() {
                     const list = [];
                     this.allFiles.forEach(f => {
@@ -676,38 +654,30 @@
                     const q = this.createModal.cloneSearch.toLowerCase();
                     return this.allFiles.filter(f => f.type === 'tres' && (f.name.toLowerCase().includes(q) || f.scriptName.toLowerCase().includes(q))).slice(0, 8);
                 },
-
                 addJsonPropToSchema() {
                     if (!this.createModal.jsonNewPropName.trim()) return;
                     this.createModal.jsonSchema.push({ name: this.createModal.jsonNewPropName.trim(), type: this.createModal.jsonNewPropType });
                     this.createModal.jsonNewPropName = '';
                 },
-
                 async openProject() {
-                    try { 
-                        this.rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' }); 
-                        await this.storeHandle(this.rootHandle); // Lưu vào DB
+                    try {
+                        this.rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                        await this.storeHandle(this.rootHandle);
                         this.canRestore = false;
-                        await this.loadProjectData(); 
+                        await this.loadProjectData();
                     } catch (e) { }
                 },
-
                 async restoreLastProject() {
                     try {
-                        // Trình duyệt yêu cầu kích hoạt quyền truy cập lại mỗi khi tải lại trang (vì lý do bảo mật)
                         if (await this.savedHandle.requestPermission({ mode: 'readwrite' }) === 'granted') {
                             this.rootHandle = this.savedHandle;
                             this.canRestore = false;
                             await this.loadProjectData();
                         }
-                    } catch (e) {
-                        alert("Cannot restore project: " + e.message);
-                        this.canRestore = false;
-                    }
+                    } catch (e) { alert("Restore failed: " + e.message); this.canRestore = false; }
                 },
-
                 async reloadProject() {
-                    if (this.dirtyCount > 0 && !confirm("Reload and discard changes?")) return;
+                    if (this.dirtyCount > 0 && !confirm("Discard changes?")) return;
                     await this.loadProjectData();
                 },
                 async loadProjectData() {
@@ -751,178 +721,21 @@
                     else file.data[prop] = newValue;
                     this.markDirty(file);
                 },
-
-                openRenamePropModal(prop, groupFiles) {
-                    this.renamePropModal = { open: true, oldName: prop, group: groupFiles, newName: prop };
-                },
-                confirmRenameProperty() {
-                    const { oldName, newName, group } = this.renamePropModal;
-                    if (!newName || oldName === newName) return;
-                    group.forEach(f => {
-                        if (f.data.hasOwnProperty(oldName)) {
-                            f.data[newName] = f.data[oldName];
-                            delete f.data[oldName];
-                            const t = this.originalTypes.get(f.id);
-                            if (t && t[oldName]) {
-                                t[newName] = t[oldName];
-                                delete t[oldName];
-                            }
-                            this.markDirty(f);
-                        }
-                    });
-                    this.renamePropModal.open = false;
-                },
-
-                openChangeTypeModal(prop, groupFiles) {
-                    const firstFile = groupFiles[0];
-                    const currentType = this.originalTypes.get(firstFile.id)?.[prop] || 'string';
-                    this.changeTypeModal = { open: true, prop, group: groupFiles, newType: currentType };
-                },
-                confirmChangeType() {
-                    const { prop, group, newType } = this.changeTypeModal;
-                    group.forEach(f => {
-                        let val = f.data[prop];
-                        if (newType === 'number') val = (val === true) ? 1 : (val === false ? 0 : (Number(val) || 0));
-                        else if (newType === 'boolean') val = !!val;
-                        else val = String(val);
-                        f.data[prop] = val;
-                        const t = this.originalTypes.get(f.id);
-                        if (t) t[prop] = newType;
-                        this.markDirty(f);
-                    });
-                    this.changeTypeModal.open = false;
-                },
-
-                openMultiline(file, prop) {
-                    this.multilineModal = { open: true, file, prop, text: file.data[prop] };
-                },
-                saveMultiline() {
-                    this.multilineModal.file.data[this.multilineModal.prop] = this.multilineModal.text;
-                    this.markDirty(this.multilineModal.file);
-                    this.multilineModal.open = false;
-                },
-
-                async renameEntry(file) {
-                    const newName = prompt("New Identifier Name:", file.name);
-                    if (!newName || newName === file.name) return;
-                    if (file.type === 'tres') {
-                        try {
-                            const newFileName = newName.endsWith('.tres') ? newName : newName + '.tres';
-                            const oldPath = file.path;
-                            const newPath = file.folder === 'root' ? newFileName : file.folder + '/' + newFileName;
-                            if (this.allFiles.find(f => f.path === newPath)) { alert("File already exists!"); return; }
-                            this.isSaving = true;
-                            if (file.handle.move) { await file.handle.move(newFileName); }
-                            else {
-                                let dir = this.rootHandle;
-                                if (file.folder !== "root") for (let p of file.folder.split('/')) dir = await dir.getDirectoryHandle(p);
-                                const newHandle = await dir.getFileHandle(newFileName, { create: true });
-                                const w = await newHandle.createWritable();
-                                await w.write(file.rawHeader + "\n" + file.rawBody); await w.close();
-                                await dir.removeEntry(file.name); file.handle = newHandle;
-                            }
-                            const oldId = file.id; file.name = newFileName; file.path = newPath; file.id = newPath;
-                            const types = this.originalTypes.get(oldId); this.originalTypes.delete(oldId); this.originalTypes.set(file.id, types);
-                            this.buildTree();
-                        } catch (e) { alert("Rename failed: " + e.message); }
-                        finally { this.isSaving = false; }
-                    } else {
-                        const pathEntries = this.allFiles.filter(f => f.path === file.path);
-                        if (pathEntries.find(f => f.name === newName)) { alert("Identifier already exists in this file!"); return; }
-                        const oldId = file.id; file.name = newName; file.id = file.path + ":" + newName;
-                        const types = this.originalTypes.get(oldId); this.originalTypes.delete(oldId); this.originalTypes.set(file.id, types);
-                        this.markDirty(file);
-                    }
-                },
-
-                openAddPropModal(groupFiles) { this.addPropModal = { open: true, group: groupFiles, name: '', type: 'string', defaultValue: '' }; },
-                confirmAddProperty() {
-                    const { name, type, defaultValue, group } = this.addPropModal; if (!name) return;
-                    let val = type === 'number' ? Number(defaultValue) || 0 : (type === 'boolean' ? (defaultValue === 'true') : String(defaultValue));
-                    group.forEach(f => { if (!(name in f.data)) { f.data[name] = val; this.markDirty(f); this.recordTypes(f.id, f.data); } });
-                    this.addPropModal.open = false;
-                },
-
-                hasIssue(file, prop) {
-                    const v = file.data[prop];
-                    const t = this.originalTypes.get(file.id);
-                    const hint = this.getHint(file, prop);
-                    if (t && t[prop] === 'number' && isNaN(v) && v !== "") return true;
-                    if (hint && hint.type === 'enum' && v === null) return true;
-                    return false;
-                },
-                hasWarning(file, prop) {
-                    if (file.type !== 'tres') return false;
-                    const v = file.data[prop];
-                    return (v === "" || v === null || v === undefined);
-                },
-
-                async saveDirtyFiles() {
-                    if (this.dirtyCount === 0 || this.errorCount > 0) return; this.isSaving = true;
-                    try {
-                        const paths = [...new Set(this.allFiles.filter(f => f.dirty).map(f => f.path))];
-                        for (let p of paths) {
-                            const entries = this.allFiles.filter(f => f.dirty && f.path === p);
-                            if (entries.length === 0) continue;
-                            const first = entries[0];
-                            const w = await first.handle.createWritable();
-                            if (first.type === 'tres') {
-                                let lines = first.rawBody.split(/\r?\n/); let up = new Set();
-                                let nl = lines.map(line => {
-                                    const tr = line.trim();
-                                    if (tr && tr.includes('=') && !tr.startsWith('[')) {
-                                        const k = tr.split('=')[0].trim();
-                                        if (first.data.hasOwnProperty(k)) {
-                                            up.add(k); const v = first.data[k];
-                                            let vStr = (typeof v === 'string' && !this.godotTypes.some(gt => v.startsWith(gt + "("))) ? `"${v}"` : v;
-                                            return `${k} = ${vStr}`;
-                                        }
-                                    } return line;
-                                });
-                                Object.keys(first.data).forEach(k => {
-                                    if (!up.has(k)) {
-                                        const v = first.data[k]; let vStr = (typeof v === 'string') ? `"${v}"` : v;
-                                        nl.push(`${k} = ${vStr}`);
-                                    }
-                                });
-                                await w.write(first.rawHeader + "\n" + nl.join('\n')); first.rawBody = nl.join('\n');
-                            } else {
-                                const allInPath = this.allFiles.filter(f => f.path === p);
-                                const json = {}; allInPath.forEach(e => json[e.name] = e.data);
-                                await w.write(JSON.stringify(json, null, "\t"));
-                            }
-                            await w.close(); entries.forEach(e => e.dirty = false);
-                        }
-                        this.dirtyCount = 0;
-                    } catch (e) { alert("Save failed!"); } finally { this.isSaving = false; }
-                },
-                openCreateModal() {
-                    this.createModal = {
-                        open: true, name: '', ext: '.tres', targetClone: '', cloneSearch: '',
-                        jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string'
-                    };
-                },
-                async confirmCreateFile() {
-                    if (!this.createModal.name) return;
-                    let initialData = {};
-                    if (this.createModal.ext === '.json') {
-                        this.createModal.jsonSchema.forEach(p => {
-                            if (p.type === 'number') initialData[p.name] = 0;
-                            else if (p.type === 'boolean') initialData[p.name] = false;
-                            else initialData[p.name] = "";
-                        });
-                        await this.internalCreate(this.createModal.name, this.createModal.ext, null, initialData);
-                    } else {
-                        await this.internalCreate(this.createModal.name, this.createModal.ext, this.createModal.targetClone);
-                    }
-                    this.createModal.open = false;
-                },
                 async internalCreate(name, ext, templateId = null, initialData = null) {
                     const fullName = name.endsWith(ext) ? name : name + ext;
-                    let dir = this.rootHandle; if (this.activeFolder !== "root") for (let p of this.activeFolder.split('/')) dir = await dir.getDirectoryHandle(p);
+                    let dir = this.rootHandle;
+
+                    if (this.activeFolder && this.activeFolder !== "root") {
+                        const parts = this.activeFolder.split('/').filter(p => p.length > 0);
+                        for (let p of parts) { dir = await dir.getDirectoryHandle(p); }
+                    }
+
                     const handle = await dir.getFileHandle(fullName, { create: true });
-                    const path = (this.activeFolder === "root" ? "" : this.activeFolder + "/") + fullName;
+                    const path = (this.activeFolder === "root" || !this.activeFolder ? "" : this.activeFolder + "/") + fullName;
+                    const folderPath = this.activeFolder || "root";
+
                     let data = {}, header = `[gd_resource type="Resource" format=3]\n\n[resource]`, body = "", sName = ext === '.tres' ? "Godot Resource" : fullName;
+
                     if (ext === '.tres' && templateId) {
                         const src = this.allFiles.find(f => f.id === templateId);
                         if (src) { data = JSON.parse(JSON.stringify(src.data)); header = src.rawHeader; sName = src.scriptName; body = src.rawBody; }
@@ -930,12 +743,19 @@
                         data = initialData; const defaultEntryName = "new_entry_1"; const jsonPayload = {}; jsonPayload[defaultEntryName] = data;
                         const w = await handle.createWritable(); await w.write(JSON.stringify(jsonPayload, null, "\t")); await w.close();
                         const eid = path + ":" + defaultEntryName;
-                        const newFile = { id: eid, name: defaultEntryName, path, folder: this.activeFolder, handle, data: JSON.parse(JSON.stringify(data)), type: 'json', scriptName: fullName, dirty: false };
+                        const newFile = { id: eid, name: defaultEntryName, path, folder: folderPath, handle, data: JSON.parse(JSON.stringify(data)), type: 'json', scriptName: fullName, dirty: false };
                         this.allFiles.push(newFile); this.recordTypes(eid, data); this.buildTree(); return;
                     }
-                    const newFile = { id: path, name: fullName, path, folder: this.activeFolder, handle, data, type: ext.replace('.', ''), scriptName: sName, dirty: true, rawHeader: header, rawBody: body };
+                    const newFile = { id: path, name: fullName, path, folder: folderPath, handle, data, type: ext.replace('.', ''), scriptName: sName, dirty: true, rawHeader: header, rawBody: body };
                     this.allFiles.push(newFile); this.recordTypes(path, data); this.dirtyCount++; this.buildTree();
                 },
+                buildTree() {
+                    let ps = [...new Set(this.allFiles.map(x => x.folder))];
+                    if (ps.length === 0) ps = ["root"];
+                    this.folders = ps.sort().map(p => ({ name: p === "root" ? 'Resources' : p.split('/').pop(), fullPath: p, level: p === "root" ? 0 : p.split('/').filter(x => x).length }));
+                    if (!this.activeFolder && this.folders.length > 0) this.activeFolder = this.folders[0].fullPath;
+                },
+                // Các hàm phụ trợ khác
                 parseGDScript(c, f) {
                     const hints = {}, enums = {}, classNameMatch = c.match(/class_name\s+(\w+)/);
                     if (classNameMatch) this.classMap[classNameMatch[1]] = f;
@@ -975,8 +795,7 @@
                     return h[p] || { type: 'default' };
                 },
                 getFieldType(f, p) {
-                    const h = this.getHint(f, p);
-                    if (h.type !== 'default') return h.type;
+                    const h = this.getHint(f, p); if (h.type !== 'default') return h.type;
                     const typeInMeta = this.originalTypes.get(f.id)?.[p];
                     if (typeInMeta === 'number') return 'number';
                     if (typeInMeta === 'boolean') return 'bool';
@@ -987,11 +806,6 @@
                     let f = this.searchQuery ? this.allFiles.filter(x => x.name.toLowerCase().includes(this.searchQuery.toLowerCase())) : this.allFiles.filter(x => x.folder === this.activeFolder);
                     const groups = {}; f.forEach(x => { if (!groups[x.scriptName]) groups[x.scriptName] = []; groups[x.scriptName].push(x); }); return groups;
                 },
-                buildTree() {
-                    const ps = [...new Set(this.allFiles.map(x => x.folder))];
-                    this.folders = ps.sort().map(p => ({ name: p === "root" ? 'Resources' : p.split('/').pop(), fullPath: p, level: p === "root" ? 0 : p.split('/').length }));
-                    if (this.folders.length > 0 && !this.activeFolder) this.activeFolder = this.folders[0].fullPath;
-                },
                 markDirty(f) { if (!f.dirty) { f.dirty = true; this.dirtyCount++; } },
                 addNewEntry(g, s) {
                     const f = g[0], id = prompt("Identifier:"); if (!id) return;
@@ -1000,20 +814,58 @@
                         const n = { ...f, id: f.path + ":" + id, name: id, data: ed, dirty: true }; this.allFiles.push(n); this.recordTypes(n.id, n.data); this.dirtyCount++;
                     } else this.internalCreate(id, '.tres', f.id);
                 },
-                async deleteEntry(f) {
-                    if (!confirm("Delete?")) return;
-                    if (f.type === 'tres') { await f.handle.remove(); this.allFiles = this.allFiles.filter(x => x.id !== f.id); }
-                    else { const p = f.path; this.allFiles = this.allFiles.filter(x => x.id !== f.id); this.allFiles.filter(x => x.path === p).forEach(x => this.markDirty(x)); }
-                    this.buildTree();
+                async saveDirtyFiles() {
+                    if (this.dirtyCount === 0 || this.errorCount > 0) return; this.isSaving = true;
+                    try {
+                        const paths = [...new Set(this.allFiles.filter(f => f.dirty).map(f => f.path))];
+                        for (let p of paths) {
+                            const entries = this.allFiles.filter(f => f.dirty && f.path === p);
+                            const first = entries[0]; const w = await first.handle.createWritable();
+                            if (first.type === 'tres') {
+                                let lines = first.rawBody.split(/\r?\n/), up = new Set();
+                                let nl = lines.map(line => {
+                                    const tr = line.trim(); if (tr && tr.includes('=') && !tr.startsWith('[')) {
+                                        const k = tr.split('=')[0].trim();
+                                        if (first.data.hasOwnProperty(k)) {
+                                            up.add(k); const v = first.data[k];
+                                            let vStr = (typeof v === 'string' && !this.godotTypes.some(gt => v.startsWith(gt + "("))) ? `"${v}"` : v;
+                                            return `${k} = ${vStr}`;
+                                        }
+                                    } return line;
+                                });
+                                Object.keys(first.data).forEach(k => { if (!up.has(k)) { const v = first.data[k]; let vStr = (typeof v === 'string') ? `"${v}"` : v; nl.push(`${k} = ${vStr}`); } });
+                                await w.write(first.rawHeader + "\n" + nl.join('\n')); first.rawBody = nl.join('\n');
+                            } else {
+                                const allInPath = this.allFiles.filter(f => f.path === p);
+                                const json = {}; allInPath.forEach(e => json[e.name] = e.data);
+                                await w.write(JSON.stringify(json, null, "\t"));
+                            }
+                            await w.close(); entries.forEach(e => e.dirty = false);
+                        }
+                        this.dirtyCount = 0;
+                    } catch (e) { alert("Save failed!"); } finally { this.isSaving = false; }
                 },
+                async confirmCreateFile() {
+                    if (!this.createModal.name) return;
+                    let initialData = {};
+                    if (this.createModal.ext === '.json') {
+                        this.createModal.jsonSchema.forEach(p => { initialData[p.name] = (p.type === 'number' ? 0 : (p.type === 'boolean' ? false : "")); });
+                        await this.internalCreate(this.createModal.name, this.createModal.ext, null, initialData);
+                    } else { await this.internalCreate(this.createModal.name, this.createModal.ext, this.createModal.targetClone); }
+                    this.createModal.open = false;
+                },
+                openCreateModal() { this.createModal = { open: true, name: '', ext: '.tres', targetClone: '', cloneSearch: '', jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string' }; },
+                hasIssue(file, prop) {
+                    const v = file.data[prop], t = this.originalTypes.get(file.id), hint = this.getHint(file, prop);
+                    if (t && t[prop] === 'number' && isNaN(v) && v !== "") return true;
+                    if (hint && hint.type === 'enum' && v === null) return true;
+                    return false;
+                },
+                hasWarning(file, prop) { return file.type === 'tres' && (file.data[prop] === "" || file.data[prop] === null); },
                 exportAllData() {
                     const b = {}; this.allFiles.forEach(f => b[f.id] = f.data);
                     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(b, null, 2)], { type: 'application/json' }));
                     a.download = `database_export.json`; a.click();
-                },
-                async importData() {
-                    const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
-                    input.onchange = async (e) => { this.processImport(await e.target.files[0].text()); }; input.click();
                 },
                 processImport(jsonStr) {
                     try {
@@ -1023,7 +875,63 @@
                     } catch (e) { alert("Invalid JSON"); }
                 },
                 getFolderErrorCount(path) { return this.allFiles.filter(f => f.folder === path && Object.keys(f.data).some(p => this.hasIssue(f, p))).length; },
-                goToError(err) { this.activeFolder = err.folder; this.searchQuery = err.fileName; this.errorSummary.open = false; }
+                goToError(err) { this.activeFolder = err.folder; this.searchQuery = err.fileName; this.errorSummary.open = false; },
+                openAddPropModal(groupFiles) { this.addPropModal = { open: true, group: groupFiles, name: '', type: 'string', defaultValue: '' }; },
+                confirmAddProperty() {
+                    const { name, type, defaultValue, group } = this.addPropModal; if (!name) return;
+                    let val = type === 'number' ? Number(defaultValue) || 0 : (type === 'boolean' ? (defaultValue === 'true') : String(defaultValue));
+                    group.forEach(f => { if (!(name in f.data)) { f.data[name] = val; this.markDirty(f); this.recordTypes(f.id, f.data); } });
+                    this.addPropModal.open = false;
+                },
+                openRenamePropModal(prop, groupFiles) { this.renamePropModal = { open: true, oldName: prop, group: groupFiles, newName: prop }; },
+                confirmRenameProperty() {
+                    const { oldName, newName, group } = this.renamePropModal; if (!newName || oldName === newName) return;
+                    group.forEach(f => { if (f.data.hasOwnProperty(oldName)) { f.data[newName] = f.data[oldName]; delete f.data[oldName]; const t = this.originalTypes.get(f.id); if (t && t[oldName]) { t[newName] = t[oldName]; delete t[oldName]; } this.markDirty(f); } });
+                    this.renamePropModal.open = false;
+                },
+                openChangeTypeModal(prop, groupFiles) { const currentType = this.originalTypes.get(groupFiles[0].id)?.[prop] || 'string'; this.changeTypeModal = { open: true, prop, group: groupFiles, newType: currentType }; },
+                confirmChangeType() {
+                    const { prop, group, newType } = this.changeTypeModal;
+                    group.forEach(f => {
+                        let val = f.data[prop];
+                        if (newType === 'number') val = (val === true) ? 1 : (val === false ? 0 : (Number(val) || 0));
+                        else if (newType === 'boolean') val = !!val;
+                        else val = String(val);
+                        f.data[prop] = val; const t = this.originalTypes.get(f.id); if (t) t[prop] = newType; this.markDirty(f);
+                    });
+                    this.changeTypeModal.open = false;
+                },
+                openMultiline(file, prop) { this.multilineModal = { open: true, file, prop, text: file.data[prop] }; },
+                saveMultiline() { this.multilineModal.file.data[this.multilineModal.prop] = this.multilineModal.text; this.markDirty(this.multilineModal.file); this.multilineModal.open = false; },
+                async renameEntry(file) {
+                    const newName = prompt("New Identifier Name:", file.name); if (!newName || newName === file.name) return;
+                    if (file.type === 'tres') {
+                        try {
+                            const newFileName = newName.endsWith('.tres') ? newName : newName + '.tres';
+                            const oldPath = file.path; const newPath = (file.folder === 'root' ? "" : file.folder + "/") + newFileName;
+                            if (this.allFiles.find(f => f.path === newPath)) { alert("File already exists!"); return; }
+                            this.isSaving = true; let dir = this.rootHandle; if (file.folder !== "root") for (let p of file.folder.split('/')) dir = await dir.getDirectoryHandle(p);
+                            const newHandle = await dir.getFileHandle(newFileName, { create: true });
+                            const w = await newHandle.createWritable(); await w.write(file.rawHeader + "\n" + file.rawBody); await w.close();
+                            await dir.removeEntry(file.name); file.handle = newHandle;
+                            const oldId = file.id; file.name = newFileName; file.path = newPath; file.id = newPath;
+                            const types = this.originalTypes.get(oldId); this.originalTypes.delete(oldId); this.originalTypes.set(file.id, types);
+                            this.buildTree();
+                        } catch (e) { alert("Rename failed: " + e.message); } finally { this.isSaving = false; }
+                    } else {
+                        const pathEntries = this.allFiles.filter(f => f.path === file.path);
+                        if (pathEntries.find(f => f.name === newName)) { alert("Identifier already exists!"); return; }
+                        const oldId = file.id; file.name = newName; file.id = file.path + ":" + newName;
+                        const types = this.originalTypes.get(oldId); this.originalTypes.delete(oldId); this.originalTypes.set(file.id, types);
+                        this.markDirty(file);
+                    }
+                },
+                async deleteEntry(f) {
+                    if (!confirm("Delete?")) return;
+                    if (f.type === 'tres') { await f.handle.remove(); this.allFiles = this.allFiles.filter(x => x.id !== f.id); }
+                    else { const p = f.path; this.allFiles = this.allFiles.filter(x => x.id !== f.id); this.allFiles.filter(x => x.path === p).forEach(x => this.markDirty(x)); }
+                    this.buildTree();
+                }
             }
         }
     </script>
