@@ -15,11 +15,8 @@
         .g-table-row td { height: 58px; vertical-align: middle; border-bottom: 1px solid var(--border); }
         .g-input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0 12px; border-radius: 8px; font-size: 13px; outline: none; width: 100%; height: 38px; transition: all 0.2s; }
         .g-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
-        
-        /* Error & Warning Styles */
         .input-error { border-color: #ef4444 !important; background-color: rgba(239, 68, 68, 0.05) !important; color: #f87171 !important; }
         .input-warning { border-color: #f59e0b !important; background-color: rgba(245, 158, 11, 0.05) !important; color: #fbbf24 !important; }
-        
         .sidebar-active { background: rgba(59, 130, 246, 0.1); color: #60a5fa !important; }
         .data-panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
         [x-cloak] { display: none !important; }
@@ -75,6 +72,7 @@
     </nav>
 
     <div class="flex-1 flex overflow-hidden">
+        <!-- SIDEBAR -->
         <aside :class="sidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 pointer-events-none'" class="bg-zinc-950 flex flex-col border-r border-zinc-900 shrink-0 overflow-hidden">
             <div class="p-4" x-show="rootHandle" x-cloak>
                 <button @click="openCreateModal()" class="btn-action btn-primary w-full justify-center"><i class="fa-solid fa-plus-circle"></i> New Resource</button>
@@ -95,6 +93,7 @@
             </div>
         </aside>
 
+        <!-- MAIN CONTENT -->
         <main class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
             <template x-for="(groupFiles, scriptName) in groupedFiles" :key="scriptName">
                 <div class="data-panel shadow-2xl" x-data="{ isDown: false, startX: 0, scrollLeft: 0 }" @mouseup="isDown = false" @mouseleave="isDown = false" @mousemove="if(!isDown) return; $event.preventDefault(); const x = $event.pageX - startX; $refs.scrollContainer.scrollLeft = scrollLeft - x;">
@@ -115,10 +114,15 @@
                                     <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
                                         <th class="px-4 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-600 uppercase">
                                             <div class="flex items-center gap-2 group/h">
-                                                <span x-text="prop"></span>
-                                                <button @click="openChangeTypeModal(prop, groupFiles)" class="opacity-0 group-hover/h:opacity-100 text-blue-500 hover:text-blue-400 transition-all">
-                                                    <i class="fa-solid fa-tags text-[9px]"></i>
-                                                </button>
+                                                <span x-text="prop" class="truncate max-w-[120px]"></span>
+                                                <div class="flex items-center opacity-0 group-hover/h:opacity-100 transition-all bg-zinc-900 rounded-md p-0.5 border border-zinc-800">
+                                                    <button @click="openRenamePropModal(prop, groupFiles)" class="w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Rename Property">
+                                                        <i class="fa-solid fa-pen-nib text-[12px]"></i>
+                                                    </button>
+                                                    <button @click="openChangeTypeModal(prop, groupFiles)" class="w-7 h-7 flex items-center justify-center text-blue-500 hover:text-blue-300 hover:bg-zinc-800 rounded transition-colors" title="Change Data Type">
+                                                        <i class="fa-solid fa-gear text-[14px]"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </th>
                                     </template>
@@ -183,20 +187,33 @@
         </main>
     </div>
 
+    <!-- MODAL ĐỔI TÊN PROPERTY -->
+    <div x-show="renamePropModal.open" x-cloak class="fixed inset-0 z-[260] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden" @click.away="renamePropModal.open = false">
+            <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-orange-400">Rename Property</div>
+            <div class="p-6 space-y-4">
+                <div class="text-xs text-zinc-500">Old name: <span class="text-white font-mono" x-text="renamePropModal.oldName"></span></div>
+                <input type="text" x-model="renamePropModal.newName" class="g-input !h-12 border-orange-900/30" placeholder="New Property Name">
+            </div>
+            <div class="px-6 py-4 border-t border-zinc-900 flex justify-end gap-3">
+                <button @click="renamePropModal.open = false" class="px-4 text-xs font-bold text-zinc-500">CANCEL</button>
+                <button @click="confirmRenameProperty()" class="btn-action !bg-orange-600 text-white border-none !px-6 uppercase">Rename All</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL ĐỔI KIỂU DỮ LIỆU -->
     <div x-show="changeTypeModal.open" x-cloak class="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden" @click.away="changeTypeModal.open = false">
             <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-blue-500">Change Column Type</div>
             <div class="p-6 space-y-4">
-                <div class="text-xs text-zinc-500">Change type for column: <span class="text-white font-mono" x-text="changeTypeModal.prop"></span></div>
+                <div class="text-xs text-zinc-500">Column: <span class="text-white font-mono" x-text="changeTypeModal.prop"></span></div>
                 <select x-model="changeTypeModal.newType" class="g-input !h-12">
                     <option value="string">String</option>
                     <option value="number">Number</option>
                     <option value="boolean">Boolean</option>
                 </select>
-                <div class="bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg text-[11px] text-blue-400 italic">
-                    Note: Values will be converted automatically if possible.
-                </div>
+                <div class="bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg text-[11px] text-blue-400 italic">Values will be converted automatically.</div>
             </div>
             <div class="px-6 py-4 border-t border-zinc-900 flex justify-end gap-3">
                 <button @click="changeTypeModal.open = false" class="px-4 text-xs font-bold text-zinc-500">CANCEL</button>
@@ -334,6 +351,7 @@
                 },
                 addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
                 changeTypeModal: { open: false, prop: '', group: null, newType: 'string' },
+                renamePropModal: { open: false, oldName: '', group: null, newName: '' },
                 importModal: { open: false, text: '' },
                 multilineModal: { open: false, file: null, prop: '', text: '' },
 
@@ -407,6 +425,28 @@
                     this.markDirty(file);
                 },
 
+                // FEATURE: RENAME PROPERTY
+                openRenamePropModal(prop, groupFiles) {
+                    this.renamePropModal = { open: true, oldName: prop, group: groupFiles, newName: prop };
+                },
+                confirmRenameProperty() {
+                    const { oldName, newName, group } = this.renamePropModal;
+                    if (!newName || oldName === newName) return;
+                    group.forEach(f => {
+                        if (f.data.hasOwnProperty(oldName)) {
+                            f.data[newName] = f.data[oldName];
+                            delete f.data[oldName];
+                            const t = this.originalTypes.get(f.id);
+                            if (t && t[oldName]) {
+                                t[newName] = t[oldName];
+                                delete t[oldName];
+                            }
+                            this.markDirty(f);
+                        }
+                    });
+                    this.renamePropModal.open = false;
+                },
+
                 // FEATURE: CHANGE COLUMN TYPE
                 openChangeTypeModal(prop, groupFiles) {
                     const firstFile = groupFiles[0];
@@ -420,7 +460,6 @@
                         if (newType === 'number') val = (val === true) ? 1 : (val === false ? 0 : (Number(val) || 0));
                         else if (newType === 'boolean') val = !!val;
                         else val = String(val);
-                        
                         f.data[prop] = val;
                         const t = this.originalTypes.get(f.id);
                         if (t) t[prop] = newType;
@@ -484,8 +523,6 @@
                     const v = file.data[prop]; 
                     const t = this.originalTypes.get(file.id);
                     const hint = this.getHint(file, prop);
-                    
-                    // Nếu là Number mà chứa String không phải số -> Error (Đỏ)
                     if (t && t[prop] === 'number' && isNaN(v) && v !== "") return true;
                     if (hint && hint.type === 'enum' && v === null) return true;
                     return false;
@@ -493,7 +530,6 @@
                 hasWarning(file, prop) {
                     if (file.type !== 'tres') return false;
                     const v = file.data[prop];
-                    // Nếu rỗng trong .tres -> Warning (Vàng)
                     return (v === "" || v === null || v === undefined);
                 },
 
