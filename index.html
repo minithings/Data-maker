@@ -1,90 +1,254 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
-    <title>Database Maker v4.1 - Pro Max Workflow</title>
+    <title>Database Maker v1.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
     <style>
-        :root { --bg-main: #09090b; --bg-side: #09090b; --bg-panel: #121217; --bg-input: #000000; --accent: #3b82f6; --border: #27272a; --text-main: #f4f4f5; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow: hidden; letter-spacing: -0.01em; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
-        .g-table-row td { height: 58px; vertical-align: middle; border-bottom: 1px solid var(--border); }
-        .g-input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0 12px; border-radius: 8px; font-size: 13px; outline: none; width: 100%; height: 38px; transition: all 0.2s; }
-        .g-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
-        .input-error { border-color: #ef4444 !important; background-color: rgba(239, 68, 68, 0.05) !important; color: #f87171 !important; }
-        .input-warning { border-color: #f59e0b !important; background-color: rgba(245, 158, 11, 0.05) !important; color: #fbbf24 !important; }
-        .sidebar-active { background: rgba(59, 130, 246, 0.1); color: #60a5fa !important; }
-        .data-panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
-        [x-cloak] { display: none !important; }
-        .btn-action { font-size: 11px; padding: 6px 14px; border-radius: 8px; background: #18181b; border: 1px solid #27272a; color: #a1a1aa; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
-        .btn-action:hover { background: #27272a; color: white; }
-        .btn-primary { background: #2563eb; color: white; border: none; }
-        .btn-primary:hover { background: #3b82f6; }
-        .dirty-row { border-left: 3px solid #f59e0b !important; }
-        .col-id { width: 220px; min-width: 220px; position: sticky; left: 0; z-index: 20; background: var(--bg-panel); border-right: 1px solid var(--border); }
-        .type-number { color: #60a5fa !important; font-family: 'JetBrains Mono', monospace; }
-        .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-2px, 0, 0); } 40%, 60% { transform: translate3d(2px, 0, 0); } }
-        aside { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s; }
-        .grab-scroll { cursor: grab; user-select: none; }
-        .grab-scroll:active { cursor: grabbing; }
+        :root {
+            --bg-main: #09090b;
+            --bg-side: #09090b;
+            --bg-panel: #121217;
+            --bg-input: #000000;
+            --accent: #3b82f6;
+            --border: #27272a;
+            --text-main: #f4f4f5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 10px;
+        }
+
+        .g-table-row td {
+            height: 58px;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .g-input {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            width: 100%;
+            height: 38px;
+            transition: all 0.2s;
+        }
+
+        .g-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-error {
+            border-color: #ef4444 !important;
+            background-color: rgba(239, 68, 68, 0.05) !important;
+            color: #f87171 !important;
+        }
+
+        .input-warning {
+            border-color: #f59e0b !important;
+            background-color: rgba(245, 158, 11, 0.05) !important;
+            color: #fbbf24 !important;
+        }
+
+        .sidebar-active {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa !important;
+        }
+
+        .data-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        .btn-action {
+            font-size: 11px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: #18181b;
+            border: 1px solid #27272a;
+            color: #a1a1aa;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .btn-action:hover {
+            background: #27272a;
+            color: white;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #3b82f6;
+        }
+
+        .dirty-row {
+            border-left: 3px solid #f59e0b !important;
+        }
+
+        .col-id {
+            width: 220px;
+            min-width: 220px;
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+        }
+
+        .type-number {
+            color: #60a5fa !important;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .shake-error {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-2px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(2px, 0, 0);
+            }
+        }
+
+        aside {
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+        }
+
+        .grab-scroll {
+            cursor: grab;
+            user-select: none;
+        }
+
+        .grab-scroll:active {
+            cursor: grabbing;
+        }
     </style>
 </head>
 
 <body x-data="editor()" @keydown.window.prevent.ctrl.s="saveDirtyFiles()" class="h-screen flex flex-col">
 
-    <div x-show="isSaving" x-cloak class="fixed inset-0 bg-black/80 z-[200] flex flex-col items-center justify-center backdrop-blur-sm font-mono text-xs">
+    <div x-show="isSaving" x-cloak
+        class="fixed inset-0 bg-black/80 z-[200] flex flex-col items-center justify-center backdrop-blur-sm font-mono text-xs">
         <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
         <p class="mt-4 text-zinc-400 uppercase tracking-widest">Processing...</p>
     </div>
 
     <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30">
         <div class="flex items-center gap-4">
-            <button @click="sidebarOpen = !sidebarOpen" class="text-zinc-500 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-900">
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="text-zinc-500 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-900">
                 <i class="fa-solid" :class="sidebarOpen ? 'fa-indent' : 'fa-bars'"></i>
             </button>
-            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V4.1 Final</span></h1>
-            <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i> Open</button>
-            <button @click="reloadProject()" class="btn-action" :disabled="!rootHandle" :class="!rootHandle && 'opacity-20'"><i class="fa-solid fa-rotate text-green-500"></i> Reload</button>
+            <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span
+                    class="text-blue-500 font-black">V1.0</span></h1>
+            <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i>
+                Open</button>
+            <button @click="reloadProject()" class="btn-action" :disabled="!rootHandle"
+                :class="!rootHandle && 'opacity-20'"><i class="fa-solid fa-rotate text-green-500"></i> Reload</button>
             <div class="h-4 w-[1px] bg-zinc-800 mx-1"></div>
-            <button @click="exportAllData()" class="btn-action"><i class="fa-solid fa-file-export text-orange-400"></i> Export</button>
+            <button @click="exportAllData()" class="btn-action"><i class="fa-solid fa-file-export text-orange-400"></i>
+                Export</button>
             <div class="flex items-center bg-zinc-900 rounded-lg p-0.5 border border-zinc-800">
-                <button @click="importData()" class="btn-action !border-none !bg-transparent px-3" title="Import from File"><i class="fa-solid fa-file-import text-green-400"></i></button>
+                <button @click="importData()" class="btn-action !border-none !bg-transparent px-3"
+                    title="Import from File"><i class="fa-solid fa-file-import text-green-400"></i></button>
                 <div class="w-[1px] h-3 bg-zinc-800"></div>
-                <button @click="importModal.open = true" class="btn-action !border-none !bg-transparent px-3" title="Paste JSON string"><i class="fa-solid fa-paste text-blue-400"></i> Paste JSON</button>
+                <button @click="importModal.open = true" class="btn-action !border-none !bg-transparent px-3"
+                    title="Paste JSON string"><i class="fa-solid fa-paste text-blue-400"></i> Paste JSON</button>
             </div>
         </div>
         <div class="flex items-center gap-4">
-            <button @click="errorSummary.open = true" class="text-[10px] font-bold text-red-500 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20" x-show="errorCount > 0">
+            <button @click="errorSummary.open = true"
+                class="text-[10px] font-bold text-red-500 bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/20"
+                x-show="errorCount > 0">
                 <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span x-text="errorCount"></span> ISSUES
             </button>
             <input type="text" x-model="searchQuery" placeholder="Search..." class="g-input !w-64">
-            <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0 || errorCount > 0" :class="(dirtyCount > 0 && errorCount === 0) ? 'btn-primary' : 'opacity-30'" class="btn-action px-8 uppercase tracking-widest">
+            <button @click="saveDirtyFiles()" :disabled="dirtyCount === 0 || errorCount > 0"
+                :class="(dirtyCount > 0 && errorCount === 0) ? 'btn-primary' : 'opacity-30'"
+                class="btn-action px-8 uppercase tracking-widest">
                 Sync (<span x-text="dirtyCount"></span>)
             </button>
         </div>
     </nav>
 
     <div class="flex-1 flex overflow-hidden">
-        <aside :class="sidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 pointer-events-none'" class="bg-zinc-950 flex flex-col border-r border-zinc-900 shrink-0 overflow-hidden">
+        <aside :class="sidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 pointer-events-none'"
+            class="bg-zinc-950 flex flex-col border-r border-zinc-900 shrink-0 overflow-hidden">
             <div class="p-4" x-show="rootHandle" x-cloak>
-                <button @click="openCreateModal()" class="btn-action btn-primary w-full justify-center"><i class="fa-solid fa-plus-circle"></i> New Resource</button>
+                <button @click="openCreateModal()" class="btn-action btn-primary w-full justify-center"><i
+                        class="fa-solid fa-plus-circle"></i> New Resource</button>
             </div>
             <div class="flex-1 overflow-y-auto custom-scrollbar border-t border-zinc-900">
                 <template x-for="folder in folders" :key="folder.fullPath">
-                    <div @click="activeFolder = folder.fullPath; searchQuery = ''" 
-                         :style="'padding-left: ' + (folder.level * 12 + 16) + 'px'" 
-                         :class="activeFolder === folder.fullPath && !searchQuery ? 'sidebar-active' : 'text-zinc-500 hover:text-zinc-300'" 
-                         class="py-2.5 px-3 cursor-pointer text-[13px] font-medium truncate flex items-center justify-between group transition-colors">
+                    <div @click="activeFolder = folder.fullPath; searchQuery = ''"
+                        :style="'padding-left: ' + (folder.level * 12 + 16) + 'px'"
+                        :class="activeFolder === folder.fullPath && !searchQuery ? 'sidebar-active' : 'text-zinc-500 hover:text-zinc-300'"
+                        class="py-2.5 px-3 cursor-pointer text-[13px] font-medium truncate flex items-center justify-between group transition-colors">
                         <div class="flex items-center gap-2 overflow-hidden">
-                            <i class="fa-solid fa-folder text-[11px] opacity-40"></i> 
+                            <i class="fa-solid fa-folder text-[11px] opacity-40"></i>
                             <span class="truncate" x-text="folder.name"></span>
                         </div>
-                        <span x-show="getFolderErrorCount(folder.fullPath) > 0" class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center" x-text="getFolderErrorCount(folder.fullPath)"></span>
+                        <span x-show="getFolderErrorCount(folder.fullPath) > 0"
+                            class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center"
+                            x-text="getFolderErrorCount(folder.fullPath)"></span>
                     </div>
                 </template>
             </div>
@@ -92,30 +256,47 @@
 
         <main class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
             <template x-for="(groupFiles, scriptName) in groupedFiles" :key="scriptName">
-                <div class="data-panel shadow-2xl" x-data="{ isDown: false, startX: 0, scrollLeft: 0 }" @mouseup="isDown = false" @mouseleave="isDown = false" @mousemove="if(!isDown) return; $event.preventDefault(); const x = $event.pageX - startX; $refs.scrollContainer.scrollLeft = scrollLeft - x;">
-                    <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between grab-scroll" @mousedown="if($event.target.closest('button, input')) return; isDown = true; startX = $event.pageX; scrollLeft = $refs.scrollContainer.scrollLeft;">
+                <div class="data-panel shadow-2xl" x-data="{ isDown: false, startX: 0, scrollLeft: 0 }"
+                    @mouseup="isDown = false" @mouseleave="isDown = false"
+                    @mousemove="if(!isDown) return; $event.preventDefault(); const x = $event.pageX - startX; $refs.scrollContainer.scrollLeft = scrollLeft - x;">
+                    <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between grab-scroll"
+                        @mousedown="if($event.target.closest('button, input')) return; isDown = true; startX = $event.pageX; scrollLeft = $refs.scrollContainer.scrollLeft;">
                         <div class="flex items-center gap-4">
                             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400" x-text="scriptName"></span>
-                            <button @click="addNewEntry(groupFiles, scriptName)" class="btn-action !py-1 !px-3 hover:text-blue-400"><i class="fa-solid fa-plus"></i> Entry</button>
-                            <button x-show="groupFiles[0].type !== 'tres'" @click="openAddPropModal(groupFiles)" class="btn-action !py-1 !px-3 hover:text-green-400 border-green-900/20"><i class="fa-solid fa-table-columns"></i> Column</button>
+                            <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400"
+                                x-text="scriptName"></span>
+                            <button @click="addNewEntry(groupFiles, scriptName)"
+                                class="btn-action !py-1 !px-3 hover:text-blue-400"><i class="fa-solid fa-plus"></i>
+                                Entry</button>
+                            <button x-show="groupFiles[0].type !== 'tres'" @click="openAddPropModal(groupFiles)"
+                                class="btn-action !py-1 !px-3 hover:text-green-400 border-green-900/20"><i
+                                    class="fa-solid fa-table-columns"></i> Column</button>
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto custom-scrollbar grab-scroll" x-ref="scrollContainer" @mousedown="if($event.target.closest('button, input, select')) return; isDown = true; startX = $event.pageX; scrollLeft = $refs.scrollContainer.scrollLeft;">
+                    <div class="overflow-x-auto custom-scrollbar grab-scroll" x-ref="scrollContainer"
+                        @mousedown="if($event.target.closest('button, input, select')) return; isDown = true; startX = $event.pageX; scrollLeft = $refs.scrollContainer.scrollLeft;">
                         <table class="w-full text-left border-separate border-spacing-0">
                             <thead>
                                 <tr class="bg-zinc-900/20">
-                                    <th class="px-6 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-500 uppercase col-id">Identifier</th>
+                                    <th
+                                        class="px-6 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-500 uppercase col-id">
+                                        Identifier</th>
                                     <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
-                                        <th class="px-4 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-600 uppercase">
+                                        <th
+                                            class="px-4 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-600 uppercase">
                                             <div class="flex items-center gap-2 group/h">
                                                 <span x-text="prop" class="truncate max-w-[120px]"></span>
-                                                <div class="flex items-center opacity-0 group-hover/h:opacity-100 transition-all bg-zinc-900 rounded-md p-0.5 border border-zinc-800">
-                                                    <button @click="openRenamePropModal(prop, groupFiles)" class="w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors" title="Rename Property">
+                                                <div
+                                                    class="flex items-center opacity-0 group-hover/h:opacity-100 transition-all bg-zinc-900 rounded-md p-0.5 border border-zinc-800">
+                                                    <button @click="openRenamePropModal(prop, groupFiles)"
+                                                        class="w-7 h-7 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 rounded transition-colors"
+                                                        title="Rename Property">
                                                         <i class="fa-solid fa-pen-nib text-[12px]"></i>
                                                     </button>
-                                                    <button @click="openChangeTypeModal(prop, groupFiles)" class="w-7 h-7 flex items-center justify-center text-blue-500 hover:text-blue-300 hover:bg-zinc-800 rounded transition-colors" title="Change Data Type">
+                                                    <button @click="openChangeTypeModal(prop, groupFiles)"
+                                                        class="w-7 h-7 flex items-center justify-center text-blue-500 hover:text-blue-300 hover:bg-zinc-800 rounded transition-colors"
+                                                        title="Change Data Type">
                                                         <i class="fa-solid fa-gear text-[14px]"></i>
                                                     </button>
                                                 </div>
@@ -130,8 +311,11 @@
                                     <tr class="g-table-row group transition-all" :class="file.dirty && 'dirty-row'">
                                         <td class="px-6 col-id">
                                             <div class="flex items-center justify-between group/id">
-                                                <span class="text-[13px] font-semibold text-zinc-300 group-hover:text-white truncate" x-text="file.name"></span>
-                                                <button @click="renameEntry(file)" class="opacity-0 group-hover/id:opacity-100 p-1 text-zinc-600 hover:text-blue-500 transition-all">
+                                                <span
+                                                    class="text-[13px] font-semibold text-zinc-300 group-hover:text-white truncate"
+                                                    x-text="file.name"></span>
+                                                <button @click="renameEntry(file)"
+                                                    class="opacity-0 group-hover/id:opacity-100 p-1 text-zinc-600 hover:text-blue-500 transition-all">
                                                     <i class="fa-solid fa-pen-to-square text-[11px]"></i>
                                                 </button>
                                             </div>
@@ -141,29 +325,51 @@
                                                 <div class="min-w-[140px] flex items-center gap-1 group/field relative">
                                                     <template x-if="getFieldType(file, prop) === 'multiline'">
                                                         <div class="flex items-center gap-2 w-full">
-                                                            <input type="text" :value="file.data[prop]" readonly @click="openMultiline(file, prop)" class="g-input !h-8 cursor-pointer overflow-hidden truncate italic text-zinc-500" placeholder="Click to edit...">
-                                                            <button @click="openMultiline(file, prop)" class="text-blue-500 hover:text-blue-400"><i class="fa-solid fa-expand"></i></button>
+                                                            <input type="text" :value="file.data[prop]" readonly
+                                                                @click="openMultiline(file, prop)"
+                                                                class="g-input !h-8 cursor-pointer overflow-hidden truncate italic text-zinc-500"
+                                                                placeholder="Click to edit...">
+                                                            <button @click="openMultiline(file, prop)"
+                                                                class="text-blue-500 hover:text-blue-400"><i
+                                                                    class="fa-solid fa-expand"></i></button>
                                                         </div>
                                                     </template>
                                                     <template x-if="getFieldType(file, prop) === 'bool'">
-                                                        <button @click="file.data[prop] = !file.data[prop]; markDirty(file)" :class="file.data[prop] ? 'bg-blue-600' : 'bg-zinc-800'" class="w-9 h-5 rounded-full px-0.5 flex items-center transition-all">
-                                                            <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'" class="w-4 h-4 bg-white rounded-full transition-all"></div>
+                                                        <button
+                                                            @click="file.data[prop] = !file.data[prop]; markDirty(file)"
+                                                            :class="file.data[prop] ? 'bg-blue-600' : 'bg-zinc-800'"
+                                                            class="w-9 h-5 rounded-full px-0.5 flex items-center transition-all">
+                                                            <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'"
+                                                                class="w-4 h-4 bg-white rounded-full transition-all">
+                                                            </div>
                                                         </button>
                                                     </template>
-                                                    <template x-if="getFieldType(file, prop) === 'enum' || getFieldType(file, prop) === 'export_enum'">
-                                                        <select :value="file.data[prop]" @change="updateValue(file, prop, $event.target.value)" class="g-input !h-8 text-xs appearance-none cursor-pointer">
+                                                    <template
+                                                        x-if="getFieldType(file, prop) === 'enum' || getFieldType(file, prop) === 'export_enum'">
+                                                        <select :value="file.data[prop]"
+                                                            @change="updateValue(file, prop, $event.target.value)"
+                                                            class="g-input !h-8 text-xs appearance-none cursor-pointer">
                                                             <template x-for="(val, idx) in getHint(file, prop).options">
-                                                                <option :value="getFieldType(file, prop) === 'enum' ? idx : val" x-text="val" :selected="file.data[prop] == (getFieldType(file, prop) === 'enum' ? idx : val)"></option>
+                                                                <option
+                                                                    :value="getFieldType(file, prop) === 'enum' ? idx : val"
+                                                                    x-text="val"
+                                                                    :selected="file.data[prop] == (getFieldType(file, prop) === 'enum' ? idx : val)">
+                                                                </option>
                                                             </template>
                                                         </select>
                                                     </template>
-                                                    <template x-if="['bool', 'enum', 'export_enum', 'multiline'].indexOf(getFieldType(file, prop)) === -1">
+                                                    <template
+                                                        x-if="['bool', 'enum', 'export_enum', 'multiline'].indexOf(getFieldType(file, prop)) === -1">
                                                         <div class="relative w-full">
-                                                            <input type="text" :value="file.data[prop]" @input="updateValue(file, prop, $event.target.value)" 
-                                                                   :class="[hasIssue(file, prop) && 'input-error shake-error', !hasIssue(file, prop) && hasWarning(file, prop) && 'input-warning', typeof file.data[prop] === 'number' && 'type-number']"
-                                                                   class="g-input !h-8 focus:bg-zinc-950" placeholder="...">
-                                                            <div x-show="hasIssue(file, prop) || hasWarning(file, prop)" class="absolute -right-1.5 -top-1.5 z-10">
-                                                                <i class="fa-solid fa-circle-exclamation text-[10px] bg-zinc-950 rounded-full" :class="hasIssue(file, prop) ? 'text-red-500' : 'text-orange-400'"></i>
+                                                            <input type="text" :value="file.data[prop]"
+                                                                @input="updateValue(file, prop, $event.target.value)"
+                                                                :class="[hasIssue(file, prop) && 'input-error shake-error', !hasIssue(file, prop) && hasWarning(file, prop) && 'input-warning', typeof file.data[prop] === 'number' && 'type-number']"
+                                                                class="g-input !h-8 focus:bg-zinc-950"
+                                                                placeholder="...">
+                                                            <div x-show="hasIssue(file, prop) || hasWarning(file, prop)"
+                                                                class="absolute -right-1.5 -top-1.5 z-10">
+                                                                <i class="fa-solid fa-circle-exclamation text-[10px] bg-zinc-950 rounded-full"
+                                                                    :class="hasIssue(file, prop) ? 'text-red-500' : 'text-orange-400'"></i>
                                                             </div>
                                                         </div>
                                                     </template>
@@ -171,7 +377,9 @@
                                             </td>
                                         </template>
                                         <td class="px-2 text-center">
-                                            <button @click="deleteEntry(file)" class="text-zinc-700 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                                            <button @click="deleteEntry(file)"
+                                                class="text-zinc-700 hover:text-red-500 transition-colors"><i
+                                                    class="fa-solid fa-trash-can text-sm"></i></button>
                                         </td>
                                     </tr>
                                 </template>
@@ -183,80 +391,115 @@
         </main>
     </div>
 
-    <div x-show="renamePropModal.open" x-cloak class="fixed inset-0 z-[260] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden" @click.away="renamePropModal.open = false">
-            <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-orange-400">Rename Property</div>
+    <div x-show="renamePropModal.open" x-cloak
+        class="fixed inset-0 z-[260] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden"
+            @click.away="renamePropModal.open = false">
+            <div
+                class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-orange-400">
+                Rename Property</div>
             <div class="p-6 space-y-4">
-                <div class="text-xs text-zinc-500">Old name: <span class="text-white font-mono" x-text="renamePropModal.oldName"></span></div>
-                <input type="text" x-model="renamePropModal.newName" class="g-input !h-12 border-orange-900/30" placeholder="New Property Name">
+                <div class="text-xs text-zinc-500">Old name: <span class="text-white font-mono"
+                        x-text="renamePropModal.oldName"></span></div>
+                <input type="text" x-model="renamePropModal.newName" class="g-input !h-12 border-orange-900/30"
+                    placeholder="New Property Name">
             </div>
             <div class="px-6 py-4 border-t border-zinc-900 flex justify-end gap-3">
-                <button @click="renamePropModal.open = false" class="px-4 text-xs font-bold text-zinc-500">CANCEL</button>
-                <button @click="confirmRenameProperty()" class="btn-action !bg-orange-600 text-white border-none !px-6 uppercase">Rename All</button>
+                <button @click="renamePropModal.open = false"
+                    class="px-4 text-xs font-bold text-zinc-500">CANCEL</button>
+                <button @click="confirmRenameProperty()"
+                    class="btn-action !bg-orange-600 text-white border-none !px-6 uppercase">Rename All</button>
             </div>
         </div>
     </div>
 
-    <div x-show="changeTypeModal.open" x-cloak class="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden" @click.away="changeTypeModal.open = false">
-            <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-blue-500">Change Column Type</div>
+    <div x-show="changeTypeModal.open" x-cloak
+        class="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden"
+            @click.away="changeTypeModal.open = false">
+            <div
+                class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-blue-500">
+                Change Column Type</div>
             <div class="p-6 space-y-4">
-                <div class="text-xs text-zinc-500">Column: <span class="text-white font-mono" x-text="changeTypeModal.prop"></span></div>
+                <div class="text-xs text-zinc-500">Column: <span class="text-white font-mono"
+                        x-text="changeTypeModal.prop"></span></div>
                 <select x-model="changeTypeModal.newType" class="g-input !h-12">
                     <option value="string">String</option>
                     <option value="number">Number</option>
                     <option value="boolean">Boolean</option>
                 </select>
-                <div class="bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg text-[11px] text-blue-400 italic">Values will be converted automatically.</div>
+                <div class="bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg text-[11px] text-blue-400 italic">
+                    Values will be converted automatically.</div>
             </div>
             <div class="px-6 py-4 border-t border-zinc-900 flex justify-end gap-3">
-                <button @click="changeTypeModal.open = false" class="px-4 text-xs font-bold text-zinc-500">CANCEL</button>
+                <button @click="changeTypeModal.open = false"
+                    class="px-4 text-xs font-bold text-zinc-500">CANCEL</button>
                 <button @click="confirmChangeType()" class="btn-action btn-primary !px-6 uppercase">Convert All</button>
             </div>
         </div>
     </div>
 
-    <div x-show="multilineModal.open" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-3xl rounded-2xl border border-zinc-800 shadow-2xl flex flex-col overflow-hidden h-[80vh]">
+    <div x-show="multilineModal.open" x-cloak
+        class="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+        <div
+            class="bg-zinc-950 w-full max-w-3xl rounded-2xl border border-zinc-800 shadow-2xl flex flex-col overflow-hidden h-[80vh]">
             <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 flex justify-between items-center">
-                <span class="text-[10px] font-bold uppercase tracking-widest text-blue-500">Edit Long Text Content</span>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-blue-500">Edit Long Text
+                    Content</span>
                 <span class="text-[10px] text-zinc-500 font-mono" x-text="multilineModal.prop"></span>
             </div>
-            <textarea x-model="multilineModal.text" class="flex-1 bg-zinc-950 p-6 text-[13px] text-zinc-300 outline-none resize-none font-mono leading-relaxed" placeholder="Write content here..."></textarea>
+            <textarea x-model="multilineModal.text"
+                class="flex-1 bg-zinc-950 p-6 text-[13px] text-zinc-300 outline-none resize-none font-mono leading-relaxed"
+                placeholder="Write content here..."></textarea>
             <div class="px-6 py-4 border-t border-zinc-900 bg-zinc-900/10 flex justify-end gap-3">
-                <button @click="multilineModal.open = false" class="text-xs font-bold text-zinc-500 uppercase px-4">Close</button>
+                <button @click="multilineModal.open = false"
+                    class="text-xs font-bold text-zinc-500 uppercase px-4">Close</button>
                 <button @click="saveMultiline()" class="btn-action btn-primary !px-8">Update Content</button>
             </div>
         </div>
     </div>
 
-    <div x-show="createModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-lg rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl" @click.away="createModal.open = false">
+    <div x-show="createModal.open" x-cloak
+        class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-lg rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl"
+            @click.away="createModal.open = false">
             <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest">Create New Resource</h3>
-            <input type="text" x-model="createModal.name" class="g-input !h-12 border-zinc-700" placeholder="Resource Filename">
+            <input type="text" x-model="createModal.name" class="g-input !h-12 border-zinc-700"
+                placeholder="Resource Filename">
             <div class="grid grid-cols-2 gap-4">
-                <button @click="createModal.ext = '.tres'" :class="createModal.ext === '.tres' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.tres</button>
-                <button @click="createModal.ext = '.json'" :class="createModal.ext === '.json' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'" class="border p-4 rounded-xl transition-all font-bold">.json</button>
+                <button @click="createModal.ext = '.tres'"
+                    :class="createModal.ext === '.tres' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'"
+                    class="border p-4 rounded-xl transition-all font-bold">.tres</button>
+                <button @click="createModal.ext = '.json'"
+                    :class="createModal.ext === '.json' ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-zinc-800'"
+                    class="border p-4 rounded-xl transition-all font-bold">.json</button>
             </div>
             <div x-show="createModal.ext === '.json'" class="space-y-3 pt-2 border-t border-zinc-900">
-                <label class="text-[10px] font-bold text-zinc-600 uppercase italic">Define Initial Object Schema:</label>
+                <label class="text-[10px] font-bold text-zinc-600 uppercase italic">Define Initial Object
+                    Schema:</label>
                 <div class="flex gap-2">
-                    <input type="text" x-model="createModal.jsonNewPropName" class="g-input flex-1" placeholder="Prop Name">
+                    <input type="text" x-model="createModal.jsonNewPropName" class="g-input flex-1"
+                        placeholder="Prop Name">
                     <select x-model="createModal.jsonNewPropType" class="g-input !w-24">
                         <option value="string">String</option>
                         <option value="number">Number</option>
                         <option value="boolean">Bool</option>
                     </select>
-                    <button @click="addJsonPropToSchema()" class="btn-action !bg-blue-600 text-white border-none"><i class="fa-solid fa-plus"></i></button>
+                    <button @click="addJsonPropToSchema()" class="btn-action !bg-blue-600 text-white border-none"><i
+                            class="fa-solid fa-plus"></i></button>
                 </div>
-                <div class="space-y-1 max-h-32 overflow-y-auto custom-scrollbar bg-black/20 rounded-lg p-2 border border-zinc-900">
+                <div
+                    class="space-y-1 max-h-32 overflow-y-auto custom-scrollbar bg-black/20 rounded-lg p-2 border border-zinc-900">
                     <template x-for="(p, index) in createModal.jsonSchema" :key="index">
-                        <div class="flex items-center justify-between bg-zinc-900/50 px-3 py-1.5 rounded border border-zinc-800 group">
+                        <div
+                            class="flex items-center justify-between bg-zinc-900/50 px-3 py-1.5 rounded border border-zinc-800 group">
                             <div class="flex items-center gap-2">
                                 <span class="text-xs font-mono text-blue-400" x-text="p.name"></span>
-                                <span class="text-[9px] px-1.5 bg-zinc-800 text-zinc-500 rounded uppercase" x-text="p.type"></span>
+                                <span class="text-[9px] px-1.5 bg-zinc-800 text-zinc-500 rounded uppercase"
+                                    x-text="p.type"></span>
                             </div>
-                            <button @click="createModal.jsonSchema.splice(index, 1)" class="text-zinc-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                            <button @click="createModal.jsonSchema.splice(index, 1)"
+                                class="text-zinc-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
                         </div>
                     </template>
                 </div>
@@ -266,22 +509,30 @@
                 <input type="text" x-model="createModal.cloneSearch" class="g-input" placeholder="Search templates...">
                 <div class="max-h-32 overflow-y-auto custom-scrollbar border border-zinc-800 rounded-lg bg-black/30">
                     <template x-for="tpl in filteredTemplates" :key="tpl.id">
-                        <div @click="createModal.targetClone = tpl.id" :class="createModal.targetClone === tpl.id ? 'bg-blue-600/30 text-blue-400' : 'hover:bg-zinc-900 text-zinc-500'" class="px-3 py-2 text-xs cursor-pointer border-b border-zinc-900/50 flex justify-between items-center">
-                            <span x-text="tpl.name"></span><span class="text-[9px] opacity-30" x-text="tpl.scriptName"></span>
+                        <div @click="createModal.targetClone = tpl.id"
+                            :class="createModal.targetClone === tpl.id ? 'bg-blue-600/30 text-blue-400' : 'hover:bg-zinc-900 text-zinc-500'"
+                            class="px-3 py-2 text-xs cursor-pointer border-b border-zinc-900/50 flex justify-between items-center">
+                            <span x-text="tpl.name"></span><span class="text-[9px] opacity-30"
+                                x-text="tpl.scriptName"></span>
                         </div>
                     </template>
                 </div>
             </div>
             <div class="flex justify-end gap-3 pt-4 border-t border-zinc-900">
-                <button @click="createModal.open = false" class="px-4 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
-                <button @click="confirmCreateFile()" class="btn-action btn-primary !px-8">Create</button>
+                <button @click="createModal.open = false"
+                    class="px-4 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
+                <button @click="confirmCreateFile()" class="btn-action btn-primary !px-8 uppercase">Create</button>
             </div>
         </div>
     </div>
 
-    <div x-show="addPropModal.open" x-cloak class="fixed inset-0 z-[160] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden" @click.away="addPropModal.open = false">
-            <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-blue-500">Configure New Column</div>
+    <div x-show="addPropModal.open" x-cloak
+        class="fixed inset-0 z-[160] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden"
+            @click.away="addPropModal.open = false">
+            <div
+                class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-blue-500">
+                Configure New Column</div>
             <div class="p-6 space-y-4">
                 <input type="text" x-model="addPropModal.name" class="g-input !h-12" placeholder="Property Name">
                 <select x-model="addPropModal.type" class="g-input !h-12">
@@ -298,30 +549,43 @@
         </div>
     </div>
 
-    <div x-show="importModal.open" x-cloak class="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 p-6 shadow-2xl" @click.away="importModal.open = false">
+    <div x-show="importModal.open" x-cloak
+        class="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 p-6 shadow-2xl"
+            @click.away="importModal.open = false">
             <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest mb-4">Paste Database JSON</h3>
-            <textarea x-model="importModal.text" class="g-input !h-80 p-4 font-mono text-[11px] leading-relaxed resize-none" placeholder='{"path/to/file": {"key": "val"}}'></textarea>
+            <textarea x-model="importModal.text"
+                class="g-input !h-80 p-4 font-mono text-[11px] leading-relaxed resize-none"
+                placeholder='{"path/to/file": {"key": "val"}}'></textarea>
             <div class="flex justify-end gap-3 mt-4">
-                <button @click="importModal.open = false" class="px-4 py-2 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
-                <button @click="processImport(importModal.text); importModal.open = false" class="btn-action btn-primary !px-8">Import</button>
+                <button @click="importModal.open = false"
+                    class="px-4 py-2 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
+                <button @click="processImport(importModal.text); importModal.open = false"
+                    class="btn-action btn-primary !px-8">Import</button>
             </div>
         </div>
     </div>
 
-    <div x-show="errorSummary.open" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
-        <div class="bg-zinc-950 w-full max-w-xl rounded-2xl border border-zinc-800 flex flex-col shadow-2xl max-h-[70vh]" @click.away="errorSummary.open = false">
+    <div x-show="errorSummary.open" x-cloak
+        class="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-xl rounded-2xl border border-zinc-800 flex flex-col shadow-2xl max-h-[70vh]"
+            @click.away="errorSummary.open = false">
             <div class="px-6 py-4 border-b border-zinc-900 flex justify-between items-center bg-red-900/10">
                 <span class="text-xs font-bold uppercase text-red-500">Validation Errors</span>
-                <button @click="errorSummary.open = false" class="text-zinc-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
+                <button @click="errorSummary.open = false" class="text-zinc-500 hover:text-white"><i
+                        class="fa-solid fa-times"></i></button>
             </div>
             <div class="p-4 overflow-y-auto custom-scrollbar">
                 <template x-for="err in errorList" :key="err.id + err.prop">
-                    <div @click="goToError(err)" class="bg-zinc-900/50 border border-zinc-800 p-3 rounded-lg mb-2 cursor-pointer hover:border-blue-500/50">
+                    <div @click="goToError(err)"
+                        class="bg-zinc-900/50 border border-zinc-800 p-3 rounded-lg mb-2 cursor-pointer hover:border-blue-500/50">
                         <div class="flex justify-between text-[12px] font-bold text-zinc-200">
-                            <span x-text="err.fileName"></span><span class="text-red-400 text-[10px]" x-text="err.issueType"></span>
+                            <span x-text="err.fileName"></span><span class="text-red-400 text-[10px]"
+                                x-text="err.issueType"></span>
                         </div>
-                        <div class="text-[11px] text-zinc-500">Column: <span class="text-zinc-300" x-text="err.prop"></span> - Val: <span class="text-red-400" x-text="err.value"></span></div>
+                        <div class="text-[11px] text-zinc-500">Column: <span class="text-zinc-300"
+                                x-text="err.prop"></span> - Val: <span class="text-red-400" x-text="err.value"></span>
+                        </div>
                     </div>
                 </template>
             </div>
@@ -333,12 +597,12 @@
             return {
                 allFiles: [], folders: [], scripts: {}, classMap: {}, activeFolder: '', searchQuery: '',
                 rootHandle: null, dirtyCount: 0, isSaving: false,
-                sidebarOpen: true, 
+                sidebarOpen: true,
                 blacklist: ['script', 'uid', 'format', 'load_steps', 'atlas', 'texture', 'sprite_frames', 'icon'],
                 godotTypes: ['ExtResource', 'SubResource', 'Rect2', 'Vector2', 'Vector3', 'Color', 'Transform2D'],
                 originalTypes: new Map(),
                 errorSummary: { open: false },
-                createModal: { 
+                createModal: {
                     open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '',
                     jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string'
                 },
@@ -478,7 +742,7 @@
                             const newPath = file.folder === 'root' ? newFileName : file.folder + '/' + newFileName;
                             if (this.allFiles.find(f => f.path === newPath)) { alert("File already exists!"); return; }
                             this.isSaving = true;
-                            if (file.handle.move) { await file.handle.move(newFileName); } 
+                            if (file.handle.move) { await file.handle.move(newFileName); }
                             else {
                                 let dir = this.rootHandle;
                                 if (file.folder !== "root") for (let p of file.folder.split('/')) dir = await dir.getDirectoryHandle(p);
@@ -508,9 +772,9 @@
                     group.forEach(f => { if (!(name in f.data)) { f.data[name] = val; this.markDirty(f); this.recordTypes(f.id, f.data); } });
                     this.addPropModal.open = false;
                 },
-                
+
                 hasIssue(file, prop) {
-                    const v = file.data[prop]; 
+                    const v = file.data[prop];
                     const t = this.originalTypes.get(file.id);
                     const hint = this.getHint(file, prop);
                     if (t && t[prop] === 'number' && isNaN(v) && v !== "") return true;
@@ -545,10 +809,12 @@
                                         }
                                     } return line;
                                 });
-                                Object.keys(first.data).forEach(k => { if (!up.has(k)) { 
-                                    const v = first.data[k]; let vStr = (typeof v === 'string') ? `"${v}"` : v;
-                                    nl.push(`${k} = ${vStr}`);
-                                }});
+                                Object.keys(first.data).forEach(k => {
+                                    if (!up.has(k)) {
+                                        const v = first.data[k]; let vStr = (typeof v === 'string') ? `"${v}"` : v;
+                                        nl.push(`${k} = ${vStr}`);
+                                    }
+                                });
                                 await w.write(first.rawHeader + "\n" + nl.join('\n')); first.rawBody = nl.join('\n');
                             } else {
                                 const allInPath = this.allFiles.filter(f => f.path === p);
@@ -558,15 +824,15 @@
                             await w.close(); entries.forEach(e => e.dirty = false);
                         }
                         this.dirtyCount = 0;
-                    } catch(e) { alert("Save failed!"); } finally { this.isSaving = false; }
+                    } catch (e) { alert("Save failed!"); } finally { this.isSaving = false; }
                 },
-                openCreateModal() { 
-                    this.createModal = { 
+                openCreateModal() {
+                    this.createModal = {
                         open: true, name: '', ext: '.tres', targetClone: '', cloneSearch: '',
                         jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string'
-                    }; 
+                    };
                 },
-                async confirmCreateFile() { 
+                async confirmCreateFile() {
                     if (!this.createModal.name) return;
                     let initialData = {};
                     if (this.createModal.ext === '.json') {
@@ -577,9 +843,9 @@
                         });
                         await this.internalCreate(this.createModal.name, this.createModal.ext, null, initialData);
                     } else {
-                        await this.internalCreate(this.createModal.name, this.createModal.ext, this.createModal.targetClone); 
+                        await this.internalCreate(this.createModal.name, this.createModal.ext, this.createModal.targetClone);
                     }
-                    this.createModal.open = false; 
+                    this.createModal.open = false;
                 },
                 async internalCreate(name, ext, templateId = null, initialData = null) {
                     const fullName = name.endsWith(ext) ? name : name + ext;
@@ -597,7 +863,7 @@
                         const newFile = { id: eid, name: defaultEntryName, path, folder: this.activeFolder, handle, data: JSON.parse(JSON.stringify(data)), type: 'json', scriptName: fullName, dirty: false };
                         this.allFiles.push(newFile); this.recordTypes(eid, data); this.buildTree(); return;
                     }
-                    const newFile = { id: path, name: fullName, path, folder: this.activeFolder, handle, data, type: ext.replace('.',''), scriptName: sName, dirty: true, rawHeader: header, rawBody: body };
+                    const newFile = { id: path, name: fullName, path, folder: this.activeFolder, handle, data, type: ext.replace('.', ''), scriptName: sName, dirty: true, rawHeader: header, rawBody: body };
                     this.allFiles.push(newFile); this.recordTypes(path, data); this.dirtyCount++; this.buildTree();
                 },
                 parseGDScript(c, f) {
@@ -638,13 +904,13 @@
                     while (cur && s < 10) { let si = this.scripts[cur] || this.scripts[this.classMap[cur]]; if (!si) break; h = { ...si.hints, ...h }; cur = si.parent; s++; }
                     return h[p] || { type: 'default' };
                 },
-                getFieldType(f, p) { 
-                    const h = this.getHint(f, p); 
+                getFieldType(f, p) {
+                    const h = this.getHint(f, p);
                     if (h.type !== 'default') return h.type;
                     const typeInMeta = this.originalTypes.get(f.id)?.[p];
                     if (typeInMeta === 'number') return 'number';
                     if (typeInMeta === 'boolean') return 'bool';
-                    return (typeof f.data[p] === 'boolean' ? 'bool' : 'default'); 
+                    return (typeof f.data[p] === 'boolean' ? 'bool' : 'default');
                 },
                 getFieldsForGroup(s, f) { let k = new Set(); f.forEach(x => Object.keys(x.data).forEach(y => k.add(y))); return Array.from(k); },
                 get groupedFiles() {
@@ -672,7 +938,7 @@
                 },
                 exportAllData() {
                     const b = {}; this.allFiles.forEach(f => b[f.id] = f.data);
-                    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(b, null, 2)], {type:'application/json'}));
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(b, null, 2)], { type: 'application/json' }));
                     a.download = `database_export.json`; a.click();
                 },
                 async importData() {
@@ -692,4 +958,5 @@
         }
     </script>
 </body>
+
 </html>
