@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Database Maker v1.0</title>
+    <title>Database Maker v1.1 - Optimized</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -188,7 +188,7 @@
     <div x-show="isSaving" x-cloak
         class="fixed inset-0 bg-black/80 z-[200] flex flex-col items-center justify-center backdrop-blur-sm font-mono text-xs">
         <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-        <p class="mt-4 text-zinc-400 uppercase tracking-widest">Processing...</p>
+        <p class="mt-4 text-zinc-400 uppercase tracking-widest">Processing (Scanning files)...</p>
     </div>
 
     <nav class="h-14 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between px-4 z-30">
@@ -198,7 +198,7 @@
                 <i class="fa-solid" :class="sidebarOpen ? 'fa-indent' : 'fa-bars'"></i>
             </button>
             <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span
-                    class="text-blue-500 font-black">V1.0</span></h1>
+                    class="text-blue-500 font-black">V1.1</span></h1>
 
             <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i>
                 Open</button>
@@ -395,6 +395,7 @@
     </div>
 
     <!-- MODALS -->
+    <!-- (Phần Modals giữ nguyên như cũ để đảm bảo tính năng) -->
     <div x-show="renamePropModal.open" x-cloak
         class="fixed inset-0 z-[260] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden"
@@ -605,6 +606,7 @@
                 blacklist: ['script', 'uid', 'format', 'load_steps', 'atlas', 'texture', 'sprite_frames', 'icon'],
                 godotTypes: ['ExtResource', 'SubResource', 'Rect2', 'Vector2', 'Vector3', 'Color', 'Transform2D'],
                 originalTypes: new Map(),
+                ignoredFolders: [], // Lưu danh sách folder từ file text
                 errorSummary: { open: false },
                 createModal: { open: false, name: '', ext: '.tres', targetClone: '', cloneSearch: '', jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string' },
                 addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
@@ -682,13 +684,34 @@
                 },
                 async loadProjectData() {
                     this.isSaving = true; this.allFiles = []; this.scripts = {}; this.classMap = {}; this.originalTypes.clear(); this.dirtyCount = 0;
-                    try { await this.scanDir(this.rootHandle, ""); this.buildTree(); } finally { this.isSaving = false; }
+                    this.ignoredFolders = [];
+                    try {
+                        // BƯỚC 1: Đọc file cấu hình loại trừ
+                        try {
+                            const ignoreHandle = await this.rootHandle.getFileHandle('.dbmakerignore');
+                            const ignoreFile = await ignoreHandle.getFile();
+                            const ignoreContent = await ignoreFile.text();
+                            this.ignoredFolders = ignoreContent.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+                        } catch (e) { this.ignoredFolders = []; }
+
+                        // BƯỚC 2: Quét thư mục
+                        await this.scanDir(this.rootHandle, ""); 
+                        this.buildTree(); 
+                    } finally { this.isSaving = false; }
                 },
                 async scanDir(handle, path) {
                     for await (const entry of handle.values()) {
                         const curPath = path + entry.name;
-                        if (entry.kind === 'directory') await this.scanDir(entry, curPath + "/");
+                        if (entry.kind === 'directory') {
+                            // LOẠI TRỪ: Bắt đầu bằng "." hoặc nằm trong list ignore
+                            if (entry.name.startsWith('.')) continue;
+                            if (this.ignoredFolders.includes(entry.name)) continue;
+                            
+                            await this.scanDir(entry, curPath + "/");
+                        }
                         else {
+                            if (entry.name === '.dbmakerignore') continue; // Không đọc file cấu hình
+
                             const file = await entry.getFile(); const content = await file.text();
                             if (entry.name.endsWith('.gd')) this.parseGDScript(content, entry.name);
                             else if (entry.name.endsWith('.tres')) {
@@ -755,7 +778,6 @@
                     this.folders = ps.sort().map(p => ({ name: p === "root" ? 'Resources' : p.split('/').pop(), fullPath: p, level: p === "root" ? 0 : p.split('/').filter(x => x).length }));
                     if (!this.activeFolder && this.folders.length > 0) this.activeFolder = this.folders[0].fullPath;
                 },
-                // Các hàm phụ trợ khác
                 parseGDScript(c, f) {
                     const hints = {}, enums = {}, classNameMatch = c.match(/class_name\s+(\w+)/);
                     if (classNameMatch) this.classMap[classNameMatch[1]] = f;
