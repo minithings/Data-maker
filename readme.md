@@ -1,22 +1,21 @@
-Đây là nội dung tệp **README.md** được thiết kế chuyên nghiệp, trình bày đầy đủ các tính năng kỹ thuật và hướng dẫn vận hành cho dự án **Database Maker v1.0** của bạn.
 
 ---
 
 # 🗃️ Database Maker v1.0
 
-**Database Maker** là một công cụ quản lý dữ liệu dựa trên web (Web-based GUI) mạnh mẽ, được thiết kế đặc biệt để giúp các nhà phát triển game (đặc biệt là Godot Engine) chỉnh sửa các tệp tin tài nguyên như `.tres` và `.json` dưới dạng bảng (spreadsheet) trực quan.
+**Database Maker** là một công cụ quản lý dữ liệu dựa trên web, được thiết kế đặc biệt để giúp chỉnh sửa các tệp tin tài nguyên như `.tres` và `.json` dưới dạng bảng (spreadsheet) trực quan.
 
 Thay vì chỉnh sửa từng file đơn lẻ, công cụ này gom nhóm các dữ liệu cùng loại, cho phép bạn quản lý hàng trăm đối tượng cùng lúc với trải nghiệm mượt mà như Excel nhưng dành riêng cho cấu trúc dữ liệu lập trình.
 
 ---
 
-## ✨ Tính năng nổi bật
+## ✨ Tính năng
 
-### 🚀 Tương tác File Hệ thống (FileSystem Access API)
+### 🚀 Tương tác File Hệ thống
 - **Chỉnh sửa trực tiếp:** Không cần upload/download. Mở thư mục dự án và lưu thay đổi trực tiếp vào ổ cứng.
-- **Ghi nhớ phiên làm việc:** Tự động lưu Handle của thư mục vào IndexedDB. Khi quay lại, bạn chỉ cần một cú click để "Restore" toàn bộ dự án mà không cần chọn lại đường dẫn.
+- **Ghi nhớ phiên làm việc:** Tự động lưu Handle. Khi quay lại, bạn chỉ cần một cú click để "Restore" toàn bộ dự án mà không cần chọn lại đường dẫn.
 
-### 🎮 Hỗ trợ Godot Engine tối ưu
+### 🎮 Hỗ trợ dữ liệu Godot 
 - **Phân tích Script (.gd):** Tự động đọc các file script để nhận diện kiểu dữ liệu:
     - `@export_multiline`: Hiển thị trình soạn thảo văn bản dài.
     - `@export_enum` hoặc `enum`: Hiển thị danh sách chọn (Dropdown).
