@@ -95,7 +95,9 @@
                             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
                             <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400" x-text="scriptName"></span>
                             <button @click="addNewEntry(groupFiles, scriptName)" class="btn-action !py-1 !px-3 hover:text-blue-400"><i class="fa-solid fa-plus"></i> Entry</button>
-                            <button @click="openAddPropModal(groupFiles)" class="btn-action !py-1 !px-3 hover:text-green-400 border-green-900/20"><i class="fa-solid fa-table-columns"></i> Column</button>
+                            
+                            <!-- ĐÃ ẨN NÚT COLUMN KHI LÀ FILE TRES -->
+                            <button x-show="groupFiles[0].type !== 'tres'" @click="openAddPropModal(groupFiles)" class="btn-action !py-1 !px-3 hover:text-green-400 border-green-900/20"><i class="fa-solid fa-table-columns"></i> Column</button>
                         </div>
                     </div>
 
@@ -173,7 +175,7 @@
         </main>
     </div>
 
-    <!-- MODAL: MULTILINE EDITOR -->
+    <!-- PHẦN CÒN LẠI GIỮ NGUYÊN ... -->
     <div x-show="multilineModal.open" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-3xl rounded-2xl border border-zinc-800 shadow-2xl flex flex-col overflow-hidden h-[80vh]">
             <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 flex justify-between items-center">
@@ -188,7 +190,6 @@
         </div>
     </div>
 
-    <!-- MODAL: CREATE (CLONE + SEARCH) -->
     <div x-show="createModal.open" x-cloak class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-lg rounded-2xl border border-zinc-800 p-6 space-y-4 shadow-2xl" @click.away="createModal.open = false">
             <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest">Create New Resource</h3>
@@ -215,7 +216,6 @@
         </div>
     </div>
 
-    <!-- MODAL: ADD COLUMN -->
     <div x-show="addPropModal.open" x-cloak class="fixed inset-0 z-[160] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden" @click.away="addPropModal.open = false">
             <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-blue-500">Configure New Column</div>
@@ -235,7 +235,6 @@
         </div>
     </div>
 
-    <!-- MODAL: PASTE JSON -->
     <div x-show="importModal.open" x-cloak class="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 p-6 shadow-2xl" @click.away="importModal.open = false">
             <h3 class="text-blue-500 font-bold uppercase text-[10px] tracking-widest mb-4">Paste Database JSON</h3>
@@ -247,7 +246,6 @@
         </div>
     </div>
 
-    <!-- MODAL: ISSUES -->
     <div x-show="errorSummary.open" x-cloak class="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-xl rounded-2xl border border-zinc-800 flex flex-col shadow-2xl max-h-[70vh]" @click.away="errorSummary.open = false">
             <div class="px-6 py-4 border-b border-zinc-900 flex justify-between items-center bg-red-900/10">
