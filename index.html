@@ -199,8 +199,16 @@
             </button>
             <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span
                     class="text-blue-500 font-black">V1.0</span></h1>
-            <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i>
-                Open</button>
+            
+            <button @click="openProject()" class="btn-action">
+                <i class="fa-solid fa-folder-open text-blue-500"></i> Open
+            </button>
+
+            <!-- Nút Restore dự án cũ (Chỉ hiện khi có dữ liệu trong IndexedDB) -->
+            <button x-show="canRestore" @click="restoreLastProject()" class="btn-action bg-blue-900/20 border-blue-500/30 text-blue-400">
+                <i class="fa-solid fa-clock-rotate-left"></i> Restore: <span x-text="savedName"></span>
+            </button>
+
             <button @click="reloadProject()" class="btn-action" :disabled="!rootHandle"
                 :class="!rootHandle && 'opacity-20'"><i class="fa-solid fa-rotate text-green-500"></i> Reload</button>
             <div class="h-4 w-[1px] bg-zinc-800 mx-1"></div>
@@ -391,6 +399,7 @@
         </main>
     </div>
 
+    <!-- CÁC MODAL GIỮ NGUYÊN 100% -->
     <div x-show="renamePropModal.open" x-cloak
         class="fixed inset-0 z-[260] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden"
@@ -612,6 +621,47 @@
                 importModal: { open: false, text: '' },
                 multilineModal: { open: false, file: null, prop: '', text: '' },
 
+                // CÁC BIẾN CHO TÍNH NĂNG NHỚ ĐƯỜNG DẪN
+                canRestore: false,
+                savedName: '',
+                savedHandle: null,
+
+                async init() {
+                    // Kiểm tra xem có dự án nào đã mở trước đó không
+                    const saved = await this.getStoredHandle();
+                    if (saved) {
+                        this.savedHandle = saved;
+                        this.savedName = saved.name;
+                        this.canRestore = true;
+                    }
+                },
+
+                // Lô-gic IndexedDB để lưu Handle
+                async openDB() {
+                    return new Promise((resolve) => {
+                        const request = indexedDB.open("DatabaseMakerDB", 1);
+                        request.onupgradeneeded = (e) => {
+                            e.target.result.createObjectStore("handles");
+                        };
+                        request.onsuccess = (e) => resolve(e.target.result);
+                    });
+                },
+                async storeHandle(handle) {
+                    const db = await this.openDB();
+                    const tx = db.transaction("handles", "readwrite");
+                    tx.objectStore("handles").put(handle, "lastRoot");
+                },
+                async getStoredHandle() {
+                    try {
+                        const db = await this.openDB();
+                        return new Promise((resolve) => {
+                            const request = db.transaction("handles").objectStore("handles").get("lastRoot");
+                            request.onsuccess = () => resolve(request.result);
+                            request.onerror = () => resolve(null);
+                        });
+                    } catch (e) { return null; }
+                },
+
                 get errorList() {
                     const list = [];
                     this.allFiles.forEach(f => {
@@ -634,8 +684,28 @@
                 },
 
                 async openProject() {
-                    try { this.rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' }); await this.loadProjectData(); } catch (e) { }
+                    try { 
+                        this.rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' }); 
+                        await this.storeHandle(this.rootHandle); // Lưu vào DB
+                        this.canRestore = false;
+                        await this.loadProjectData(); 
+                    } catch (e) { }
                 },
+
+                async restoreLastProject() {
+                    try {
+                        // Trình duyệt yêu cầu kích hoạt quyền truy cập lại mỗi khi tải lại trang (vì lý do bảo mật)
+                        if (await this.savedHandle.requestPermission({ mode: 'readwrite' }) === 'granted') {
+                            this.rootHandle = this.savedHandle;
+                            this.canRestore = false;
+                            await this.loadProjectData();
+                        }
+                    } catch (e) {
+                        alert("Cannot restore project: " + e.message);
+                        this.canRestore = false;
+                    }
+                },
+
                 async reloadProject() {
                     if (this.dirtyCount > 0 && !confirm("Reload and discard changes?")) return;
                     await this.loadProjectData();
