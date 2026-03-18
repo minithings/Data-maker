@@ -15,7 +15,11 @@
         .g-table-row td { height: 58px; vertical-align: middle; border-bottom: 1px solid var(--border); }
         .g-input { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); padding: 0 12px; border-radius: 8px; font-size: 13px; outline: none; width: 100%; height: 38px; transition: all 0.2s; }
         .g-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+        
+        /* Error & Warning Styles */
         .input-error { border-color: #ef4444 !important; background-color: rgba(239, 68, 68, 0.05) !important; color: #f87171 !important; }
+        .input-warning { border-color: #f59e0b !important; background-color: rgba(245, 158, 11, 0.05) !important; color: #fbbf24 !important; }
+        
         .sidebar-active { background: rgba(59, 130, 246, 0.1); color: #60a5fa !important; }
         .data-panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
         [x-cloak] { display: none !important; }
@@ -29,11 +33,8 @@
         .shake-error { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-2px, 0, 0); } 40%, 60% { transform: translate3d(2px, 0, 0); } }
         aside { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s; }
-
-        /* Grab Scroll Styles */
         .grab-scroll { cursor: grab; user-select: none; }
         .grab-scroll:active { cursor: grabbing; }
-        .no-select { user-select: none; }
     </style>
 </head>
 
@@ -51,7 +52,6 @@
             <button @click="sidebarOpen = !sidebarOpen" class="text-zinc-500 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-900">
                 <i class="fa-solid" :class="sidebarOpen ? 'fa-indent' : 'fa-bars'"></i>
             </button>
-            
             <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span class="text-blue-500 font-black">V4.1 Final</span></h1>
             <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i> Open</button>
             <button @click="reloadProject()" class="btn-action" :disabled="!rootHandle" :class="!rootHandle && 'opacity-20'"><i class="fa-solid fa-rotate text-green-500"></i> Reload</button>
@@ -75,7 +75,6 @@
     </nav>
 
     <div class="flex-1 flex overflow-hidden">
-        <!-- SIDEBAR -->
         <aside :class="sidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 pointer-events-none'" class="bg-zinc-950 flex flex-col border-r border-zinc-900 shrink-0 overflow-hidden">
             <div class="p-4" x-show="rootHandle" x-cloak>
                 <button @click="openCreateModal()" class="btn-action btn-primary w-full justify-center"><i class="fa-solid fa-plus-circle"></i> New Resource</button>
@@ -96,19 +95,10 @@
             </div>
         </aside>
 
-        <!-- MAIN CONTENT -->
         <main class="flex-1 bg-zinc-950 overflow-y-auto custom-scrollbar p-6">
             <template x-for="(groupFiles, scriptName) in groupedFiles" :key="scriptName">
-                <!-- PANEL WITH GRAB SCROLL LOGIC -->
-                <div class="data-panel shadow-2xl" 
-                     x-data="{ isDown: false, startX: 0, scrollLeft: 0 }"
-                     @mouseup="isDown = false" 
-                     @mouseleave="isDown = false"
-                     @mousemove="if(!isDown) return; $event.preventDefault(); const x = $event.pageX - startX; $refs.scrollContainer.scrollLeft = scrollLeft - x;">
-                    
-                    <!-- HEADER AREA (ALSO DRAGGABLE) -->
-                    <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between grab-scroll"
-                         @mousedown="if($event.target.closest('button, input')) return; isDown = true; startX = $event.pageX; scrollLeft = $refs.scrollContainer.scrollLeft;">
+                <div class="data-panel shadow-2xl" x-data="{ isDown: false, startX: 0, scrollLeft: 0 }" @mouseup="isDown = false" @mouseleave="isDown = false" @mousemove="if(!isDown) return; $event.preventDefault(); const x = $event.pageX - startX; $refs.scrollContainer.scrollLeft = scrollLeft - x;">
+                    <div class="px-5 py-3 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between grab-scroll" @mousedown="if($event.target.closest('button, input')) return; isDown = true; startX = $event.pageX; scrollLeft = $refs.scrollContainer.scrollLeft;">
                         <div class="flex items-center gap-4">
                             <div class="w-2 h-2 rounded-full bg-blue-500"></div>
                             <span class="text-[11px] font-bold uppercase tracking-widest text-zinc-400" x-text="scriptName"></span>
@@ -117,15 +107,20 @@
                         </div>
                     </div>
 
-                    <!-- SCROLLABLE TABLE AREA -->
-                    <div class="overflow-x-auto custom-scrollbar grab-scroll" x-ref="scrollContainer"
-                         @mousedown="if($event.target.closest('button, input, select')) return; isDown = true; startX = $event.pageX; scrollLeft = $refs.scrollContainer.scrollLeft;">
+                    <div class="overflow-x-auto custom-scrollbar grab-scroll" x-ref="scrollContainer" @mousedown="if($event.target.closest('button, input, select')) return; isDown = true; startX = $event.pageX; scrollLeft = $refs.scrollContainer.scrollLeft;">
                         <table class="w-full text-left border-separate border-spacing-0">
                             <thead>
                                 <tr class="bg-zinc-900/20">
                                     <th class="px-6 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-500 uppercase col-id">Identifier</th>
                                     <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
-                                        <th class="px-4 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-600 uppercase" x-text="prop"></th>
+                                        <th class="px-4 py-3 border-b border-zinc-800 text-[10px] font-bold text-zinc-600 uppercase">
+                                            <div class="flex items-center gap-2 group/h">
+                                                <span x-text="prop"></span>
+                                                <button @click="openChangeTypeModal(prop, groupFiles)" class="opacity-0 group-hover/h:opacity-100 text-blue-500 hover:text-blue-400 transition-all">
+                                                    <i class="fa-solid fa-tags text-[9px]"></i>
+                                                </button>
+                                            </div>
+                                        </th>
                                     </template>
                                     <th class="px-4 py-3 border-b border-zinc-800 w-[60px]"></th>
                                 </tr>
@@ -144,25 +139,17 @@
                                         <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
                                             <td class="px-2">
                                                 <div class="min-w-[140px] flex items-center gap-1 group/field relative">
-                                                    
-                                                    <!-- MULTILINE -->
                                                     <template x-if="getFieldType(file, prop) === 'multiline'">
                                                         <div class="flex items-center gap-2 w-full">
-                                                            <input type="text" :value="file.data[prop]" readonly @click="openMultiline(file, prop)"
-                                                                   class="g-input !h-8 cursor-pointer overflow-hidden truncate italic text-zinc-500" placeholder="Click to edit...">
+                                                            <input type="text" :value="file.data[prop]" readonly @click="openMultiline(file, prop)" class="g-input !h-8 cursor-pointer overflow-hidden truncate italic text-zinc-500" placeholder="Click to edit...">
                                                             <button @click="openMultiline(file, prop)" class="text-blue-500 hover:text-blue-400"><i class="fa-solid fa-expand"></i></button>
                                                         </div>
                                                     </template>
-
-                                                    <!-- BOOL -->
                                                     <template x-if="getFieldType(file, prop) === 'bool'">
-                                                        <button @click="file.data[prop] = !file.data[prop]; markDirty(file)" 
-                                                                :class="file.data[prop] ? 'bg-blue-600' : 'bg-zinc-800'" class="w-9 h-5 rounded-full px-0.5 flex items-center transition-all">
+                                                        <button @click="file.data[prop] = !file.data[prop]; markDirty(file)" :class="file.data[prop] ? 'bg-blue-600' : 'bg-zinc-800'" class="w-9 h-5 rounded-full px-0.5 flex items-center transition-all">
                                                             <div :class="file.data[prop] ? 'translate-x-4' : 'translate-x-0'" class="w-4 h-4 bg-white rounded-full transition-all"></div>
                                                         </button>
                                                     </template>
-
-                                                    <!-- ENUM -->
                                                     <template x-if="getFieldType(file, prop) === 'enum' || getFieldType(file, prop) === 'export_enum'">
                                                         <select :value="file.data[prop]" @change="updateValue(file, prop, $event.target.value)" class="g-input !h-8 text-xs appearance-none cursor-pointer">
                                                             <template x-for="(val, idx) in getHint(file, prop).options">
@@ -170,15 +157,13 @@
                                                             </template>
                                                         </select>
                                                     </template>
-
-                                                    <!-- TEXT / NUMBER -->
                                                     <template x-if="['bool', 'enum', 'export_enum', 'multiline'].indexOf(getFieldType(file, prop)) === -1">
                                                         <div class="relative w-full">
                                                             <input type="text" :value="file.data[prop]" @input="updateValue(file, prop, $event.target.value)" 
-                                                                   :class="[hasIssue(file, prop) && 'input-error shake-error', typeof file.data[prop] === 'number' && 'type-number']"
+                                                                   :class="[hasIssue(file, prop) && 'input-error shake-error', !hasIssue(file, prop) && hasWarning(file, prop) && 'input-warning', typeof file.data[prop] === 'number' && 'type-number']"
                                                                    class="g-input !h-8 focus:bg-zinc-950" placeholder="...">
-                                                            <div x-show="hasIssue(file, prop)" class="absolute -right-1.5 -top-1.5 z-10">
-                                                                <i class="fa-solid fa-circle-exclamation text-red-500 text-[10px] bg-zinc-950 rounded-full"></i>
+                                                            <div x-show="hasIssue(file, prop) || hasWarning(file, prop)" class="absolute -right-1.5 -top-1.5 z-10">
+                                                                <i class="fa-solid fa-circle-exclamation text-[10px] bg-zinc-950 rounded-full" :class="hasIssue(file, prop) ? 'text-red-500' : 'text-orange-400'"></i>
                                                             </div>
                                                         </div>
                                                     </template>
@@ -198,7 +183,29 @@
         </main>
     </div>
 
-    <!-- MODALS (GIỮ NGUYÊN) -->
+    <!-- MODAL ĐỔI KIỂU DỮ LIỆU -->
+    <div x-show="changeTypeModal.open" x-cloak class="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-md rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden" @click.away="changeTypeModal.open = false">
+            <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 text-[10px] font-bold uppercase text-blue-500">Change Column Type</div>
+            <div class="p-6 space-y-4">
+                <div class="text-xs text-zinc-500">Change type for column: <span class="text-white font-mono" x-text="changeTypeModal.prop"></span></div>
+                <select x-model="changeTypeModal.newType" class="g-input !h-12">
+                    <option value="string">String</option>
+                    <option value="number">Number</option>
+                    <option value="boolean">Boolean</option>
+                </select>
+                <div class="bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg text-[11px] text-blue-400 italic">
+                    Note: Values will be converted automatically if possible.
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-zinc-900 flex justify-end gap-3">
+                <button @click="changeTypeModal.open = false" class="px-4 text-xs font-bold text-zinc-500">CANCEL</button>
+                <button @click="confirmChangeType()" class="btn-action btn-primary !px-6 uppercase">Convert All</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CÁC MODALS KHÁC (GIỮ NGUYÊN) -->
     <div x-show="multilineModal.open" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
         <div class="bg-zinc-950 w-full max-w-3xl rounded-2xl border border-zinc-800 shadow-2xl flex flex-col overflow-hidden h-[80vh]">
             <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/30 flex justify-between items-center">
@@ -233,9 +240,6 @@
                     <button @click="addJsonPropToSchema()" class="btn-action !bg-blue-600 text-white border-none"><i class="fa-solid fa-plus"></i></button>
                 </div>
                 <div class="space-y-1 max-h-32 overflow-y-auto custom-scrollbar bg-black/20 rounded-lg p-2 border border-zinc-900">
-                    <template x-if="createModal.jsonSchema.length === 0">
-                        <div class="text-[10px] text-zinc-600 text-center py-2 uppercase tracking-tighter">No properties added</div>
-                    </template>
                     <template x-for="(p, index) in createModal.jsonSchema" :key="index">
                         <div class="flex items-center justify-between bg-zinc-900/50 px-3 py-1.5 rounded border border-zinc-800 group">
                             <div class="flex items-center gap-2">
@@ -329,6 +333,7 @@
                     jsonSchema: [], jsonNewPropName: '', jsonNewPropType: 'string'
                 },
                 addPropModal: { open: false, group: null, name: '', type: 'string', defaultValue: '' },
+                changeTypeModal: { open: false, prop: '', group: null, newType: 'string' },
                 importModal: { open: false, text: '' },
                 multilineModal: { open: false, file: null, prop: '', text: '' },
 
@@ -401,6 +406,29 @@
                     else file.data[prop] = newValue;
                     this.markDirty(file);
                 },
+
+                // FEATURE: CHANGE COLUMN TYPE
+                openChangeTypeModal(prop, groupFiles) {
+                    const firstFile = groupFiles[0];
+                    const currentType = this.originalTypes.get(firstFile.id)?.[prop] || 'string';
+                    this.changeTypeModal = { open: true, prop, group: groupFiles, newType: currentType };
+                },
+                confirmChangeType() {
+                    const { prop, group, newType } = this.changeTypeModal;
+                    group.forEach(f => {
+                        let val = f.data[prop];
+                        if (newType === 'number') val = (val === true) ? 1 : (val === false ? 0 : (Number(val) || 0));
+                        else if (newType === 'boolean') val = !!val;
+                        else val = String(val);
+                        
+                        f.data[prop] = val;
+                        const t = this.originalTypes.get(f.id);
+                        if (t) t[prop] = newType;
+                        this.markDirty(f);
+                    });
+                    this.changeTypeModal.open = false;
+                },
+
                 openMultiline(file, prop) {
                     this.multilineModal = { open: true, file, prop, text: file.data[prop] };
                 },
@@ -450,10 +478,25 @@
                     group.forEach(f => { if (!(name in f.data)) { f.data[name] = val; this.markDirty(f); this.recordTypes(f.id, f.data); } });
                     this.addPropModal.open = false;
                 },
+                
+                // VALIDATION LOGIC
                 hasIssue(file, prop) {
-                    const v = file.data[prop]; const t = this.originalTypes.get(file.id);
-                    return (!t || !t[prop]) ? false : (v === "" || v === null || (t[prop] === 'number' && isNaN(v)));
+                    const v = file.data[prop]; 
+                    const t = this.originalTypes.get(file.id);
+                    const hint = this.getHint(file, prop);
+                    
+                    // Nếu là Number mà chứa String không phải số -> Error (Đỏ)
+                    if (t && t[prop] === 'number' && isNaN(v) && v !== "") return true;
+                    if (hint && hint.type === 'enum' && v === null) return true;
+                    return false;
                 },
+                hasWarning(file, prop) {
+                    if (file.type !== 'tres') return false;
+                    const v = file.data[prop];
+                    // Nếu rỗng trong .tres -> Warning (Vàng)
+                    return (v === "" || v === null || v === undefined);
+                },
+
                 async saveDirtyFiles() {
                     if (this.dirtyCount === 0 || this.errorCount > 0) return; this.isSaving = true;
                     try {
@@ -542,7 +585,8 @@
                         const l = line.trim(), varMatch = l.match(/var\s+(\w+)/); if (!varMatch) return; const varName = varMatch[1];
                         if (l.includes('@export_multiline')) hints[varName] = { type: 'multiline' };
                         else if (l.includes('@export_enum')) hints[varName] = { type: 'export_enum', options: l.match(/\(([\s\S]+?)\)/)[1].split(',').map(s => s.replace(/["']/g, "").trim()) };
-                        else if (l.includes(': bool')) hints[varName] = { type: 'bool' };
+                        else if (l.includes(': bool') || l.includes('= true') || l.includes('= false')) hints[varName] = { type: 'bool' };
+                        else if (l.includes(': int') || l.includes(': float')) hints[varName] = { type: 'number' };
                         else { for (let e in enums) { if (l.includes(`: ${e}`)) hints[varName] = { type: 'enum', options: enums[e] }; } }
                     });
                     this.scripts[f] = { hints, parent };
@@ -568,7 +612,14 @@
                     while (cur && s < 10) { let si = this.scripts[cur] || this.scripts[this.classMap[cur]]; if (!si) break; h = { ...si.hints, ...h }; cur = si.parent; s++; }
                     return h[p] || { type: 'default' };
                 },
-                getFieldType(f, p) { const h = this.getHint(f, p); return h.type !== 'default' ? h.type : (typeof f.data[p] === 'boolean' ? 'bool' : 'default'); },
+                getFieldType(f, p) { 
+                    const h = this.getHint(f, p); 
+                    if (h.type !== 'default') return h.type;
+                    const typeInMeta = this.originalTypes.get(f.id)?.[p];
+                    if (typeInMeta === 'number') return 'number';
+                    if (typeInMeta === 'boolean') return 'bool';
+                    return (typeof f.data[p] === 'boolean' ? 'bool' : 'default'); 
+                },
                 getFieldsForGroup(s, f) { let k = new Set(); f.forEach(x => Object.keys(x.data).forEach(y => k.add(y))); return Array.from(k); },
                 get groupedFiles() {
                     let f = this.searchQuery ? this.allFiles.filter(x => x.name.toLowerCase().includes(this.searchQuery.toLowerCase())) : this.allFiles.filter(x => x.folder === this.activeFolder);
