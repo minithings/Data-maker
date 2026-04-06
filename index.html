@@ -820,7 +820,7 @@
                         if (this.blacklist.includes(key.toLowerCase())) return;
                         // Keep raw Godot syntax (typed arrays, built-in types, array-of-dicts)
                         if (this.godotTypes.some(gt => val.startsWith(gt + "("))) return;
-                        if (/^Array\[.+\]\(/.test(val) || val.startsWith('[{') || val.startsWith('{')) { data[key] = val; return; }
+                        if (/^Array\[.+\]\(/.test(val) || /^Dictionary\[.+\]\(/.test(val) || val.startsWith('[{') || val.startsWith('{')) { data[key] = val; return; }
                         if (val.startsWith('"') && val.endsWith('"')) val = val.substring(1, val.length - 1);
                         else if (val === "true") val = true;
                         else if (val === "false") val = false;
@@ -853,20 +853,23 @@
                         const n = { ...f, id: f.path + ":" + id, name: id, data: ed, dirty: true }; this.allFiles.push(n); this.recordTypes(n.id, n.data); this.dirtyCount++;
                     } else this.internalCreate(id, '.tres', f.id);
                 },
+                isRawGodotValue(v) {
+                    if (typeof v !== 'string') return false;
+                    return this.godotTypes.some(gt => v.startsWith(gt + "("))
+                        || /^Array\[.+\]\(/.test(v)
+                        || /^Dictionary\[.+\]\(/.test(v)
+                        || v.trimStart().startsWith('[{')
+                        || v.trimStart().startsWith('{');
+                },
                 serializeTresValue(v) {
                     if (typeof v !== 'string') return String(v);
-                    // Godot built-in types: ExtResource(...), Vector2(...), etc.
-                    if (this.godotTypes.some(gt => v.startsWith(gt + "("))) return v;
-                    // Godot typed arrays: Array[String](...), Array[int](...), etc.
-                    if (/^Array\[.+\]\(/.test(v)) return v;
-                    // Godot array of dicts: [{...}] — keep raw as-is
-                    if (v.trimStart().startsWith('[{')) return v;
-                    // Godot inline dict: {key: val} — minify if valid JSON, else keep raw
-                    if (v.trimStart().startsWith('{')) {
-                        try { return JSON.stringify(JSON.parse(v)); } catch (e) { return v; }
-                    }
-                    // Plain string — wrap in quotes
+                    if (this.isRawGodotValue(v)) return v;
                     return `"${v}"`;
+                },
+                countDepth(s) {
+                    let d = 0;
+                    for (const c of s) { if ('([{'.includes(c)) d++; else if (')]}'.includes(c)) d--; }
+                    return d;
                 },
                 async saveDirtyFiles() {
                     if (this.dirtyCount === 0 || this.errorCount > 0) return; this.isSaving = true;
@@ -876,19 +879,43 @@
                             const entries = this.allFiles.filter(f => f.dirty && f.path === p);
                             const first = entries[0]; const w = await first.handle.createWritable();
                             if (first.type === 'tres') {
-                                let lines = first.rawBody.split(/\r?\n/), up = new Set();
-                                let nl = lines.map(line => {
-                                    const tr = line.trim(); if (tr && tr.includes('=') && !tr.startsWith('[')) {
-                                        const k = tr.split('=')[0].trim();
+                                const lines = first.rawBody.split(/\r?\n/);
+                                const up = new Set();
+                                const nl = [];
+                                let depth = 0; // bracket depth — when > 0 we're inside a multiline value
+                                for (const line of lines) {
+                                    const tr = line.trim();
+                                    if (depth > 0) {
+                                        // Inside a multiline value — count brackets to find end, then skip
+                                        depth += this.countDepth(tr);
+                                        continue;
+                                    }
+                                    const isKeyLine = tr && !tr.startsWith('[') && /^[a-zA-Z_][a-zA-Z0-9_]*\s*=/.test(tr);
+                                    if (isKeyLine) {
+                                        const k = tr.substring(0, tr.indexOf('=')).trim();
                                         if (first.data.hasOwnProperty(k)) {
-                                            up.add(k); const v = first.data[k];
-                                            let vStr = this.serializeTresValue(v);
-                                            return `${k} = ${vStr}`;
+                                            const v = first.data[k];
+                                            const vStr = this.serializeTresValue(v);
+                                            nl.push(`${k} = ${vStr}`);
+                                            up.add(k);
+                                            // Check if original line opens a multiline block
+                                            const origVal = tr.substring(tr.indexOf('=') + 1).trim();
+                                            const d = this.countDepth(origVal);
+                                            if (d > 0) depth = d; // original was multiline — skip continuation
+                                        } else {
+                                            nl.push(line);
+                                            const origVal = tr.substring(tr.indexOf('=') + 1).trim();
+                                            const d = this.countDepth(origVal);
+                                            if (d > 0) depth = d;
                                         }
-                                    } return line;
-                                });
+                                    } else {
+                                        nl.push(line);
+                                    }
+                                }
                                 Object.keys(first.data).forEach(k => { if (!up.has(k)) { const v = first.data[k]; let vStr = this.serializeTresValue(v); nl.push(`${k} = ${vStr}`); } });
-                                await w.write(first.rawHeader + "\n" + nl.join('\n')); first.rawBody = nl.join('\n');
+                                const cleanBody = nl.join('\n').replace(/^\n+/, '').replace(/\n{3,}/g, '\n\n').trimEnd();
+                                const output = first.rawHeader.trimEnd() + "\n" + cleanBody + "\n";
+                                await w.write(output); first.rawBody = cleanBody;
                             } else {
                                 const allInPath = this.allFiles.filter(f => f.path === p);
                                 const json = {}; allInPath.forEach(e => json[e.name] = e.data);
