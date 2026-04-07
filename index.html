@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Database Maker v1.1 - Optimized</title>
+    <title>Database Maker v1.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -198,7 +198,7 @@
                 <i class="fa-solid" :class="sidebarOpen ? 'fa-indent' : 'fa-bars'"></i>
             </button>
             <h1 class="text-xs font-bold uppercase tracking-tighter">Data Maker <span
-                    class="text-blue-500 font-black">V1.1</span></h1>
+                    class="text-blue-500 font-black">V1.2</span></h1>
 
             <button @click="openProject()" class="btn-action"><i class="fa-solid fa-folder-open text-blue-500"></i>
                 Open</button>
@@ -1116,16 +1116,22 @@
                     if (typeof v !== 'string') return String(v);
                     const kind = this._detectKind(v);
                     if (kind === 'array_string' || kind === 'array_number') {
-                        const m = v.match(/\[([^\]]*)\]/); const items = m ? m[1].split(',').map(s=>s.trim()).filter(s=>s) : [];
-                        return items.length === 0 ? '[ empty ]' : `[ ${items.length} item${items.length>1?'s':''} ]`;
+                        const items = this._extractArrayItems(v);
+                        if (items.length === 0) return '[ empty ]';
+                        const preview = items.slice(0, 3).join(', ');
+                        return items.length > 3 ? `[ ${preview}, +${items.length - 3} ]` : `[ ${preview} ]`;
                     }
                     if (kind === 'dict') {
-                        const inner = this._extractDictInner(v); const pairs = this._parseDictPairs(inner);
-                        return pairs.length === 0 ? '{ empty }' : `{ ${pairs.length} key${pairs.length>1?'s':''} }`;
+                        const pairs = this._parseDictPairs(this._extractDictInner(v));
+                        if (pairs.length === 0) return '{ empty }';
+                        const preview = pairs.slice(0, 2).map(p => `${p.k}: ${p.v}`).join(', ');
+                        return pairs.length > 2 ? `{ ${preview}, +${pairs.length - 2} }` : `{ ${preview} }`;
                     }
                     if (kind === 'array_dict') {
                         const items = this._parseArrayDicts(v);
-                        return items.length === 0 ? '[{ empty }]' : `[{ ${items.length} item${items.length>1?'s':''} }]`;
+                        if (items.length === 0) return '[{ empty }]';
+                        const first = items[0].slice(0, 2).map(p => `${p.k}: ${p.v}`).join(', ');
+                        return items.length > 1 ? `[{ ${first} }, +${items.length - 1} ]` : `[{ ${first} }]`;
                     }
                     return v.length > 30 ? v.substring(0, 28) + '…' : v;
                 },
