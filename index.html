@@ -307,7 +307,7 @@
                                             </div>
                                         </th>
                                     </template>
-                                    <th class="px-4 py-3 border-b border-zinc-800 w-[60px]"></th>
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -318,9 +318,22 @@
                                                 <span
                                                     class="text-[13px] font-semibold text-zinc-300 group-hover:text-white truncate"
                                                     x-text="file.name"></span>
-                                                <button @click="renameEntry(file)"
-                                                    class="opacity-0 group-hover/id:opacity-100 p-1 text-zinc-600 hover:text-blue-500 transition-all"><i
-                                                        class="fa-solid fa-pen-to-square text-[11px]"></i></button>
+                                                <div class="opacity-0 group-hover/id:opacity-100 flex items-center gap-2 transition-all shrink-0 ml-2">
+                                                    <button @click="renameEntry(file)"
+                                                        class="p-1.5 text-zinc-600 hover:text-blue-400 transition-colors" title="Rename">
+                                                        <i class="fa-solid fa-pen-to-square text-[11px]"></i>
+                                                    </button>
+                                                    <template x-if="file.type === 'tres'">
+                                                        <button @click="duplicateEntry(file)"
+                                                            class="p-1.5 text-zinc-600 hover:text-blue-400 transition-colors" title="Duplicate">
+                                                            <i class="fa-solid fa-copy text-[11px]"></i>
+                                                        </button>
+                                                    </template>
+                                                    <button @click="deleteEntry(file)"
+                                                        class="p-1.5 text-zinc-600 hover:text-red-500 transition-colors" title="Delete">
+                                                        <i class="fa-solid fa-trash-can text-[11px]"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </td>
                                         <template x-for="prop in getFieldsForGroup(scriptName, groupFiles)">
@@ -388,11 +401,6 @@
                                                 </div>
                                             </td>
                                         </template>
-                                        <td class="px-2 text-center">
-                                            <button @click="deleteEntry(file)"
-                                                class="text-zinc-700 hover:text-red-500 transition-colors"><i
-                                                    class="fa-solid fa-trash-can text-sm"></i></button>
-                                        </td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -1268,6 +1276,14 @@
                     if (f.type === 'tres') { await f.handle.remove(); this.allFiles = this.allFiles.filter(x => x.id !== f.id); }
                     else { const p = f.path; this.allFiles = this.allFiles.filter(x => x.id !== f.id); this.allFiles.filter(x => x.path === p).forEach(x => this.markDirty(x)); }
                     this.buildTree();
+                },
+                async duplicateEntry(f) {
+                    // Lấy tên gợi ý: bỏ .tres rồi thêm _copy
+                    const baseName = f.name.replace(/\.tres$/, '');
+                    const suggested = baseName + '_copy';
+                    const newName = prompt("Tên file mới:", suggested);
+                    if (!newName) return;
+                    await this.internalCreate(newName, '.tres', f.id);
                 }
             }
         }
