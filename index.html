@@ -887,7 +887,14 @@
 
                     if (ext === '.tres' && templateId) {
                         const src = this.allFiles.find(f => f.id === templateId);
-                        if (src) { data = JSON.parse(JSON.stringify(src.data)); header = src.rawHeader; sName = src.scriptName; body = src.rawBody; }
+                        if (src) {
+                            data = JSON.parse(JSON.stringify(src.data));
+                            // Strip uid khỏi header — Godot sẽ tự sinh uid mới khi import
+                            // Nếu giữ nguyên uid, Godot 4 nhận 2 file là cùng 1 resource → edit chéo nhau
+                            header = src.rawHeader.replace(/\s+uid="uid:\/\/[^"]*"/, '');
+                            sName = src.scriptName;
+                            body = src.rawBody;
+                        }
                     } else if (ext === '.json' && initialData) {
                         data = initialData; const defaultEntryName = "new_entry_1"; const jsonPayload = {}; jsonPayload[defaultEntryName] = data;
                         const w = await handle.createWritable(); await w.write(JSON.stringify(jsonPayload, null, "\t")); await w.close();
