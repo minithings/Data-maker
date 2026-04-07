@@ -364,11 +364,20 @@
                                                     <template
                                                         x-if="['bool', 'enum', 'export_enum', 'multiline'].indexOf(getFieldType(file, prop)) === -1">
                                                         <div class="relative w-full">
-                                                            <input type="text" :value="file.data[prop]"
-                                                                @input="updateValue(file, prop, $event.target.value)"
-                                                                :class="[hasIssue(file, prop) && 'input-error shake-error', !hasIssue(file, prop) && hasWarning(file, prop) && 'input-warning', typeof file.data[prop] === 'number' && 'type-number']"
-                                                                class="g-input !h-8 focus:bg-zinc-950"
-                                                                placeholder="...">
+                                                            <template x-if="isRawGodotValue(file.data[prop])">
+                                                                <button @click="openCollectionEditor(file, prop)"
+                                                                    class="g-input !h-8 text-left flex items-center gap-2 cursor-pointer hover:border-blue-500/50 hover:bg-zinc-900 transition-all">
+                                                                    <i class="fa-solid fa-layer-group text-[10px] text-blue-400 shrink-0"></i>
+                                                                    <span class="text-[11px] text-zinc-400 font-mono truncate" x-text="getCollectionLabel(file.data[prop])"></span>
+                                                                </button>
+                                                            </template>
+                                                            <template x-if="!isRawGodotValue(file.data[prop])">
+                                                                <input type="text" :value="file.data[prop]"
+                                                                    @input="updateValue(file, prop, $event.target.value)"
+                                                                    :class="[hasIssue(file, prop) && 'input-error shake-error', !hasIssue(file, prop) && hasWarning(file, prop) && 'input-warning', typeof file.data[prop] === 'number' && 'type-number']"
+                                                                    class="g-input !h-8 focus:bg-zinc-950"
+                                                                    placeholder="...">
+                                                            </template>
                                                             <div x-show="hasIssue(file, prop) || hasWarning(file, prop)"
                                                                 class="absolute -right-1.5 -top-1.5 z-10">
                                                                 <i class="fa-solid fa-circle-exclamation text-[10px] bg-zinc-950 rounded-full"
@@ -597,6 +606,122 @@
         </div>
     </div>
 
+    <!-- Collection Editor Modal -->
+    <div x-show="collectionModal.open" x-cloak
+        class="fixed inset-0 z-[320] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+        <div class="bg-zinc-950 w-full max-w-2xl rounded-2xl border border-zinc-800 shadow-2xl flex flex-col overflow-hidden"
+            style="max-height:85vh" @click.away="collectionModal.open = false">
+
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-zinc-800 bg-zinc-900/40 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-layer-group text-blue-400 text-sm"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-blue-400" x-text="collectionModal.godotType"></span>
+                    <span class="text-[10px] text-zinc-600 font-mono" x-text="collectionModal.prop"></span>
+                </div>
+                <button @click="collectionModal.open = false" class="text-zinc-600 hover:text-white transition-colors">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Body: Array[String] or Array[int/float] -->
+            <template x-if="collectionModal.kind === 'array_string' || collectionModal.kind === 'array_number'">
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-2">
+                    <template x-for="(item, idx) in collectionModal.items" :key="idx">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] text-zinc-600 font-mono w-6 text-right shrink-0" x-text="idx"></span>
+                            <input type="text" :value="item" @input="collectionModal.items[idx] = $event.target.value"
+                                class="g-input !h-8 flex-1 font-mono text-xs" :placeholder="collectionModal.kind === 'array_number' ? '0' : 'value'">
+                            <button @click="collectionModal.items.splice(idx, 1)"
+                                class="text-zinc-700 hover:text-red-500 transition-colors shrink-0">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        </div>
+                    </template>
+                    <button @click="collectionModal.items.push('')"
+                        class="w-full mt-2 py-2 border border-dashed border-zinc-700 hover:border-blue-500/50 text-zinc-600 hover:text-blue-400 rounded-lg text-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Add item
+                    </button>
+                </div>
+            </template>
+
+            <!-- Body: Dictionary[String, int|float] -->
+            <template x-if="collectionModal.kind === 'dict'">
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-2">
+                    <div class="grid grid-cols-[1fr_1fr_28px] gap-2 mb-1 px-1">
+                        <span class="text-[9px] font-bold uppercase text-zinc-600">Key</span>
+                        <span class="text-[9px] font-bold uppercase text-zinc-600">Value</span>
+                        <span></span>
+                    </div>
+                    <template x-for="(pair, idx) in collectionModal.pairs" :key="idx">
+                        <div class="grid grid-cols-[1fr_1fr_28px] gap-2 items-center">
+                            <input type="text" :value="pair.k" @input="collectionModal.pairs[idx].k = $event.target.value"
+                                class="g-input !h-8 font-mono text-xs" placeholder="key">
+                            <input type="text" :value="pair.v" @input="collectionModal.pairs[idx].v = $event.target.value"
+                                class="g-input !h-8 font-mono text-xs type-number" placeholder="0">
+                            <button @click="collectionModal.pairs.splice(idx, 1)"
+                                class="text-zinc-700 hover:text-red-500 transition-colors h-8 flex items-center justify-center">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        </div>
+                    </template>
+                    <button @click="collectionModal.pairs.push({k:'', v:'0'})"
+                        class="w-full mt-2 py-2 border border-dashed border-zinc-700 hover:border-blue-500/50 text-zinc-600 hover:text-blue-400 rounded-lg text-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Add entry
+                    </button>
+                </div>
+            </template>
+
+            <!-- Body: Array of dicts [{...}, {...}] -->
+            <template x-if="collectionModal.kind === 'array_dict'">
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-3">
+                    <template x-for="(obj, oi) in collectionModal.arrayDicts" :key="oi">
+                        <div class="border border-zinc-800 rounded-xl overflow-hidden">
+                            <div class="px-4 py-2 bg-zinc-900/50 flex items-center justify-between border-b border-zinc-800">
+                                <span class="text-[10px] font-bold text-zinc-500 uppercase">Item <span x-text="oi"></span></span>
+                                <button @click="collectionModal.arrayDicts.splice(oi, 1)"
+                                    class="text-zinc-700 hover:text-red-500 transition-colors text-xs">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                            <div class="p-3 space-y-2">
+                                <template x-for="(pair, ki) in obj" :key="ki">
+                                    <div class="grid grid-cols-[1fr_1fr_28px] gap-2 items-center">
+                                        <input type="text" :value="pair.k" @input="collectionModal.arrayDicts[oi][ki].k = $event.target.value"
+                                            class="g-input !h-7 font-mono text-xs" placeholder="key">
+                                        <input type="text" :value="pair.v" @input="collectionModal.arrayDicts[oi][ki].v = $event.target.value"
+                                            class="g-input !h-7 font-mono text-xs" placeholder="value">
+                                        <button @click="collectionModal.arrayDicts[oi].splice(ki, 1)"
+                                            class="text-zinc-700 hover:text-red-500 transition-colors h-7 flex items-center justify-center">
+                                            <i class="fa-solid fa-xmark text-xs"></i>
+                                        </button>
+                                    </div>
+                                </template>
+                                <button @click="collectionModal.arrayDicts[oi].push({k:'', v:''})"
+                                    class="w-full py-1.5 border border-dashed border-zinc-800 hover:border-zinc-600 text-zinc-700 hover:text-zinc-400 rounded-lg text-[10px] transition-all">
+                                    <i class="fa-solid fa-plus text-[9px] mr-1"></i> Add field
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <button @click="collectionModal.arrayDicts.push(collectionModal.arrayDicts.length > 0 ? JSON.parse(JSON.stringify(collectionModal.arrayDicts[0].map(p=>({k:p.k,v:''})))) : [{k:'',v:''}])"
+                        class="w-full py-2 border border-dashed border-zinc-700 hover:border-blue-500/50 text-zinc-600 hover:text-blue-400 rounded-lg text-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Add item
+                    </button>
+                </div>
+            </template>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-zinc-800 bg-zinc-900/20 flex items-center justify-between shrink-0">
+                <span class="text-[10px] text-zinc-600 font-mono" x-text="getCollectionPreview()"></span>
+                <div class="flex gap-3">
+                    <button @click="collectionModal.open = false" class="px-4 text-xs font-bold text-zinc-500 uppercase">Cancel</button>
+                    <button @click="saveCollectionEdit()" class="btn-action btn-primary !px-8 uppercase">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function editor() {
             return {
@@ -614,6 +739,7 @@
                 renamePropModal: { open: false, oldName: '', group: null, newName: '' },
                 importModal: { open: false, text: '' },
                 multilineModal: { open: false, file: null, prop: '', text: '' },
+                collectionModal: { open: false, file: null, prop: '', kind: '', godotType: '', items: [], pairs: [], arrayDicts: [] },
                 canRestore: false, savedName: '', savedHandle: null,
 
                 async init() {
@@ -984,6 +1110,123 @@
                 },
                 openMultiline(file, prop) { this.multilineModal = { open: true, file, prop, text: file.data[prop] }; },
                 saveMultiline() { this.multilineModal.file.data[this.multilineModal.prop] = this.multilineModal.text; this.markDirty(this.multilineModal.file); this.multilineModal.open = false; },
+
+                // ===== COLLECTION EDITOR =====
+                getCollectionLabel(v) {
+                    if (typeof v !== 'string') return String(v);
+                    const kind = this._detectKind(v);
+                    if (kind === 'array_string' || kind === 'array_number') {
+                        const m = v.match(/\[([^\]]*)\]/); const items = m ? m[1].split(',').map(s=>s.trim()).filter(s=>s) : [];
+                        return items.length === 0 ? '[ empty ]' : `[ ${items.length} item${items.length>1?'s':''} ]`;
+                    }
+                    if (kind === 'dict') {
+                        const inner = this._extractDictInner(v); const pairs = this._parseDictPairs(inner);
+                        return pairs.length === 0 ? '{ empty }' : `{ ${pairs.length} key${pairs.length>1?'s':''} }`;
+                    }
+                    if (kind === 'array_dict') {
+                        const items = this._parseArrayDicts(v);
+                        return items.length === 0 ? '[{ empty }]' : `[{ ${items.length} item${items.length>1?'s':''} }]`;
+                    }
+                    return v.length > 30 ? v.substring(0, 28) + '…' : v;
+                },
+                _detectKind(v) {
+                    if (!v || typeof v !== 'string') return 'raw';
+                    const t = v.trimStart();
+                    if (/^Array\[String\]/i.test(t) || /^Array\[NodePath\]/i.test(t)) return 'array_string';
+                    if (/^Array\[(int|float|double)\]/i.test(t)) return 'array_number';
+                    if (/^Dictionary\[/i.test(t) || (t.startsWith('{') && !t.startsWith('[{'))) return 'dict';
+                    if (t.startsWith('[{')) return 'array_dict';
+                    return 'raw';
+                },
+                _extractGodotTypeLabel(v) {
+                    const m = v.match(/^([A-Za-z]+\[[^\]]+\])/); return m ? m[1] : (v.startsWith('{') ? 'Dictionary' : v.startsWith('[{') ? 'Array[Dictionary]' : '');
+                },
+                _extractArrayItems(v) {
+                    // Array[String](["a","b"]) or Array[int]([1,2])
+                    const m = v.match(/\(\[([\s\S]*)\]\)\s*$/);
+                    if (!m || !m[1].trim()) return [];
+                    return m[1].split(',').map(s => s.trim().replace(/^"(.*)"$/, '$1')).filter(s => s !== '');
+                },
+                _extractDictInner(v) {
+                    // Dictionary[...]({ ... }) or { ... }
+                    const dm = v.match(/\(\{([\s\S]*)\}\)\s*$/);
+                    if (dm) return dm[1];
+                    const sm = v.match(/^\{([\s\S]*)\}\s*$/);
+                    if (sm) return sm[1];
+                    return '';
+                },
+                _parseDictPairs(inner) {
+                    if (!inner.trim()) return [];
+                    const pairs = []; const re = /"([^"]+)"\s*:\s*([^,}]+)/g; let m;
+                    while ((m = re.exec(inner)) !== null) pairs.push({ k: m[1], v: m[2].trim() });
+                    return pairs;
+                },
+                _parseArrayDicts(v) {
+                    // [{ "k": v, ... }, { ... }]
+                    const inner = v.replace(/^\[/, '').replace(/\]\s*$/, '').trim();
+                    if (!inner) return [];
+                    // Split on }, { boundary
+                    const objStrs = []; let depth = 0, start = 0;
+                    for (let i = 0; i < inner.length; i++) {
+                        if (inner[i] === '{') { if (depth === 0) start = i; depth++; }
+                        else if (inner[i] === '}') { depth--; if (depth === 0) objStrs.push(inner.slice(start, i+1)); }
+                    }
+                    return objStrs.map(s => this._parseDictPairs(s.replace(/^\{/, '').replace(/\}$/, '')));
+                },
+                openCollectionEditor(file, prop) {
+                    const v = file.data[prop]; const kind = this._detectKind(v);
+                    this.collectionModal = {
+                        open: true, file, prop, kind,
+                        godotType: this._extractGodotTypeLabel(v),
+                        items: (kind === 'array_string' || kind === 'array_number') ? this._extractArrayItems(v) : [],
+                        pairs: kind === 'dict' ? this._parseDictPairs(this._extractDictInner(v)) : [],
+                        arrayDicts: kind === 'array_dict' ? this._parseArrayDicts(v) : [],
+                    };
+                },
+                getCollectionPreview() {
+                    const m = this.collectionModal; if (!m.open) return '';
+                    try {
+                        if (m.kind === 'array_string' || m.kind === 'array_number') return `${m.items.length} item(s)`;
+                        if (m.kind === 'dict') return `${m.pairs.filter(p=>p.k).length} key(s)`;
+                        if (m.kind === 'array_dict') return `${m.arrayDicts.length} object(s)`;
+                    } catch(e) {}
+                    return '';
+                },
+                _serializeCollection() {
+                    const m = this.collectionModal;
+                    const gt = m.godotType;
+                    if (m.kind === 'array_string' || m.kind === 'array_number') {
+                        const items = m.items.filter(s => s !== '');
+                        const isNum = m.kind === 'array_number';
+                        const inner = items.map(s => isNum ? s : `"${s}"`).join(', ');
+                        return `${gt}([${inner}])`;
+                    }
+                    if (m.kind === 'dict') {
+                        const pairs = m.pairs.filter(p => p.k !== '');
+                        // Detect value type: if original was Dictionary[String, int] keep int, float for Dictionary[String, float]
+                        const isFloat = gt.includes('float') || gt.includes('double');
+                        const inner = pairs.map(p => `"${p.k}": ${isFloat ? (parseFloat(p.v)||0).toFixed(1) : (parseInt(p.v)||0)}`).join(', ');
+                        if (gt.startsWith('Dictionary')) return `${gt}({ ${inner} })`;
+                        return `{ ${inner} }`;
+                    }
+                    if (m.kind === 'array_dict') {
+                        const objStrs = m.arrayDicts.map(pairs => {
+                            const inner = pairs.filter(p=>p.k).map(p => {
+                                const num = Number(p.v); const isNum = p.v.trim() !== '' && !isNaN(num);
+                                return `"${p.k}": ${isNum ? p.v : `"${p.v}"`}`;
+                            }).join(', ');
+                            return `{ ${inner} }`;
+                        });
+                        return `[${objStrs.join(', ')}]`;
+                    }
+                    return m.file.data[m.prop];
+                },
+                saveCollectionEdit() {
+                    const raw = this._serializeCollection();
+                    this.collectionModal.file.data[this.collectionModal.prop] = raw;
+                    this.markDirty(this.collectionModal.file);
+                    this.collectionModal.open = false;
+                },
                 async renameEntry(file) {
                     const newName = prompt("New Identifier Name:", file.name); if (!newName || newName === file.name) return;
                     if (file.type === 'tres') {
