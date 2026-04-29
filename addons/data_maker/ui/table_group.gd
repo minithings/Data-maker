@@ -374,9 +374,11 @@ func _make_cell(file: Dictionary, prop: String) -> Control:
 	var hi         = _validator.has_issue(file, prop)
 	var hw         = _validator.has_warning(file, prop)
 
-	# Outer box: fixed height = ROW_HEIGHT so both columns always align
+	# Outer box: fixed width = COL_WIDTH, never expands beyond it
 	var outer = HBoxContainer.new()
 	outer.custom_minimum_size = Vector2(COL_WIDTH, ROW_HEIGHT)
+	outer.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	outer.clip_contents = true
 	outer.add_theme_constant_override("separation", 0)
 
 	# Left border strip for validation state
@@ -421,8 +423,9 @@ func _make_cell(file: Dictionary, prop: String) -> Control:
 			btn.add_theme_color_override("font_color", Color(1.0, 0.78, 0.2))
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.clip_text = true
 		btn.flat = true
-		btn.tooltip_text = "Click to edit"
+		btn.tooltip_text = raw if raw != null else "Click to edit"
 		btn.pressed.connect(func(): collection_open_requested.emit(file, prop, _group_files))
 		pad.add_child(btn)
 		return outer
@@ -435,6 +438,7 @@ func _make_cell(file: Dictionary, prop: String) -> Control:
 		btn.text = "[ empty ]"
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.clip_text = true
 		btn.add_theme_color_override("font_color", Color(1.0, 0.78, 0.2))
 		btn.flat = true
 		btn.tooltip_text = "Click to add items"

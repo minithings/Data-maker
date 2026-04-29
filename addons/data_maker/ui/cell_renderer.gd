@@ -156,7 +156,7 @@ static func _make_collection_cell(val, on_collection: Callable) -> Control:
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.clip_text = true
-	btn.tooltip_text = "Click to edit"
+	btn.tooltip_text = str(val)
 	btn.pressed.connect(on_collection)
 	return btn
 
