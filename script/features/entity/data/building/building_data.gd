@@ -23,7 +23,7 @@ enum ConstructionType {
 
 @export_subgroup("Thông tin mở rộng")
 @export var allows_entry: bool = false
-@export var health: int = GameConstants.DEFAULT_BUILDING_HEALTH
+@export var health: int = 0
 ## Nếu true, building này luôn sẵn sàng build từ đầu game mà không cần research unlock.
 @export var unlocked_by_default: bool = false
 @export var can_upgrade: bool = false
@@ -42,8 +42,3 @@ enum ConstructionType {
 @export_group("Hiển thị & Kích thước")
 @export var icon: Texture2D
 @export var size: Vector2i = Vector2i(2, 2)
-
-func get_size() -> Vector2i:
-	var actual_width = size.x * GameConstants.TILE_SIZE
-	var actual_height = size.y * GameConstants.TILE_SIZE
-	return Vector2i(actual_width, actual_height)

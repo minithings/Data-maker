@@ -41,50 +41,63 @@ func setup(script_name: String, group_files: Array) -> void:
 	_script_name = script_name
 	_group_files = group_files
 	_fields      = _get_fields(group_files)
+	if _script_name == "item_data.gd":
+		print("[DM_FIELDS] ", _script_name, " → ", _fields)
+		if not _group_files.is_empty():
+			print("[DM_DATA] ash data = ", _group_files[0]["data"])
 	_build_ui()
 
-# Returns the union of all data keys across the group, optionally filtered to
-# only keys that exist in the GDScript hints (when hints are available).
-# This prevents extra fields from mis-copied .tres files polluting the table.
+# Returns the authoritative field list for this group.
+# For .tres: use GDScript @export hints as source of truth (preserves fields
+#   even when Godot omits default values from the file), then filter out any
+#   extra keys not declared in the script (e.g. from mis-pasted .tres files).
+# For .json: use the union of all data keys (no schema available).
 func _get_fields(group_files: Array) -> Array:
-	# Collect union of all keys
-	var all_keys: Array = []
-	for f in group_files:
-		for k in f["data"]:
-			if not all_keys.has(k):
-				all_keys.append(k)
+	if group_files.is_empty():
+		return []
 
-	# If we have script hints, filter to only declared props
-	if group_files.is_empty() or group_files[0]["type"] != "tres":
+	# JSON — no schema, use union of data keys
+	if group_files[0]["type"] != "tres":
+		var all_keys: Array = []
+		for f in group_files:
+			for k in f["data"]:
+				if not all_keys.has(k):
+					all_keys.append(k)
 		return all_keys
 
-	var sample = group_files[0]
-	var script_file = sample.get("script_name", "")
+	# .tres — resolve GDScript hints for this group's script
+	var script_file = group_files[0].get("script_name", "")
+	var all_hints: Dictionary = _collect_hints(script_file)
 
-	print("[DM_DEBUG] group=%s | script_file='%s'" % [_script_name, script_file])
-	print("[DM_DEBUG] store.scripts keys: ", _store.scripts.keys())
-	print("[DM_DEBUG] store.class_map: ", _store.class_map)
-	print("[DM_DEBUG] all_keys: ", all_keys)
+	if all_hints.is_empty():
+		# No hints found — fall back to union of data keys
+		var all_keys: Array = []
+		for f in group_files:
+			for k in f["data"]:
+				if not all_keys.has(k):
+					all_keys.append(k)
+		return all_keys
 
+	# Use hint keys as the authoritative column order (matches @export declaration order)
+	# all_hints is built in order via the while-loop below — return as ordered array
+	return all_hints.keys()
+
+# Walk the inheritance chain and return an ordered dict of all @export field names.
+func _collect_hints(script_file: String) -> Dictionary:
 	var si = _store.scripts.get(script_file)
 	if si == null:
-		var mapped = _store.class_map.get(script_file, "")
-		if mapped != "":
-			si = _store.scripts.get(mapped)
+		si = _store.scripts.get(_store.class_map.get(script_file, ""))
 	if si == null:
-		print("[DM_DEBUG] FILTER SKIPPED — script not found in store.scripts")
-		return all_keys
+		return {}
 
-	print("[DM_DEBUG] si.hints keys: ", si["hints"].keys())
-
-	# Collect all declared hints including parent chain
-	var all_hints: Dictionary = {}
+	# Walk parent chain, child hints take priority (child keys added first)
+	var ordered: Dictionary = {}
 	var cur_si = si
 	var depth = 0
 	while cur_si != null and depth < 10:
 		for k in cur_si["hints"]:
-			if not all_hints.has(k):
-				all_hints[k] = true
+			if not ordered.has(k):
+				ordered[k] = true
 		var parent = cur_si.get("parent", "")
 		if parent == "":
 			break
@@ -92,19 +105,7 @@ func _get_fields(group_files: Array) -> Array:
 		if cur_si == null:
 			cur_si = _store.scripts.get(_store.class_map.get(parent, ""))
 		depth += 1
-
-	print("[DM_DEBUG] all_hints: ", all_hints.keys())
-
-	if all_hints.is_empty():
-		print("[DM_DEBUG] FILTER SKIPPED — hints empty")
-		return all_keys
-
-	var filtered: Array = []
-	for k in all_keys:
-		if all_hints.has(k):
-			filtered.append(k)
-	print("[DM_DEBUG] filtered fields: ", filtered)
-	return filtered
+	return ordered
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _build_ui() -> void:
@@ -366,6 +367,9 @@ func _make_cell(file: Dictionary, prop: String) -> Control:
 	var val        = file["data"].get(prop)
 	var field_type = _gd_parser.get_field_type(file, prop, _store)
 	var hint       = _gd_parser.get_hint(file, prop, _store)
+	# Field absent from .tres means Godot stored the GDScript default — use it for display
+	if val == null and hint.has("default"):
+		val = hint["default"]
 	var hi         = _validator.has_issue(file, prop)
 	var hw         = _validator.has_warning(file, prop)
 

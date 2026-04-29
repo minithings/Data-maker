@@ -60,31 +60,55 @@ func parse_gdscript(content: String, filename: String, store) -> void:
 		var is_export = "@export" in t
 
 		if "@export_multiline" in t:
-			hints[var_name] = { "type": "multiline" }
+			hints[var_name] = { "type": "multiline", "default": "" }
 		elif "@export_enum" in t:
 			var em2 = _re_export_enum.search(t)
 			if em2:
 				var opts: Array[String] = []
 				for o in em2.get_string(1).split(","):
 					opts.append(o.strip_edges().trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'"))
-				hints[var_name] = { "type": "export_enum", "options": opts }
+				hints[var_name] = { "type": "export_enum", "options": opts, "default": 0 }
 		elif ": bool" in t or "= true" in t or "= false" in t:
-			hints[var_name] = { "type": "bool" }
+			var default_bool = true if "= true" in t else false
+			hints[var_name] = { "type": "bool", "default": default_bool }
 		elif ": int" in t or ": float" in t:
-			hints[var_name] = { "type": "number" }
+			var default_num = _parse_default_number(t)
+			hints[var_name] = { "type": "number", "default": default_num }
 		elif is_export:
 			# Check enum type first
 			var matched_enum = false
 			for enum_name in enums:
 				if (": %s" % enum_name) in t:
-					hints[var_name] = { "type": "enum", "options": enums[enum_name] }
+					hints[var_name] = { "type": "enum", "options": enums[enum_name], "default": 0 }
 					matched_enum = true
 					break
-			# Default: @export var with String or unknown type
 			if not matched_enum:
-				hints[var_name] = { "type": "default" }
+				var default_str = _parse_default_string(t)
+				hints[var_name] = { "type": "default", "default": default_str }
 
 	store.scripts[filename] = { "hints": hints, "parent": parent }
+
+# Extract numeric default from a var declaration line, e.g. "var foo: int = 42" → 42.0
+func _parse_default_number(line: String) -> float:
+	var eq = line.rfind("=")
+	if eq == -1:
+		return 0.0
+	var after = line.substr(eq + 1).strip_edges().split(" ")[0].split("#")[0].strip_edges()
+	if after.is_valid_float():
+		return after.to_float()
+	return 0.0
+
+# Extract string default from a var declaration line, e.g. 'var foo: String = "hi"' → "hi"
+func _parse_default_string(line: String) -> String:
+	var eq = line.rfind("=")
+	if eq == -1:
+		return ""
+	var after = line.substr(eq + 1).strip_edges().split("#")[0].strip_edges()
+	if after.begins_with('"') and after.ends_with('"'):
+		return after.substr(1, after.length() - 2)
+	if after.begins_with("'") and after.ends_with("'"):
+		return after.substr(1, after.length() - 2)
+	return ""
 
 func get_hint(file: Dictionary, prop: String, store) -> Dictionary:
 	var h: Dictionary = {}

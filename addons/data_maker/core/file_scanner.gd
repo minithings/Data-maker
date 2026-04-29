@@ -26,12 +26,9 @@ func load_project_data(root_abs: String) -> void:
 					store.ignored_folders.append(trimmed)
 			f.close()
 
-	print("[DM_SCAN] ignored_folders: ", store.ignored_folders)
-	# Pass 1: parse all .gd first so hints are available for .tres/.json
+	# Pass 1: scan ALL folders for .gd (ignore list NOT applied — scripts needed for hints)
 	_scan_dir(root_abs, "", true)
-	print("[DM_SCAN] After pass1 — store.scripts keys: ", store.scripts.keys())
-	print("[DM_SCAN] After pass1 — store.class_map: ", store.class_map)
-	# Pass 2: parse .tres and .json
+	# Pass 2: scan .tres/.json (ignore list applied — only show data folders)
 	_scan_dir(root_abs, "", false)
 
 	store.build_tree()

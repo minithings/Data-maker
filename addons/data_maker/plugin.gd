@@ -16,7 +16,7 @@ func _enter_tree() -> void:
 	if cfg.load(CONFIG_PATH) == OK:
 		var p = cfg.get_value("editor", "last_project_path", "")
 		if p != "" and DirAccess.dir_exists_absolute(p):
-			_panel.restore_project(p)
+			_panel.call_deferred("restore_project", p)
 
 func _exit_tree() -> void:
 	if is_instance_valid(_panel):

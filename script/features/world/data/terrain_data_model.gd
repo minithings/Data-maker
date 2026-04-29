@@ -148,23 +148,3 @@ func save_to_dict() -> Dictionary:
 		"crop_data": saved_crops,
 		"metadata": _metadata
 	}
-
-func load_from_dict(data: Dictionary) -> void:
-	clear_all()
-
-	var soil_dict: Dictionary = data.get("soil_data", {})
-	for pos_str in soil_dict:
-		_soil_data[_parse_string_to_vector2i(pos_str)] = soil_dict[pos_str]
-
-	var structure_dict: Dictionary = data.get("structure_data", {})
-	for pos_str in structure_dict:
-		_structure_data[_parse_string_to_vector2i(pos_str)] = structure_dict[pos_str]
-
-	var crop_dict: Dictionary = data.get("crop_data", {})
-	for pos_str in crop_dict:
-		_crop_data[_parse_string_to_vector2i(pos_str)] = crop_dict[pos_str]
-
-	_metadata = data.get("metadata", _metadata)
-
-func _parse_string_to_vector2i(pos_str: String) -> Vector2i:
-	return Common.parse_string_to_vector2i(pos_str)
