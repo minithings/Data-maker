@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://b5hgjywbfv4fp"]
-
-[ext_resource type="Script" uid="uid://07hdih6n6yp4" path="res://script/shared/data/event_data.gd" id="1_myfs5"]
-
-[resource]
-script = ExtResource("1_myfs5")
-code = "evt_beast_raid"
-name = "Thú Hoang Rình Rập"
-metadata/_custom_type_script = "uid://07hdih6n6yp4"
