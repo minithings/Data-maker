@@ -401,7 +401,6 @@ func _make_cell(file: Dictionary, prop: String) -> Control:
 		return outer
 
 	# Bool fields: build CheckButton here so we can use the already-injected `val`
-	# (CellRenderer.make_cell re-reads file["data"].get(prop) which misses injected default)
 	if field_type == "bool":
 		var btn = CheckButton.new()
 		btn.button_pressed = true if val else false
@@ -411,8 +410,24 @@ func _make_cell(file: Dictionary, prop: String) -> Control:
 		pad.add_child(btn)
 		return outer
 
-	# Null/empty value whose type looks like a collection in sibling entries →
-	# show clickable button so user can open CollectionDialog to add items
+	# Collection fields (Array[String], Array, Dictionary declared in .gd) → always show button
+	if field_type == "collection":
+		var btn = Button.new()
+		var raw = file["data"].get(prop)
+		if raw != null and typeof(raw) == TYPE_STRING and raw.strip_edges() != "":
+			btn.text = _CellRenderer._collection_label(raw)
+		else:
+			btn.text = "[ empty ]"
+			btn.add_theme_color_override("font_color", Color(1.0, 0.78, 0.2))
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.flat = true
+		btn.tooltip_text = "Click to edit"
+		btn.pressed.connect(func(): collection_open_requested.emit(file, prop, _group_files))
+		pad.add_child(btn)
+		return outer
+
+	# Raw Godot collection value in data (e.g. [{...}], {...}) from sibling entries
 	var is_null_collection = (val == null or (typeof(val) == TYPE_STRING and (val as String) in ["", "—"])) and \
 		_prop_is_collection(prop)
 	if is_null_collection:

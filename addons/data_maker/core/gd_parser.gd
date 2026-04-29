@@ -115,8 +115,8 @@ func parse_gdscript(content: String, filename: String, store) -> void:
 						else:
 							# Array[LootData], Array[FishData] etc. → unsupported
 							hints[var_name] = { "type": "unsupported", "gdtype": full, "default": null }
-					elif full == "Dictionary":
-						hints[var_name] = { "type": "collection", "default": {} }
+					elif full in ["Dictionary", "Array"]:
+						hints[var_name] = { "type": "collection", "default": [] }
 					elif scalar in PRIMITIVE_TYPES:
 						# String, int, float → default text field
 						var default_str = _parse_default_string(t)

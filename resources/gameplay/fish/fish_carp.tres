@@ -6,3 +6,5 @@
 [resource]
 script = ExtResource("2_e5xmi")
 metadata/_custom_type_script = "uid://pbvx3fuku2x6"
+
+weather_bonus = "[]"
