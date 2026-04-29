@@ -25,7 +25,7 @@ func has_warning(file: Dictionary, prop: String) -> bool:
 	if field_type in ["bool", "enum", "export_enum"]:
 		return false
 	var v = file["data"].get(prop)
-	return v == "" or v == null
+	return v == null or (typeof(v) == TYPE_STRING and (v as String) == "")
 
 func get_error_list() -> Array:
 	return store.get_error_list(self)

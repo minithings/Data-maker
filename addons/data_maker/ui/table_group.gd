@@ -40,8 +40,71 @@ func _init(store, validator, gd_parser) -> void:
 func setup(script_name: String, group_files: Array) -> void:
 	_script_name = script_name
 	_group_files = group_files
-	_fields      = _store.get_fields_for_group(group_files)
+	_fields      = _get_fields(group_files)
 	_build_ui()
+
+# Returns the union of all data keys across the group, optionally filtered to
+# only keys that exist in the GDScript hints (when hints are available).
+# This prevents extra fields from mis-copied .tres files polluting the table.
+func _get_fields(group_files: Array) -> Array:
+	# Collect union of all keys
+	var all_keys: Array = []
+	for f in group_files:
+		for k in f["data"]:
+			if not all_keys.has(k):
+				all_keys.append(k)
+
+	# If we have script hints, filter to only declared props
+	if group_files.is_empty() or group_files[0]["type"] != "tres":
+		return all_keys
+
+	var sample = group_files[0]
+	var script_file = sample.get("script_name", "")
+
+	print("[DM_DEBUG] group=%s | script_file='%s'" % [_script_name, script_file])
+	print("[DM_DEBUG] store.scripts keys: ", _store.scripts.keys())
+	print("[DM_DEBUG] store.class_map: ", _store.class_map)
+	print("[DM_DEBUG] all_keys: ", all_keys)
+
+	var si = _store.scripts.get(script_file)
+	if si == null:
+		var mapped = _store.class_map.get(script_file, "")
+		if mapped != "":
+			si = _store.scripts.get(mapped)
+	if si == null:
+		print("[DM_DEBUG] FILTER SKIPPED — script not found in store.scripts")
+		return all_keys
+
+	print("[DM_DEBUG] si.hints keys: ", si["hints"].keys())
+
+	# Collect all declared hints including parent chain
+	var all_hints: Dictionary = {}
+	var cur_si = si
+	var depth = 0
+	while cur_si != null and depth < 10:
+		for k in cur_si["hints"]:
+			if not all_hints.has(k):
+				all_hints[k] = true
+		var parent = cur_si.get("parent", "")
+		if parent == "":
+			break
+		cur_si = _store.scripts.get(parent)
+		if cur_si == null:
+			cur_si = _store.scripts.get(_store.class_map.get(parent, ""))
+		depth += 1
+
+	print("[DM_DEBUG] all_hints: ", all_hints.keys())
+
+	if all_hints.is_empty():
+		print("[DM_DEBUG] FILTER SKIPPED — hints empty")
+		return all_keys
+
+	var filtered: Array = []
+	for k in all_keys:
+		if all_hints.has(k):
+			filtered.append(k)
+	print("[DM_DEBUG] filtered fields: ", filtered)
+	return filtered
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _build_ui() -> void:
@@ -347,7 +410,7 @@ func _make_cell(file: Dictionary, prop: String) -> Control:
 
 	# Null/empty value whose type looks like a collection in sibling entries →
 	# show clickable button so user can open CollectionDialog to add items
-	var is_null_collection = (val == null or val == "" or val == "—") and \
+	var is_null_collection = (val == null or (typeof(val) == TYPE_STRING and (val as String) in ["", "—"])) and \
 		_prop_is_collection(prop)
 	if is_null_collection:
 		var btn = Button.new()
@@ -462,5 +525,5 @@ func _on_value_changed(file: Dictionary, prop: String, new_val) -> void:
 	file_changed.emit(file)
 
 func refresh() -> void:
-	_fields = _store.get_fields_for_group(_group_files)
+	_fields = _get_fields(_group_files)
 	_build_ui()

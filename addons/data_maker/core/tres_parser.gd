@@ -111,6 +111,9 @@ func parse_tres_body(body: String) -> Dictionary:
 			if val.begins_with(gt + "("):
 				skip = true
 				break
+		# Skip typed Array[X](...) and Dictionary[X,Y](...) — Godot native, not user-editable text
+		if not skip and (val.begins_with("Array[") or val.begins_with("Dictionary[")):
+			skip = true
 		if skip:
 			continue
 

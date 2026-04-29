@@ -56,6 +56,9 @@ func parse_gdscript(content: String, filename: String, store) -> void:
 			continue
 		var var_name = vm.get_string(1)
 
+		# Only track exported vars — used for field filtering in table view
+		var is_export = "@export" in t
+
 		if "@export_multiline" in t:
 			hints[var_name] = { "type": "multiline" }
 		elif "@export_enum" in t:
@@ -69,11 +72,17 @@ func parse_gdscript(content: String, filename: String, store) -> void:
 			hints[var_name] = { "type": "bool" }
 		elif ": int" in t or ": float" in t:
 			hints[var_name] = { "type": "number" }
-		else:
+		elif is_export:
+			# Check enum type first
+			var matched_enum = false
 			for enum_name in enums:
 				if (": %s" % enum_name) in t:
 					hints[var_name] = { "type": "enum", "options": enums[enum_name] }
+					matched_enum = true
 					break
+			# Default: @export var with String or unknown type
+			if not matched_enum:
+				hints[var_name] = { "type": "default" }
 
 	store.scripts[filename] = { "hints": hints, "parent": parent }
 

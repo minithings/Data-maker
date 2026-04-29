@@ -15,5 +15,3 @@ condition_value = 500
 secret = false
 sort_order = 32
 metadata/_custom_type_script = "uid://cx5soryltywi6"
-
-prerequisites = ""

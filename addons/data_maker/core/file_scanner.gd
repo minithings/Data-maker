@@ -26,8 +26,11 @@ func load_project_data(root_abs: String) -> void:
 					store.ignored_folders.append(trimmed)
 			f.close()
 
+	print("[DM_SCAN] ignored_folders: ", store.ignored_folders)
 	# Pass 1: parse all .gd first so hints are available for .tres/.json
 	_scan_dir(root_abs, "", true)
+	print("[DM_SCAN] After pass1 — store.scripts keys: ", store.scripts.keys())
+	print("[DM_SCAN] After pass1 — store.class_map: ", store.class_map)
 	# Pass 2: parse .tres and .json
 	_scan_dir(root_abs, "", false)
 
@@ -44,8 +47,15 @@ func _scan_dir(abs_path: String, rel_path: String, gd_only: bool) -> void:
 		var cur_abs = abs_path.path_join(entry_name)
 		var cur_rel = (rel_path + "/" + entry_name).lstrip("/")
 		if dir.current_is_dir():
-			if not entry_name.begins_with(".") and not store.ignored_folders.has(entry_name):
-				_scan_dir(cur_abs, cur_rel, gd_only)
+			if entry_name.begins_with("."):
+				entry_name = dir.get_next()
+				continue
+			# gd_only pass: scan ALL folders for .gd scripts (ignore list applies only to data files)
+			# data pass: skip ignored folders so they don't appear in the table
+			if not gd_only and store.ignored_folders.has(entry_name):
+				entry_name = dir.get_next()
+				continue
+			_scan_dir(cur_abs, cur_rel, gd_only)
 		else:
 			_process_file(cur_abs, cur_rel, entry_name, rel_path, gd_only)
 		entry_name = dir.get_next()
