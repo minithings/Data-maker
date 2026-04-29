@@ -250,15 +250,42 @@ static func _fmt(f: float) -> String:
 	return s
 
 static func _collection_label(v: String) -> String:
-	if v.strip_edges().begins_with("[{"):
+	var s = v.strip_edges()
+	# Array of dicts: [{...}]
+	if s.begins_with("[{"):
 		return "[ {…} ]"
-	if v.strip_edges().begins_with("{"):
+	# Plain dict: {...}
+	if s.begins_with("{"):
 		return "{ … }"
-	if "Array[" in v:
-		var i0 = v.find("([")
-		var i1 = v.rfind("])")
+	# Typed Dictionary[K,V]({...})
+	if s.begins_with("Dictionary["):
+		var i0 = s.find("({")
+		var i1 = s.rfind("})")
 		if i0 != -1 and i1 != -1:
-			var inner = v.substr(i0 + 2, i1 - i0 - 2).strip_edges()
+			var inner = s.substr(i0 + 2, i1 - i0 - 2).strip_edges()
+			if inner == "":
+				return "{ empty }"
+			# Count keys by counting quoted key patterns: "key":
+			var count = 0
+			var search_from = 0
+			while true:
+				var pos = inner.find('": ', search_from)
+				if pos == -1:
+					pos = inner.find('":', search_from)
+				if pos == -1:
+					break
+				count += 1
+				search_from = pos + 2
+			if count == 0:
+				count = 1
+			return "{ %d key%s }" % [count, "s" if count != 1 else ""]
+		return "{ … }"
+	# Typed Array[X]([...])
+	if "Array[" in s:
+		var i0 = s.find("([")
+		var i1 = s.rfind("])")
+		if i0 != -1 and i1 != -1:
+			var inner = s.substr(i0 + 2, i1 - i0 - 2).strip_edges()
 			if inner == "":
 				return "[ empty ]"
 			var parts = inner.split(",")
@@ -269,4 +296,4 @@ static func _collection_label(v: String) -> String:
 			if parts.size() > 3:
 				preview += " +%d" % (parts.size() - 3)
 			return "[ %s ]" % preview
-	return v.left(30) + ("…" if v.length() > 30 else "")
+	return v.left(28) + ("…" if v.length() > 28 else "")
