@@ -581,12 +581,24 @@ func _on_change_type(prop: String, new_type: String, group_files: Array) -> void
 func _on_multiline_saved(file: Dictionary, prop: String, text: String) -> void:
 	file["data"][prop] = text
 	_store.mark_dirty(file)
-	_refresh_table()
+	_refresh_file_row(file)
 
 func _on_collection_saved(file: Dictionary, prop: String, raw: String) -> void:
 	file["data"][prop] = raw
 	_store.mark_dirty(file)
-	_refresh_table()
+	_refresh_file_row(file)
+
+# Rebuild only the TableGroup that owns this file — no full table rebuild
+func _refresh_file_row(file: Dictionary) -> void:
+	_on_dirty_changed(_store.dirty_count)
+	var script_name = file.get("script_name", "")
+	for tg in _table_groups:
+		if tg._script_name == script_name:
+			var sv = _table_scroll.scroll_vertical
+			var sh = _table_scroll.scroll_horizontal if _table_scroll.get("scroll_horizontal") != null else 0
+			tg.refresh()
+			_table_scroll.call_deferred("set", "scroll_vertical", sv)
+			return
 
 func _process_import(json_text: String) -> void:
 	var json = JSON.new()

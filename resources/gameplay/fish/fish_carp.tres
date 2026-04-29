@@ -10,3 +10,5 @@ metadata/_custom_type_script = "uid://pbvx3fuku2x6"
 weather_bonus = "[]"
 
 seasons = Array[int]([1, 2, 3, 4])
+
+description = "123123123"
