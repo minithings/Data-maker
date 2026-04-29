@@ -2,12 +2,22 @@
 extends RefCounted
 class_name CellRenderer
 
+const _GODOT_TYPES: Array = [
+	"ExtResource", "SubResource", "Rect2", "Rect2i",
+	"Vector2", "Vector2i", "Vector3", "Vector3i", "Vector4", "Vector4i",
+	"Color", "Transform2D", "Transform3D", "Basis", "Quaternion",
+	"Plane", "AABB", "NodePath",
+	"PackedByteArray", "PackedInt32Array", "PackedInt64Array",
+	"PackedFloat32Array", "PackedFloat64Array", "PackedStringArray",
+	"PackedVector2Array", "PackedVector3Array", "PackedColorArray"
+]
+
 # Detect Godot-native raw string values (ExtResource, Color(...), Vector2(...), etc.)
 static func is_raw_godot_value(v) -> bool:
 	if typeof(v) != TYPE_STRING:
 		return false
 	var s: String = v
-	for gt in TresParser.GODOT_TYPES:
+	for gt in _GODOT_TYPES:
 		if s.begins_with(gt + "("):
 			return true
 	if s.begins_with("Array[") and "(" in s:
