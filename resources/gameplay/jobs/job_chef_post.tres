@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="JobConfiguration" format=3 uid="uid://dve8ar3njt46x"]
+
+[ext_resource type="Script" uid="uid://bp2hrge03rxl6" path="res://script/shared/data/jobs/job_configuration.gd" id="1_widfi"]
+[ext_resource type="Script" uid="uid://c8p2ye03e0nx2" path="res://script/features/jobs/job/job_chef.gd" id="2_up200"]
+
+[resource]
+script = ExtResource("1_widfi")
+job_name = "Đầu Bếp"
+job_code = "job_chef_post"
+job_type = "chef"
+strategy_script = ExtResource("2_up200")
+work_radius = 800
+metadata/_custom_type_script = "uid://bp2hrge03rxl6"

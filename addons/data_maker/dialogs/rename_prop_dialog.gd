@@ -10,6 +10,7 @@ var _old_name: String
 var _group_files: Array
 
 func _ready() -> void:
+	hide()
 	title = "Rename Property"
 	size = Vector2(400, 220)
 	wrap_controls = true

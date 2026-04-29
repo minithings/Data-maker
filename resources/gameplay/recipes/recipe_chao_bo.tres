@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3 uid="uid://boejsbsg31o7"]
+
+[ext_resource type="Script" uid="uid://olfmkhvqb52k" path="res://script/features/inventory/data/recipe_data.gd" id="1_mh0cq"]
+
+[resource]
+script = ExtResource("1_mh0cq")
+name = "Cháo Thịt Bò"
+craft_time = 50
+ingredients = Dictionary[String, int]({
+"meat_steak": 1,
+"wheat": 2
+})
+output_item_id = "chao"
+output_amount = 2
+allowed_building_codes = Array[String](["kitchen_stove"])

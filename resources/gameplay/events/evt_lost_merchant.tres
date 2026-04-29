@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://cbwxr3g6q0lip"]
+
+[ext_resource type="Script" uid="uid://07hdih6n6yp4" path="res://script/shared/data/event_data.gd" id="1_32h5q"]
+
+[resource]
+script = ExtResource("1_32h5q")
+metadata/_custom_type_script = "uid://07hdih6n6yp4"
+
+code = "evt_lost_merchant"
+name = "Thương Nhân Lạc Bước"
+description = "Một thương lái ngoại quốc quần áo xộc xệch, co ro vì lạc đường trong sương mù. Ông ta cầu xin một bữa ăn nóng hổi và hứa sẽ trả ơn hậu hĩnh."
+flavor_text = "Cứu một mạng người phúc đẳng hà sa."
+category = "village"
+trigger_type = "random_encounter"
+season_allowed = Array[String](["spring", "summer", "autumn", "winter"])
+required_village_level = 3
+duration_days = 0
+choices = [{"id": "feed", "text": "Đãi tiệc (Tốn 10 Bánh mì, 5 Phô mai)"}, {"id": "basic", "text": "Cho ăn tạm (Tốn 5 Lúa mì)"}, {"id": "refuse", "text": "Từ chối, làng cũng đang thiếu thốn"}]
+outcomes = [{"choice": "feed", "rewards": {"gold": 300, "seed_grape": 5}, "village_happiness": 5}, {"choice": "basic", "rewards": {"gold": 50}, "village_happiness": 0}, {"choice": "refuse", "village_happiness": -5}]
+icon_path = "res://assets/ui/events/lost_merchant.png"

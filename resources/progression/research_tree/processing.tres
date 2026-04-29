@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://dvs4u7p5h30of"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_fy3q2"]
+
+[resource]
+
+
+
+
+
+script = ExtResource("1_fy3q2")
+code = "processing"
+name = "Tinh Chế Vật Liệu"
+description = "Học cách tôi luyện nguyên liệu thô sơ thành những vật tư cao cấp. Cấp quyền xây dựng Lò Rèn (Blacksmith)."
+flavor_text = "Gian nan rèn luyện mới thành thép tốt."
+category = "industry"
+tier = 3
+prerequisites = Array[String](["construction"])
+required_village_level = 3
+gold_cost = 200
+item_costs = {"wood":30,"stone":40}
+children = Array[String](["trade"])
+unlocks_buildings = Array[String](["blacksmith"])
+unlocks_recipes = Array[String](["ash"])
+unlocks_skills = Array[String]([])
+unlocks_tools = Array[String]([])
+unlocks_knowledges = Array[String](["knowledge_metallurgy"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://bcornporrcfgf"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_r3utn"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_odor8"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cornporr"]
+atlas = ExtResource("1_r3utn")
+region = Rect2(48, 64, 16, 16)
+
+[resource]
+script = ExtResource("2_odor8")
+health_restore = 10
+energy_restore = 45
+hunger_restore = 55
+code = "corn_porridge"
+name = "Cháo Bắp"
+description = "Cháo bắp nấu từ hạt ngô tươi, sền sệt vàng óng ngọt lịm. Bà nội hay nấu vào sáng sớm mùa thu — mùi thơm bay xa nửa xóm."
+icon = SubResource("AtlasTexture_cornporr")
+max_stack_size = 30
+sell_price = 50
+buy_price = 100

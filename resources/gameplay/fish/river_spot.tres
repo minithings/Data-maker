@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FishingSpotData" format=3 uid="uid://drji0si8l13jf"]
+
+[ext_resource type="Script" uid="uid://pbvx3fuku2x6" path="res://script/features/fishing/data/fish_data.gd" id="1_58og5"]
+[ext_resource type="Script" uid="uid://c0y1t7p5qc70v" path="res://script/features/fishing/data/fishing_spot_data.gd" id="2_7bm8x"]
+[ext_resource type="Resource" uid="uid://dn84x7o4et421" path="res://resources/gameplay/fish/fish_carp.tres" id="2_s712p"]
+
+[resource]
+script = ExtResource("2_7bm8x")
+spot_code = "river_spot"
+fish_pool = Array[ExtResource("1_58og5")]([ExtResource("2_s712p")])
+restock_hours = 0.0
+visual_tile = Vector2i(50, 50)
+metadata/_custom_type_script = "uid://c0y1t7p5qc70v"

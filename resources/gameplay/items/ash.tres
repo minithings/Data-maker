@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://da28bo5s2d7dk"]
+
+[ext_resource type="Texture2D" uid="uid://bkqg27srtnleg" path="res://graphics/icons/weapons/14.png" id="1_spnmm"]
+[ext_resource type="Script" uid="uid://jlk7al1lfpix" path="res://script/features/item/data/item_data.gd" id="2_vfgxq"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rqi53"]
+atlas = ExtResource("1_spnmm")
+region = Rect2(208, 0, 16, 16)
+
+[resource]
+
+script = ExtResource("2_vfgxq")
+code = "ash"
+name = "Tro"
+description = "Tro tàn xám xịt còn sót lại sau khi đốt củi. Rất tốt để rắc lên đất nhằm trung hòa độ chua."
+icon = SubResource("AtlasTexture_rqi53")
+max_stack_size = 999
+sell_price = 2
+buy_price = 5

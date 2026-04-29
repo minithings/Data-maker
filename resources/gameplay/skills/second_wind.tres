@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://pr2crd4gho86"]
+
+[ext_resource type="Script" uid="uid://con4myvhthet7" path="res://script/features/skill/data/skill_data.gd" id="1_scwd"]
+
+[resource]
+script = ExtResource("1_scwd")
+code = "second_wind"
+name = "Ý Chí Sinh Tồn"
+description = "Khi cơ thể tưởng chừng gục ngã, một luồng sinh khí mạnh mẽ trỗi dậy. Ngay lập tức xua tan kiệt sức và phục hồi năng lượng để bước tiếp."
+icon_emoji = "🌀"
+category = "survival"
+prerequisites = Array[String](["tough_body", "quick_recovery"])
+level_costs = [{
+"player_level": 8,
+"skill_points": 4
+}]
+level_effects = [{
+"remove_exhaustion": 1,
+"restore_energy": 60
+}]
+skill_type = "active"
+cooldown = 45

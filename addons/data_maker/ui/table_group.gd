@@ -2,6 +2,8 @@
 extends VBoxContainer
 class_name TableGroup
 
+const _CellRenderer = preload("res://addons/data_maker/ui/cell_renderer.gd")
+
 signal entry_add_requested(group_files: Array, script_name: String)
 signal column_add_requested(group_files: Array)
 signal column_rename_requested(prop: String, group_files: Array)
@@ -10,217 +12,452 @@ signal entry_rename_requested(file: Dictionary)
 signal entry_duplicate_requested(file: Dictionary)
 signal entry_delete_requested(file: Dictionary)
 signal multiline_open_requested(file: Dictionary, prop: String)
-signal collection_open_requested(file: Dictionary, prop: String)
+signal collection_open_requested(file: Dictionary, prop: String, group_files: Array)
 signal file_changed(file: Dictionary)
+signal inspect_resource_requested(abs_path: String)   # open ExtResource in Godot Inspector
 
-var _store: DataStore
-var _validator: Validator
-var _gd_parser: GDParser
+const ROW_HEIGHT    = 32
+const HEADER_HEIGHT = 28
+const ID_COL_WIDTH  = 210
+const COL_WIDTH     = 180
+
+var _store
+var _validator
+var _gd_parser
 var _script_name: String
 var _group_files: Array
-var _rows_container: VBoxContainer
-var _header_row: HBoxContainer
 var _fields: Array = []
 
-func _init(store: DataStore, validator: Validator, gd_parser: GDParser) -> void:
-	_store = store
+var _id_col_vbox: VBoxContainer
+var _data_scroll: ScrollContainer
+var _data_col_vbox: VBoxContainer
+
+func _init(store, validator, gd_parser) -> void:
+	_store     = store
 	_validator = validator
 	_gd_parser = gd_parser
 
 func setup(script_name: String, group_files: Array) -> void:
 	_script_name = script_name
 	_group_files = group_files
-	_fields = _store.get_fields_for_group(group_files)
+	_fields      = _store.get_fields_for_group(group_files)
 	_build_ui()
 
+# ─────────────────────────────────────────────────────────────────────────────
 func _build_ui() -> void:
-	# Clear previous
-	for child in get_children():
-		child.queue_free()
+	for c in get_children(): c.queue_free()
+	add_theme_constant_override("separation", 0)
 
-	# Group header bar
-	var header_bar = HBoxContainer.new()
-	var dot = ColorRect.new()
-	dot.custom_minimum_size = Vector2(8, 8)
-	dot.color = Color(0.4, 0.6, 1.0)
-	header_bar.add_child(dot)
+	add_child(_make_section_header())
+
+	var body = HBoxContainer.new()
+	body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body.add_theme_constant_override("separation", 0)
+	add_child(body)
+
+	# Fixed ID column (left)
+	_id_col_vbox = VBoxContainer.new()
+	_id_col_vbox.custom_minimum_size.x = ID_COL_WIDTH
+	_id_col_vbox.size_flags_horizontal  = Control.SIZE_SHRINK_BEGIN
+	_id_col_vbox.add_theme_constant_override("separation", 0)
+	body.add_child(_id_col_vbox)
+
+	var vsep = VSeparator.new()
+	vsep.custom_minimum_size.x = 1
+	body.add_child(vsep)
+
+	# Scrollable data columns (right) — wheel scrolls horizontally, drag scrolls
+	_data_scroll = ScrollContainer.new()
+	_data_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	_data_scroll.vertical_scroll_mode   = ScrollContainer.SCROLL_MODE_DISABLED
+	_data_scroll.size_flags_horizontal  = Control.SIZE_EXPAND_FILL
+	_data_scroll.gui_input.connect(_on_scroll_input.bind(_data_scroll))
+	body.add_child(_data_scroll)
+
+	_data_col_vbox = VBoxContainer.new()
+	_data_col_vbox.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_data_col_vbox.add_theme_constant_override("separation", 0)
+	_data_scroll.add_child(_data_col_vbox)
+
+	_build_header_row()
+	_build_data_rows()
+
+# ── Section header ────────────────────────────────────────────────────────────
+func _make_section_header() -> Control:
+	var vb = VBoxContainer.new()
+	vb.add_theme_constant_override("separation", 0)
+
+	var bar = HBoxContainer.new()
+	bar.add_theme_constant_override("separation", 6)
+
+	var accent = ColorRect.new()
+	accent.custom_minimum_size = Vector2(3, 16)
+	accent.color = Color(0.4, 0.6, 1.0)
+	bar.add_child(accent)
 
 	var title = Label.new()
-	title.text = _script_name
-	title.add_theme_font_size_override("font_size", 11)
-	header_bar.add_child(title)
+	title.text = " " + _script_name
+	title.add_theme_font_size_override("font_size", 12)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.vertical_alignment   = VERTICAL_ALIGNMENT_CENTER
+	bar.add_child(title)
 
-	var add_entry_btn = Button.new()
-	add_entry_btn.text = "+ Entry"
-	add_entry_btn.pressed.connect(func(): entry_add_requested.emit(_group_files, _script_name))
-	header_bar.add_child(add_entry_btn)
+	var count_lbl = Label.new()
+	count_lbl.text = str(_group_files.size()) + " rows"
+	count_lbl.add_theme_font_size_override("font_size", 10)
+	count_lbl.modulate = Color(0.5, 0.5, 0.5)
+	count_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	bar.add_child(count_lbl)
 
-	# Add Column only for JSON groups
+	var add_btn = Button.new()
+	add_btn.text = "+ Entry"
+	add_btn.custom_minimum_size = Vector2(70, 22)
+	add_btn.pressed.connect(func(): entry_add_requested.emit(_group_files, _script_name))
+	bar.add_child(add_btn)
+
 	if not _group_files.is_empty() and _group_files[0]["type"] == "json":
-		var add_col_btn = Button.new()
-		add_col_btn.text = "Column"
-		add_col_btn.pressed.connect(func(): column_add_requested.emit(_group_files))
-		header_bar.add_child(add_col_btn)
+		var col_btn = Button.new()
+		col_btn.text = "+ Column"
+		col_btn.custom_minimum_size = Vector2(76, 22)
+		col_btn.pressed.connect(func(): column_add_requested.emit(_group_files))
+		bar.add_child(col_btn)
 
-	add_child(header_bar)
+	vb.add_child(bar)
+	vb.add_child(HSeparator.new())
+	return vb
 
-	# Scrollable table area
-	var scroll = ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	scroll.custom_minimum_size.y = 38 + _group_files.size() * 50
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	add_child(scroll)
+# ── Scroll: wheel → horizontal, left-drag → grab-scroll ──────────────────────
+func _on_scroll_input(event: InputEvent, scroll: ScrollContainer) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+			scroll.scroll_horizontal -= 48
+			scroll.accept_event()
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+			scroll.scroll_horizontal += 48
+			scroll.accept_event()
+		elif event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				scroll.set_meta("_drag", true)
+				scroll.set_meta("_drag_x", event.global_position.x)
+				scroll.set_meta("_drag_sx", float(scroll.scroll_horizontal))
+				scroll.mouse_default_cursor_shape = Control.CURSOR_DRAG
+			else:
+				scroll.set_meta("_drag", false)
+				scroll.mouse_default_cursor_shape = Control.CURSOR_ARROW
+	elif event is InputEventMouseMotion:
+		if scroll.get_meta("_drag", false):
+			var dx = event.global_position.x - scroll.get_meta("_drag_x", 0.0)
+			scroll.scroll_horizontal = int(scroll.get_meta("_drag_sx", 0.0) - dx)
+			scroll.accept_event()
 
-	var table = VBoxContainer.new()
-	table.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(table)
-
-	# Column header row
-	_header_row = HBoxContainer.new()
-	_build_header_row()
-	table.add_child(_header_row)
-
-	# Data rows
-	_rows_container = VBoxContainer.new()
-	table.add_child(_rows_container)
-	_rebuild_rows()
-
+# ── Header row ────────────────────────────────────────────────────────────────
 func _build_header_row() -> void:
-	for child in _header_row.get_children():
-		child.queue_free()
+	var id_hdr = Label.new()
+	id_hdr.text = "  Identifier"
+	id_hdr.custom_minimum_size = Vector2(ID_COL_WIDTH, HEADER_HEIGHT)
+	id_hdr.add_theme_font_size_override("font_size", 11)
+	id_hdr.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	id_hdr.modulate = Color(0.65, 0.65, 0.65)
+	_id_col_vbox.add_child(id_hdr)
+	_id_col_vbox.add_child(_hsep())
 
-	# ID column header
-	var id_label = Label.new()
-	id_label.text = "Identifier"
-	id_label.custom_minimum_size.x = 220
-	id_label.add_theme_font_size_override("font_size", 10)
-	_header_row.add_child(id_label)
+	var hdr_row = HBoxContainer.new()
+	hdr_row.custom_minimum_size.y = HEADER_HEIGHT
+	hdr_row.add_theme_constant_override("separation", 1)
 
-	# Field column headers
 	for prop in _fields:
-		var col_box = HBoxContainer.new()
-		col_box.custom_minimum_size.x = 150
+		hdr_row.add_child(_make_col_header(prop))
 
-		var col_label = Label.new()
-		col_label.text = prop
-		col_label.add_theme_font_size_override("font_size", 10)
-		col_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		col_box.add_child(col_label)
+	_data_col_vbox.add_child(hdr_row)
+	_data_col_vbox.add_child(_hsep())
 
-		# Rename button
-		var rename_btn = Button.new()
-		rename_btn.text = "✎"
-		rename_btn.custom_minimum_size = Vector2(24, 24)
-		rename_btn.tooltip_text = "Rename Property"
-		rename_btn.pressed.connect(func(): column_rename_requested.emit(prop, _group_files))
-		col_box.add_child(rename_btn)
+func _make_col_header(prop: String) -> Control:
+	var box = HBoxContainer.new()
+	box.custom_minimum_size = Vector2(COL_WIDTH, HEADER_HEIGHT)
+	box.add_theme_constant_override("separation", 2)
 
-		# Change type button
-		var type_btn = Button.new()
-		type_btn.text = "⚙"
-		type_btn.custom_minimum_size = Vector2(24, 24)
-		type_btn.tooltip_text = "Change Column Type"
-		type_btn.pressed.connect(func(): column_change_type_requested.emit(prop, _group_files))
-		col_box.add_child(type_btn)
+	var lbl = Label.new()
+	lbl.text = prop
+	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.modulate = Color(0.65, 0.65, 0.65)
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl.clip_text = true
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	box.add_child(lbl)
 
-		_header_row.add_child(col_box)
+	var ren = Button.new()
+	ren.text = "✎"
+	ren.flat = true
+	ren.custom_minimum_size = Vector2(18, 18)
+	ren.tooltip_text = "Rename column"
+	ren.pressed.connect(func(): column_rename_requested.emit(prop, _group_files))
+	box.add_child(ren)
 
-func _rebuild_rows() -> void:
-	for child in _rows_container.get_children():
-		child.queue_free()
+	var typ = Button.new()
+	typ.text = "⚙"
+	typ.flat = true
+	typ.custom_minimum_size = Vector2(18, 18)
+	typ.tooltip_text = "Change column type"
+	typ.pressed.connect(func(): column_change_type_requested.emit(prop, _group_files))
+	box.add_child(typ)
 
-	for file in _group_files:
-		_add_row(file)
+	return box
 
-func _add_row(file: Dictionary) -> void:
+# ── Data rows ─────────────────────────────────────────────────────────────────
+func _build_data_rows() -> void:
+	for i in _group_files.size():
+		_add_row(_group_files[i], i)
+
+func _add_row(file: Dictionary, row_idx: int) -> void:
+	var is_dirty = file.get("dirty", false)
+	var even     = row_idx % 2 == 0
+
+	# Left: ID cell
+	_id_col_vbox.add_child(_make_id_cell(file, is_dirty, even))
+	_id_col_vbox.add_child(_hsep())
+
+	# Right: one cell per field — all editable, ExtResource gets special treatment
+	var data_row = HBoxContainer.new()
+	data_row.custom_minimum_size.y = ROW_HEIGHT
+	data_row.add_theme_constant_override("separation", 1)
+	if even:
+		_apply_bg(data_row, Color(1, 1, 1, 0.03))
+
+	for prop in _fields:
+		data_row.add_child(_make_cell(file, prop))
+
+	_data_col_vbox.add_child(data_row)
+	_data_col_vbox.add_child(_hsep())
+
+# ── ID cell ───────────────────────────────────────────────────────────────────
+func _make_id_cell(file: Dictionary, is_dirty: bool, even: bool) -> Control:
 	var row = HBoxContainer.new()
-	row.custom_minimum_size.y = 40
+	row.custom_minimum_size.y = ROW_HEIGHT
+	row.add_theme_constant_override("separation", 0)
+	if even:
+		_apply_bg(row, Color(1, 1, 1, 0.03))
 
-	# Dirty indicator
-	if file.get("dirty", false):
-		var dirty_rect = ColorRect.new()
-		dirty_rect.custom_minimum_size = Vector2(3, 0)
-		dirty_rect.color = Color(0.95, 0.62, 0.1)
-		dirty_rect.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		row.add_child(dirty_rect)
-
-	# ID cell
-	var id_box = HBoxContainer.new()
-	id_box.custom_minimum_size.x = 217
-
-	var id_label = Label.new()
-	id_label.text = file["name"]
-	id_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	id_label.clip_text = true
-	id_box.add_child(id_label)
-
-	# Row action buttons
-	var rename_btn = Button.new()
-	rename_btn.text = "✎"
-	rename_btn.custom_minimum_size = Vector2(24, 24)
-	rename_btn.tooltip_text = "Rename"
-	rename_btn.pressed.connect(func(): entry_rename_requested.emit(file))
-	id_box.add_child(rename_btn)
+	# Dirty strip
+	var strip = ColorRect.new()
+	strip.custom_minimum_size  = Vector2(3, 0)
+	strip.size_flags_vertical  = Control.SIZE_EXPAND_FILL
+	strip.color = Color(0.95, 0.62, 0.1) if is_dirty else Color(0, 0, 0, 0)
+	row.add_child(strip)
 
 	if file["type"] == "tres":
-		var dup_btn = Button.new()
-		dup_btn.text = "⧉"
-		dup_btn.custom_minimum_size = Vector2(24, 24)
-		dup_btn.tooltip_text = "Duplicate"
-		dup_btn.pressed.connect(func(): entry_duplicate_requested.emit(file))
-		id_box.add_child(dup_btn)
-
-	var del_btn = Button.new()
-	del_btn.text = "🗑"
-	del_btn.custom_minimum_size = Vector2(24, 24)
-	del_btn.tooltip_text = "Delete"
-	del_btn.pressed.connect(func(): entry_delete_requested.emit(file))
-	id_box.add_child(del_btn)
-
-	row.add_child(id_box)
-
-	# Data cells
-	for prop in _fields:
-		var field_type = _gd_parser.get_field_type(file, prop, _store)
-		var hint = _gd_parser.get_hint(file, prop, _store)
-		var hi = _validator.has_issue(file, prop)
-		var hw = _validator.has_warning(file, prop)
-
-		var cell_box = HBoxContainer.new()
-		cell_box.custom_minimum_size.x = 150
-
-		var cell = CellRenderer.make_cell(
-			file, prop, field_type, hint, hi, hw,
-			func(val): _on_value_changed(file, prop, val),
-			func(): multiline_open_requested.emit(file, prop),
-			func(): collection_open_requested.emit(file, prop)
+		# Clickable name → open in Inspector
+		var name_btn = Button.new()
+		name_btn.text = "  " + file["name"]
+		name_btn.flat = true
+		name_btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		name_btn.clip_text = true
+		name_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_btn.add_theme_font_size_override("font_size", 11)
+		name_btn.tooltip_text = "Open in Inspector"
+		if is_dirty:
+			name_btn.add_theme_color_override("font_color", Color(0.95, 0.72, 0.3))
+		else:
+			name_btn.add_theme_color_override("font_color", Color(0.75, 0.88, 1.0))
+		name_btn.pressed.connect(func():
+			inspect_resource_requested.emit(file.get("abs_path", ""))
 		)
-		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		cell_box.add_child(cell)
-		row.add_child(cell_box)
+		row.add_child(name_btn)
+	else:
+		var lbl = Label.new()
+		lbl.text = "  " + file["name"]
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lbl.clip_text = true
+		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.add_theme_font_size_override("font_size", 11)
+		if is_dirty:
+			lbl.modulate = Color(0.95, 0.72, 0.3)
+		row.add_child(lbl)
 
-	_rows_container.add_child(row)
+	var ren = Button.new()
+	ren.text = "✎"; ren.flat = true
+	ren.custom_minimum_size = Vector2(22, 22)
+	ren.tooltip_text = "Rename"
+	ren.pressed.connect(func(): entry_rename_requested.emit(file))
+	row.add_child(ren)
 
-	# Separator
-	var sep = HSeparator.new()
-	_rows_container.add_child(sep)
+	if file["type"] == "tres":
+		var dup = Button.new()
+		dup.text = "⧉"; dup.flat = true
+		dup.custom_minimum_size = Vector2(22, 22)
+		dup.tooltip_text = "Duplicate"
+		dup.pressed.connect(func(): entry_duplicate_requested.emit(file))
+		row.add_child(dup)
+
+	var del = Button.new()
+	del.text = "✕"; del.flat = true
+	del.custom_minimum_size = Vector2(22, 22)
+	del.tooltip_text = "Delete"
+	del.add_theme_color_override("font_color", Color(0.9, 0.4, 0.4))
+	del.pressed.connect(func(): entry_delete_requested.emit(file))
+	row.add_child(del)
+
+	return row
+
+# ── Per-field cell: editable or ExtResource badge ────────────────────────────
+func _make_cell(file: Dictionary, prop: String) -> Control:
+	var val        = file["data"].get(prop)
+	var field_type = _gd_parser.get_field_type(file, prop, _store)
+	var hint       = _gd_parser.get_hint(file, prop, _store)
+	var hi         = _validator.has_issue(file, prop)
+	var hw         = _validator.has_warning(file, prop)
+
+	# Outer box: fixed height = ROW_HEIGHT so both columns always align
+	var outer = HBoxContainer.new()
+	outer.custom_minimum_size = Vector2(COL_WIDTH, ROW_HEIGHT)
+	outer.add_theme_constant_override("separation", 0)
+
+	# Left border strip for validation state
+	if hi or hw:
+		var strip = ColorRect.new()
+		strip.custom_minimum_size = Vector2(2, 0)
+		strip.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		strip.color = Color(1.0, 0.3, 0.3) if hi else Color(1.0, 0.78, 0.2)
+		outer.add_child(strip)
+
+	# Padding wrapper
+	var pad = MarginContainer.new()
+	pad.add_theme_constant_override("margin_left", 4)
+	pad.add_theme_constant_override("margin_right", 4)
+	pad.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pad.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+	outer.add_child(pad)
+
+	# ExtResource / SubResource → show ref badge + open button
+	if typeof(val) == TYPE_STRING and _is_ext_ref(val):
+		pad.add_child(_make_extref_cell(val, file))
+		return outer
+
+	# Bool fields always render as CheckButton regardless of null/empty value
+	if field_type == "bool":
+		var bool_cell = _CellRenderer.make_cell(
+			file, prop, "bool", hint, false, false,
+			func(v): _on_value_changed(file, prop, v),
+			func(): multiline_open_requested.emit(file, prop),
+			func(): collection_open_requested.emit(file, prop, _group_files)
+		)
+		bool_cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		bool_cell.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+		pad.add_child(bool_cell)
+		return outer
+
+	# Null/empty value whose type looks like a collection in sibling entries →
+	# show clickable button so user can open CollectionDialog to add items
+	var is_null_collection = (val == null or val == "" or val == "—") and \
+		_prop_is_collection(prop)
+	if is_null_collection:
+		var btn = Button.new()
+		btn.text = "[ empty ]"
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.add_theme_color_override("font_color", Color(1.0, 0.78, 0.2))
+		btn.flat = true
+		btn.tooltip_text = "Click to add items"
+		btn.pressed.connect(func(): collection_open_requested.emit(file, prop, _group_files))
+		pad.add_child(btn)
+		return outer
+
+	# Normal editable cell via CellRenderer
+	var cell = _CellRenderer.make_cell(
+		file, prop, field_type, hint, hi, hw,
+		func(v): _on_value_changed(file, prop, v),
+		func(): multiline_open_requested.emit(file, prop),
+		func(): collection_open_requested.emit(file, prop, _group_files)
+	)
+	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cell.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+	pad.add_child(cell)
+	return outer
+
+# Returns true when prop holds collection values in at least one sibling entry.
+# Used to show "[ empty ]" button for null slots so user can open CollectionDialog.
+func _prop_is_collection(prop: String) -> bool:
+	for f in _group_files:
+		var v = f["data"].get(prop)
+		if typeof(v) == TYPE_STRING and v != "" and v != "—":
+			if _CellRenderer.is_raw_godot_value(v):
+				return true
+	return false
+
+# ── ExtResource / SubResource cell ───────────────────────────────────────────
+static func _is_ext_ref(s: String) -> bool:
+	return s.begins_with("ExtResource(") or s.begins_with("SubResource(")
+
+func _make_extref_cell(val: String, file: Dictionary) -> Control:
+	var box = HBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	# Icon badge
+	var badge = Label.new()
+	badge.text = "⬡"
+	badge.modulate = Color(0.5, 0.7, 1.0)
+	badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	box.add_child(badge)
+
+	# Short label showing the ref ID
+	var inner = val.trim_prefix("ExtResource(").trim_prefix("SubResource(").trim_suffix(")")
+	var lbl = Label.new()
+	lbl.text = inner.trim_prefix('"').trim_suffix('"')
+	lbl.add_theme_font_size_override("font_size", 10)
+	lbl.modulate = Color(0.6, 0.6, 0.6)
+	lbl.clip_text = true
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.tooltip_text = val
+	box.add_child(lbl)
+
+	# Open in Inspector button — loads the parent .tres in Godot Inspector
+	var open_btn = Button.new()
+	open_btn.text = "↗"
+	open_btn.flat = true
+	open_btn.custom_minimum_size = Vector2(22, 22)
+	open_btn.tooltip_text = "Open resource in Inspector"
+	open_btn.pressed.connect(func():
+		inspect_resource_requested.emit(file.get("abs_path", ""))
+	)
+	box.add_child(open_btn)
+
+	return box
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+func _apply_bg(node: Control, color: Color) -> void:
+	var sb = StyleBoxFlat.new()
+	sb.bg_color = color
+	node.add_theme_stylebox_override("panel", sb)
+
+func _hsep() -> Control:
+	var s = HSeparator.new()
+	s.add_theme_constant_override("separation", 0)
+	return s
 
 func _on_value_changed(file: Dictionary, prop: String, new_val) -> void:
-	var t = _store.get_original_type(file["id"], prop)
-	match t:
+	var field_type = _gd_parser.get_field_type(file, prop, _store)
+	match field_type:
+		"bool":
+			file["data"][prop] = bool(new_val)
 		"number":
 			if typeof(new_val) == TYPE_STRING:
-				if (new_val as String).is_valid_float():
-					file["data"][prop] = (new_val as String).to_float()
+				file["data"][prop] = (new_val as String).to_float() \
+					if (new_val as String).is_valid_float() else new_val
+			else:
+				file["data"][prop] = new_val
+		_:
+			var t = _store.get_original_type(file["id"], prop)
+			if t == "boolean":
+				file["data"][prop] = bool(new_val)
+			elif t == "number":
+				if typeof(new_val) == TYPE_STRING:
+					file["data"][prop] = (new_val as String).to_float() \
+						if (new_val as String).is_valid_float() else new_val
 				else:
 					file["data"][prop] = new_val
 			else:
 				file["data"][prop] = new_val
-		"boolean":
-			file["data"][prop] = bool(new_val)
-		_:
-			file["data"][prop] = new_val
 	_store.mark_dirty(file)
 	file_changed.emit(file)
 

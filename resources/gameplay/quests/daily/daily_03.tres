@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://0y364fhqrw4u"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_th7do"]
+
+[resource]
+script = ExtResource("1_th7do")
+code = "daily_03"
+name = "Câu Cá Buổi Sáng"
+description = "Thả cần và câu được 3 con cá bất kỳ. Cá là nguồn đạm tuyệt vời cho NPC. Nếu trời đang mưa, bạn có cơ hội lớn câu được cá hiếm đấy!"
+type = "daily"
+required_quests = Array[String]([])
+required_level = 0
+requirements = Dictionary[String, float]({ "catch_fish": 3.0 })
+rewards = Dictionary[String, float]({ "gold": 25.0, "exp": 20.0 })
+reward_items = Dictionary[String, int]({})
+unlock_npc = Array[String]([])
+unlock_area = Array[String]([])
+next_quest_codes = Array[String]([])
+only_at_night = false
+only_when_rain = false
+time_limit = -1
+metadata/_custom_type_script = "uid://docheif6dttt3"

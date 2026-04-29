@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://k4txwyop021b"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_4ltc6"]
+
+[resource]
+
+
+
+
+
+script = ExtResource("1_4ltc6")
+code = "village_basics"
+name = "Nền Móng Bản Làng"
+description = "Những viên gạch đầu tiên dựng xây xóm làng. Mở khóa Nhà Kho (Warehouse) và Tháp Nông Sản (Silo)."
+flavor_text = "Vạn dặm chông gai đều bắt đầu từ một túp lều tranh bé nhỏ."
+category = "general"
+tier = 0
+row_hint = 1
+prerequisites = Array[String]([])
+required_village_level = 0
+gold_cost = 0
+item_costs = {}
+children = Array[String](["farming_basic", "woodwork_basic", "animal_care_basic"])
+unlocks_buildings = Array[String](["warehouse", "silo"])
+unlocks_recipes = Array[String]([])
+unlocks_skills = Array[String]([])
+unlocks_knowledges = Array[String](["knowledge_village_basics"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3 uid="uid://achi_city_planner"]
+
+[ext_resource type="Script" uid="uid://cx5soryltywi6" path="res://script/shared/data/achievement_data.gd" id="1_city_planner"]
+
+[resource]
+script = ExtResource("1_city_planner")
+code = "city_planner"
+name = "Quy Hoạch Đô Thị"
+description = "Tầm nhìn xa trông rộng của một kiến trúc sư vĩ đại. Xây dựng thành công 8 công trình khác nhau trong làng."
+icon_emoji = "🏗️"
+category = "building"
+condition_type = "stat"
+condition_key = "buildings_built"
+condition_value = 8
+secret = false
+sort_order = 23
+metadata/_custom_type_script = "uid://cx5soryltywi6"

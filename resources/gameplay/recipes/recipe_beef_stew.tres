@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3 uid="uid://40ypnhjhrjkh"]
+
+[ext_resource type="Script" uid="uid://olfmkhvqb52k" path="res://script/features/inventory/data/recipe_data.gd" id="2_abyu1"]
+
+[resource]
+script = ExtResource("2_abyu1")
+code = "recipe_beef_stew"
+name = "Bò Hầm Rau Củ"
+craft_time = 45.0
+ingredients = Dictionary[String, int]({
+"meat_steak": 2,
+"potato": 3,
+"carrot": 2,
+"tomato_sauce": 1
+})
+output_item_id = "beef_stew"
+output_amount = 1
+allowed_building_codes = Array[String](["kitchen_stove"])

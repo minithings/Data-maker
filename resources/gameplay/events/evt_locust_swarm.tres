@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://dsadxdi471e28"]
+
+[ext_resource type="Script" uid="uid://07hdih6n6yp4" path="res://script/shared/data/event_data.gd" id="1_8rqkg"]
+
+[resource]
+
+
+script = ExtResource("1_8rqkg")
+metadata/_custom_type_script = "uid://07hdih6n6yp4"
+
+code = "evt_locust_swarm"
+name = "Nạn Côn Trùng"
+description = "Một bầy côn trùng lạ từ trong sương mù tràn ra cánh đồng. Chúng cắn phá hoa màu vô cùng hung hãn. Nếu không rắc tro bếp bảo vệ, mùa màng sẽ mất trắng."
+flavor_text = "Đại hạn chưa qua, nạn sâu bọ đã tới."
+category = "farming"
+trigger_type = "random_day"
+season_allowed = Array[String](["summer", "autumn"])
+required_village_level = 2
+duration_days = 1
+choices = [{"id": "use_ash", "text": "Rắc tro bếp (Tốn 30 Tro)"}, {"id": "sacrifice", "text": "Mặc kệ, chấp nhận mất mát"}]
+outcomes = [{"choice": "use_ash", "crop_damage": 0}, {"choice": "sacrifice", "crop_damage": 0.6, "village_happiness": -10}]
+icon_path = "res://assets/ui/events/locust_swarm.png"

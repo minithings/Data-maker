@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://dg0pbtphfpnqj"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_0jdva"]
+
+[resource]
+script = ExtResource("1_0jdva")
+code = "tut_build_02_canteen"
+name = "Cái Bụng Đói Khó Làm Việc"
+description = "Việc phát thức ăn thủ công cho từng người rất mất thời gian. Hãy xây Nhà Ăn Tập Thể (Canteen). Từ giờ, những cư dân đang đói sẽ tự động đi đến đây để ăn uống mà không cần bạn nhắc nhở!"
+type = "tutor"
+requirements = Dictionary[String, float]({ "build_canteen": 1.0 })
+rewards = Dictionary[String, float]({ "exp": 120.0, "gold": 80.0 })
+next_quest_codes = Array[String](["tut_build_03_chef"])
+
+required_quests = Array[String](["tut_build_01_home"])
+required_level = 1
+reward_items = Dictionary[String, int]({ "bread": 5 })
+time_limit = -1

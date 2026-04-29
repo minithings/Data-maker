@@ -9,6 +9,7 @@ var _prop: String
 var _text_edit: TextEdit
 
 func _ready() -> void:
+	hide()
 	title = "Edit Long Text Content"
 	size = Vector2(700, 500)
 	wrap_controls = true

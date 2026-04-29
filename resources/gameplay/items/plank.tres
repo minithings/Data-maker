@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bplank05fgfff"]
+
+[ext_resource type="Texture2D" uid="uid://bu48mnjmn4tq8" path="res://graphics/icons/crops.png" id="1_atlas"]
+[ext_resource type="Script" uid="uid://jlk7al1lfpix" path="res://script/features/item/data/item_data.gd" id="2_script"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_plank"]
+atlas = ExtResource("1_atlas")
+region = Rect2(144, 32, 16, 16)
+
+[resource]
+script = ExtResource("2_script")
+code = "plank"
+name = "Ván Xẻ"
+description = "Gỗ súc cứng được xẻ phẳng thành từng tấm đều nhau. Nền tảng của mọi công trình — từ sàn nhà, mái hiên đến sạp phơi thóc."
+icon = SubResource("AtlasTexture_plank")
+sell_price = 12
+buy_price = 25
+max_stack_size = 99

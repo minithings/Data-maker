@@ -1,21 +1,19 @@
 @tool
 extends VBoxContainer
-class_name DataMakerSidebar
 
 signal folder_selected(full_path: String)
 signal new_resource_requested
 
 var _tree: Tree
 var _new_btn: Button
-var _store: DataStore
-var _validator: Validator
+var _store
+var _validator
 
-func _init(store: DataStore, validator: Validator) -> void:
+func _init(store, validator) -> void:
 	_store = store
 	_validator = validator
 
 func _ready() -> void:
-	custom_minimum_size.x = 220
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	_new_btn = Button.new()

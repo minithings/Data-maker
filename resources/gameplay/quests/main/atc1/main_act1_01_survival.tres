@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://djfvhuf2kytna"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_u25ig"]
+
+[resource]
+script = ExtResource("1_u25ig")
+code = "main_act1_01_survival"
+name = "Ánh Lửa Trong Đêm"
+description = "Sương mù bắt đầu dày đặc và trời trở lạnh. Bạn cần một ngọn lửa để sống sót. Hãy nhặt củi và đá để dựng một Lửa Trại (Campfire)."
+type = "main"
+requirements = Dictionary[String, float]({ "build_campfire": 1.0 })
+rewards = Dictionary[String, float]({ "exp": 50.0 })
+reward_items = Dictionary[String, int]({ "wood": 5 })
+next_quest_codes = Array[String](["main_act1_02_tools"])
+metadata/_custom_type_script = "uid://docheif6dttt3"

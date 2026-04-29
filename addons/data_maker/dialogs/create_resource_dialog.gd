@@ -15,13 +15,14 @@ var _schema_list: VBoxContainer
 var _prop_name_edit: LineEdit
 var _prop_type_opt: OptionButton
 var _schema: Array = []  # [{name, type}]
-var _store: DataStore
+var _store
 var _selected_template: String = ""
 
-func _init(store: DataStore) -> void:
+func _init(store) -> void:
 	_store = store
 
 func _ready() -> void:
+	hide()
 	title = "Create New Resource"
 	size = Vector2(520, 520)
 	wrap_controls = true

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://c87ygoj520aq3"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_6jp05"]
+
+[resource]
+script = ExtResource("1_6jp05")
+code = "tut_build_03_chef"
+name = "Đầu Bếp Chuyên Nghiệp"
+description = "Để Nhà Ăn luôn có thức ăn ngon, hãy xây một Trạm Đầu Bếp (Chef Post) cạnh Bếp Nấu. Phân công một người vào đó, họ sẽ tự động lấy nguyên liệu trong kho đi nấu ăn liên tục."
+type = "tutor"
+requirements = Dictionary[String, float]({ "build_chef_post": 1.0, "worker_assigned_chef": 1.0 })
+rewards = Dictionary[String, float]({ "exp": 150.0, "gold": 100.0 })
+next_quest_codes = Array[String](["tut_build_04_ranching"])
+
+required_quests = Array[String](["tut_build_02_canteen"])
+required_level = 1
+reward_items = Dictionary[String, int]({ "meat_drumstick": 5 })
+time_limit = -1

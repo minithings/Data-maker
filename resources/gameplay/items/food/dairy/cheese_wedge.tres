@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://b7sb1qyj1u7e8"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_8pya6"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_6aa0l"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_afogm"]
+atlas = ExtResource("1_8pya6")
+region = Rect2(32, 0, 16, 16)
+
+[resource]
+
+script = ExtResource("2_6aa0l")
+energy_restore = 20
+hunger_restore = 35
+code = "cheese_wedge"
+name = "Miếng Phô Mai"
+description = "Một lát phô mai lên men thơm lừng, cung cấp năng lượng bền bỉ cho người nông dân."
+icon = SubResource("AtlasTexture_afogm")
+buy_price = 120
+category_type = "Consumable"
+
+health_restore = 5
+sell_price = 60
+max_stack_size = 99

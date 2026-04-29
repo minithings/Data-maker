@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://dl7yq4psmpv35"]
+
+[ext_resource type="Script" uid="uid://07hdih6n6yp4" path="res://script/shared/data/event_data.gd" id="1_dt1ji"]
+
+[resource]
+script = ExtResource("1_dt1ji")
+code = "evt_toxic_fog"
+name = "Sương Độc Tràn Về"
+metadata/_custom_type_script = "uid://07hdih6n6yp4"
+
+icon_path = ""
+day = ""

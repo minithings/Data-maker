@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://bcatfish7fgff"]
+
+[ext_resource type="Texture2D" uid="uid://bu48mnjmn4tq8" path="res://graphics/icons/crops.png" id="1_kye8j"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_kye8j"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_catfish"]
+atlas = ExtResource("1_kye8j")
+region = Rect2(16, 48, 16, 16)
+
+[resource]
+script = ExtResource("2_kye8j")
+health_restore = 8
+energy_restore = 18
+hunger_restore = 40
+code = "catfish"
+name = "Cá Trê"
+description = "Cá trê da trơn nhớt, râu dài đặc trưng, thịt béo ngậy. Dễ câu ở bờ ruộng hay mương nước đục — kho tiêu hay um chuối đều tuyệt vời."
+icon = SubResource("AtlasTexture_catfish")
+max_stack_size = 99
+sell_price = 35
+buy_price = 70

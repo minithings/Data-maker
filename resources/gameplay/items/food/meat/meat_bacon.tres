@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://buu7gnsoplbcb"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_3040o"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_6toxb"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yf8ba"]
+atlas = ExtResource("1_3040o")
+region = Rect2(0, 64, 16, 16)
+
+[resource]
+
+script = ExtResource("2_6toxb")
+energy_restore = 20
+hunger_restore = 40
+code = "meat_bacon"
+name = "Thịt Xông Khói"
+description = "Những lát thịt lợn được ướp muối và xông khói thơm phức. Rất bắt miệng."
+icon = SubResource("AtlasTexture_yf8ba")
+sell_price = 65
+buy_price = 130
+category_type = "Consumable"
+
+health_restore = 5
+max_stack_size = 99

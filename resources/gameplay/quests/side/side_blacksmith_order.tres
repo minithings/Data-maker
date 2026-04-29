@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://b812mumja63tf"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_sn3bg"]
+
+[resource]
+script = ExtResource("1_sn3bg")
+code = "side_blacksmith_order"
+name = "Đơn Hàng Từ Chợ Tỉnh"
+description = "Lái buôn từ chợ tỉnh ghé qua, trả giá cao cho 10 thỏi sắt đúc sẵn để mang về bán lại. Đây là mối làm ăn lớn nhất làng mình từ trước đến giờ — hoàn thành trước khi ông ta lên xe về."
+type = "side"
+required_quests = Array[String](["main_act2_01_expansion"])
+required_level = 0
+requirements = Dictionary[String, float]({ "craft_iron_bar": 10.0 })
+rewards = Dictionary[String, float]({ "gold": 350.0, "exp": 150.0 })
+reward_items = Dictionary[String, int]({ "coal": 20 })
+unlock_npc = Array[String]([])
+unlock_area = Array[String]([])
+next_quest_codes = Array[String]([])
+only_at_night = false
+only_when_rain = false
+time_limit = 600
+metadata/_custom_type_script = "uid://docheif6dttt3"

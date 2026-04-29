@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://di22kyqojufik"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_albow"]
+
+[resource]
+
+
+
+
+
+script = ExtResource("1_albow")
+code = "food_mastery"
+name = "Tinh Hoa Ẩm Thực"
+description = "Đạt đến cảnh giới thượng thừa trong nghệ thuật ẩm thực. Thức tỉnh các kỹ năng cường hóa đặc biệt từ việc ăn uống."
+flavor_text = "Mỗi món ăn là một kiệt tác, dưỡng thân và bồi bổ tâm hồn."
+category = "cooking"
+tier = 4
+prerequisites = Array[String](["advanced_cooking"])
+required_village_level = 4
+gold_cost = 300
+item_costs = {"honey_jar":5,"cheese_wedge":10,"ash":5}
+children = Array[String]([])
+unlocks_buildings = Array[String]([])
+unlocks_recipes = Array[String]([])
+unlocks_skills = Array[String](["speed_boost"])
+unlocks_knowledges = Array[String](["knowledge_food_mastery"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

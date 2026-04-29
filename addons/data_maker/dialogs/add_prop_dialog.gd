@@ -10,6 +10,7 @@ var _default_edit: LineEdit
 var _group_files: Array
 
 func _ready() -> void:
+	hide()
 	title = "Configure New Column"
 	size = Vector2(400, 260)
 	wrap_controls = true

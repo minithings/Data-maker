@@ -16,6 +16,7 @@ var _body_container: VBoxContainer
 var _preview_label: Label
 
 func _ready() -> void:
+	hide()
 	title = "Collection Editor"
 	size = Vector2(680, 520)
 	wrap_controls = true
@@ -60,16 +61,35 @@ func _ready() -> void:
 	footer.add_child(apply_btn)
 	vbox.add_child(footer)
 
-func open_for(file: Dictionary, prop: String) -> void:
+func open_for(file: Dictionary, prop: String, group_files: Array = []) -> void:
 	_file = file
 	_prop = prop
 	var v = str(file["data"].get(prop, ""))
-	_kind = _detect_kind(v)
-	_godot_type = _extract_type_label(v)
 
-	_items = _extract_array_items(v) if _kind in ["array_string", "array_number"] else []
-	_pairs = _parse_dict_pairs(_extract_dict_inner(v)) if _kind == "dict" else []
-	_array_dicts = _parse_array_dicts(v) if _kind == "array_dict" else []
+	# When this entry has an empty/null value, infer kind + godot_type from a sibling
+	var effective_v = v
+	if effective_v.strip_edges() == "" or effective_v == "null":
+		for sibling in group_files:
+			if sibling["id"] == file["id"]:
+				continue
+			var sv = str(sibling["data"].get(prop, ""))
+			if sv.strip_edges() != "" and sv != "null":
+				effective_v = sv
+				break
+
+	_kind = _detect_kind(effective_v)
+	_godot_type = _extract_type_label(effective_v)
+
+	# Start with empty data since this entry has no value yet
+	var is_empty_entry = v.strip_edges() == "" or v == "null"
+	if is_empty_entry:
+		_items = []
+		_pairs = []
+		_array_dicts = []
+	else:
+		_items = _extract_array_items(v) if _kind in ["array_string", "array_number"] else []
+		_pairs = _parse_dict_pairs(_extract_dict_inner(v)) if _kind == "dict" else []
+		_array_dicts = _parse_array_dicts(v) if _kind == "array_dict" else []
 
 	title = "Collection Editor — %s" % prop
 	var type_label = get_node("VBoxContainer/HBoxContainer/TypeLabel")
@@ -91,6 +111,8 @@ func _rebuild_body() -> void:
 			_build_dict_body()
 		"array_dict":
 			_build_array_dict_body()
+		_:
+			_build_raw_picker()
 
 func _build_array_body() -> void:
 	for i in _items.size():
@@ -204,6 +226,38 @@ func _build_array_dict_body() -> void:
 	)
 	_body_container.add_child(add_item_btn)
 
+func _build_raw_picker() -> void:
+	var lbl = Label.new()
+	lbl.text = "Unknown collection type. Choose a type to start:"
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	_body_container.add_child(lbl)
+
+	var types = [
+		["Array[String]",     "array_string"],
+		["Array[int]",        "array_number"],
+		["Dictionary",        "dict"],
+		["Array[Dictionary]", "array_dict"],
+	]
+	for pair in types:
+		var btn = Button.new()
+		btn.text = pair[0]
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		var kind = pair[1]
+		var type_label_text = pair[0]
+		btn.pressed.connect(func():
+			_kind = kind
+			_godot_type = type_label_text
+			_items = []
+			_pairs = []
+			_array_dicts = []
+			var tl = get_node_or_null("VBoxContainer/HBoxContainer/TypeLabel")
+			if tl:
+				tl.text = "%s  [%s]" % [_godot_type, _kind]
+			_rebuild_body()
+			_update_preview()
+		)
+		_body_container.add_child(btn)
+
 func _update_preview() -> void:
 	match _kind:
 		"array_string", "array_number":
@@ -212,6 +266,8 @@ func _update_preview() -> void:
 			_preview_label.text = "%d key(s)" % _pairs.filter(func(p): return p["k"] != "").size()
 		"array_dict":
 			_preview_label.text = "%d object(s)" % _array_dicts.size()
+		_:
+			_preview_label.text = "Select a type above"
 
 func _on_apply() -> void:
 	var raw = _serialize()
@@ -230,10 +286,14 @@ func _serialize() -> String:
 			return "%s([%s])" % [_godot_type, inner]
 		"dict":
 			var valid = _pairs.filter(func(p): return p["k"] != "")
-			var is_float = "float" in _godot_type or "double" in _godot_type
 			var inner_parts = valid.map(func(p):
-				var num_val = float(p["v"]) if is_float else int(p["v"])
-				return '"%s": %s' % [p["k"], ("%.1f" % num_val) if is_float else str(num_val)]
+				var sv = str(p["v"]).strip_edges()
+				var serialized: String
+				if sv.is_valid_float():
+					serialized = sv
+				else:
+					serialized = '"%s"' % sv
+				return '"%s": %s' % [p["k"], serialized]
 			)
 			var inner = ", ".join(inner_parts)
 			if _godot_type.begins_with("Dictionary"):
@@ -264,21 +324,28 @@ func _detect_kind(v: String) -> String:
 		return "array_number"
 	if t.to_lower().begins_with("dictionary["):
 		return "dict"
-	if t.begins_with("{") and not t.begins_with("[{"):
+	# Plain dict: starts with { but is not an array-of-dicts
+	if t.begins_with("{"):
 		return "dict"
-	if t.begins_with("[{"):
+	# Array-of-dicts: [ followed by optional whitespace then {
+	var re_ad = RegEx.new()
+	re_ad.compile(r"^\[\s*\{")
+	if re_ad.search(t) != null:
 		return "array_dict"
 	return "raw"
 
 func _extract_type_label(v: String) -> String:
+	var t = v.strip_edges()
 	var re = RegEx.new()
 	re.compile(r"^([A-Za-z]+\[[^\]]+\])")
-	var m = re.search(v)
+	var m = re.search(t)
 	if m:
 		return m.get_string(1)
-	if v.begins_with("{"):
+	if t.begins_with("{"):
 		return "Dictionary"
-	if v.begins_with("[{"):
+	var re_ad = RegEx.new()
+	re_ad.compile(r"^\[\s*\{")
+	if re_ad.search(t) != null:
 		return "Array[Dictionary]"
 	return ""
 
@@ -313,20 +380,36 @@ func _parse_dict_pairs(inner: String) -> Array:
 	if inner.strip_edges() == "":
 		return result
 	var re = RegEx.new()
-	re.compile(r'"([^"]+)"\s*:\s*([^,}]+)')
+	# Group 1 = key, group 2 = quoted string value (may be empty), group 3 = bare value
+	re.compile(r'"([^"]+)"\s*:\s*(?:"([^"]*)"|([^,}\s"]+))')
 	for m in re.search_all(inner):
-		result.append({"k": m.get_string(1), "v": m.get_string(2).strip_edges()})
+		# If group 2 matched (even empty string), value was quoted; else use group 3
+		var raw_match = m.get_string(0)
+		var colon_pos = raw_match.find(":")
+		var after_colon = raw_match.substr(colon_pos + 1).strip_edges()
+		var val: String
+		if after_colon.begins_with('"'):
+			val = m.get_string(2)
+		else:
+			val = m.get_string(3)
+		result.append({"k": m.get_string(1), "v": val})
 	return result
 
 func _parse_array_dicts(v: String) -> Array:
-	var inner = v.lstrip("[").rstrip("]").strip_edges()
-	if inner == "":
+	var t = v.strip_edges()
+	# Strip exactly one leading [ and one trailing ]
+	if t.begins_with("["):
+		t = t.substr(1)
+	if t.ends_with("]"):
+		t = t.substr(0, t.length() - 1)
+	t = t.strip_edges()
+	if t == "":
 		return []
 	var obj_strs: Array = []
 	var depth = 0
 	var start = 0
-	for i in inner.length():
-		var c = inner[i]
+	for i in t.length():
+		var c = t[i]
 		if c == "{":
 			if depth == 0:
 				start = i
@@ -334,5 +417,10 @@ func _parse_array_dicts(v: String) -> Array:
 		elif c == "}":
 			depth -= 1
 			if depth == 0:
-				obj_strs.append(inner.substr(start, i - start + 1))
-	return obj_strs.map(func(s): return _parse_dict_pairs(s.lstrip("{").rstrip("}")))
+				obj_strs.append(t.substr(start, i - start + 1))
+	return obj_strs.map(func(s):
+		var inner = s.strip_edges()
+		if inner.begins_with("{"): inner = inner.substr(1)
+		if inner.ends_with("}"): inner = inner.substr(0, inner.length() - 1)
+		return _parse_dict_pairs(inner)
+	)

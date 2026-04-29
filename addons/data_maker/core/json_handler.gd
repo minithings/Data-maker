@@ -1,8 +1,7 @@
 @tool
 extends RefCounted
-class_name JsonHandler
 
-func read_json(abs_path: String, rel_path: String, folder: String, store: DataStore) -> void:
+func read_json(abs_path: String, rel_path: String, folder: String, store) -> void:
 	var f = FileAccess.open(abs_path, FileAccess.READ)
 	if not f:
 		return
@@ -37,19 +36,24 @@ func read_json(abs_path: String, rel_path: String, folder: String, store: DataSt
 		})
 		store.record_types(eid, val)
 
-func save_json(abs_path: String, rel_path: String, store: DataStore) -> void:
-	var entries = store.all_files.filter(func(f): return f["path"] == rel_path)
+func save_json(abs_path: String, rel_path: String, store) -> bool:
+	var entries = store.all_files.filter(func(e): return e["path"] == rel_path)
 	var obj: Dictionary = {}
 	for entry in entries:
 		obj[entry["name"]] = entry["data"]
 
-	var f = FileAccess.open(abs_path, FileAccess.WRITE)
-	if f:
-		f.store_string(JSON.stringify(obj, "\t"))
-		f.close()
+	var fw = FileAccess.open(abs_path, FileAccess.WRITE)
+	if not fw:
+		push_error("[DataMaker] Failed to write .json file: %s (error %d)" % [
+			abs_path, FileAccess.get_open_error()
+		])
+		return false
+	fw.store_string(JSON.stringify(obj, "\t"))
+	fw.close()
+	return true
 
 func create_json_entry(abs_path: String, rel_path: String, folder: String,
-		entry_id: String, schema: Array, store: DataStore) -> Dictionary:
+		entry_id: String, schema: Array, store) -> Dictionary:
 	var data: Dictionary = {}
 	for prop in schema:
 		match prop["type"]:
@@ -57,7 +61,6 @@ func create_json_entry(abs_path: String, rel_path: String, folder: String,
 			"boolean": data[prop["name"]] = false
 			_: data[prop["name"]] = ""
 
-	# Read existing content first
 	var existing: Dictionary = {}
 	if FileAccess.file_exists(abs_path):
 		var f = FileAccess.open(abs_path, FileAccess.READ)

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="JobConfiguration" format=3 uid="uid://ds254hhrm0mwe"]
+
+[ext_resource type="Script" uid="uid://bp2hrge03rxl6" path="res://script/shared/data/jobs/job_configuration.gd" id="1_eh1tj"]
+[ext_resource type="Script" uid="uid://mtilvsar7xu4" path="res://script/features/jobs/job/job_fishingman.gd" id="2_eh1tj"]
+
+[resource]
+script = ExtResource("1_eh1tj")
+job_name = "Ngư Dân"
+job_code = "job_fishingman_post"
+job_type = "fishing"
+strategy_script = ExtResource("2_eh1tj")
+metadata/_custom_type_script = "uid://bp2hrge03rxl6"
+
+description = "Tìm kiếm các bãi cá ven sông hồ để thả câu, mang về nguồn thực phẩm tươi sống."
+work_radius = 1200
+target_resource = Array[String](["fish_spot"])
+required_tools = Array[String](["fishing_rod_basic"])

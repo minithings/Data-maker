@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://dnir45c7ixoyc"]
+
+[ext_resource type="Script" uid="uid://07hdih6n6yp4" path="res://script/shared/data/event_data.gd" id="1_km41c"]
+
+[resource]
+script = ExtResource("1_km41c")
+code = "evt_blessing_rain"
+name = "Mưa Rào Đón Hạ"
+metadata/_custom_type_script = "uid://07hdih6n6yp4"

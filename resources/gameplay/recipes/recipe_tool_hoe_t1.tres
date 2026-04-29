@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3 uid="uid://recipe_tool_hoe_t1"]
+
+[ext_resource type="Script" uid="uid://olfmkhvqb52k" path="res://script/features/inventory/data/recipe_data.gd" id="1_recipe"]
+
+[resource]
+script = ExtResource("1_recipe")
+code = "recipe_tool_hoe_t1"
+name = "Cuốc Gỗ"
+craft_time = 5.0
+ingredients = Dictionary[String, int]({
+"wood": 3,
+"stone": 1
+})
+output_item_id = "tool_hoe_t1"
+output_amount = 1
+allowed_building_codes = Array[String]([])
+player_craftable = true

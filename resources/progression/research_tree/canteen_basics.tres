@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://research_canteen_basics"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_ctb01"]
+
+[resource]
+
+
+
+
+
+script = ExtResource("1_ctb01")
+code = "canteen_basics"
+name = "Bếp Ăn Tập Thể"
+description = "Xây dựng nhà ăn chung cho dân làng. Xóa bỏ nỗi lo lương thực, giúp mọi người ăn no mặc ấm và làm việc hăng say hơn."
+flavor_text = "Bữa cơm làng quê quây quần luôn gắn kết tình làng nghĩa xóm."
+category = "cooking"
+tier = 3
+row_hint = 2
+prerequisites = Array[String](["cooking"])
+required_village_level = 3
+gold_cost = 120
+item_costs = {"wood":50,"stone":30,"bread":15}
+children = Array[String]([])
+unlocks_buildings = Array[String](["canteen"])
+unlocks_recipes = Array[String]([])
+unlocks_skills = Array[String]([])
+unlocks_tools = Array[String]([])
+unlocks_seeds = Array[String]([])
+unlocks_knowledges = Array[String](["knowledge_canteen"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

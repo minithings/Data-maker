@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3 uid="uid://bslbj15jnuqe7"]
+
+[ext_resource type="Script" uid="uid://07hdih6n6yp4" path="res://script/shared/data/event_data.gd" id="1_uchkc"]
+
+[resource]
+script = ExtResource("1_uchkc")
+code = "plague_outbreak"
+name = "Dịch Bệnh Vật Nuôi"
+descr = "Dịch bệnh bùng phát vào ngày 20 mùa đông, làm ảnh hưởng 30% đàn gà. Cần thuốc chữa trị kịp thời."
+type = "plague"
+day = 20
+season = 3
+year = -1
+repeat_interval = 0
+trigger_time = "any"
+data = Dictionary[String, Variant]({ "affected_percent": 0.3, "animal": "chicken" })
+metadata/_custom_type_script = "uid://cowts8785821r"

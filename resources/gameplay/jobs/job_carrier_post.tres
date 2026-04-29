@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="JobConfiguration" format=3 uid="uid://dnx7lwty2kydp"]
+
+[ext_resource type="Script" uid="uid://bp2hrge03rxl6" path="res://script/shared/data/jobs/job_configuration.gd" id="1_je2on"]
+[ext_resource type="Script" uid="uid://d3ihmk62r6ola" path="res://script/features/jobs/job/job_gatherer.gd" id="2_2u8qq"]
+
+[resource]
+script = ExtResource("1_je2on")
+job_name = "Người Vận Chuyển"
+job_code = "job_carrier_post"
+job_type = "carrier"
+strategy_script = ExtResource("2_2u8qq")
+metadata/_custom_type_script = "uid://bp2hrge03rxl6"
+
+description = "Chịu trách nhiệm luân chuyển vật phẩm qua lại giữa các rương chứa, nhà kho và trạm chế tạo."
+work_radius = 1500
+required_tools = Array[String]([])

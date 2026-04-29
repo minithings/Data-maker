@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://mvc0kcty44me"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_avh01"]
+
+[resource]
+script = ExtResource("1_avh01")
+code = "advanced_husbandry"
+name = "Chăn Nuôi Chuyên Sâu"
+description = "Bí quyết chăn nuôi bậc cao. Dân làng có thể làm việc cùng bầy gia súc bền bỉ hơn mà không lo kiệt sức."
+flavor_text = "Lắng nghe hơi thở của bầy thú là cảm nhận nhịp đập của đất trời."
+category = "husbandry"
+tier = 3
+prerequisites = Array[String](["animal_husbandry"])
+required_village_level = 3
+gold_cost = 200
+item_costs = {
+"butter": 5,
+"cheese_wedge": 5,
+"wood": 30
+}
+unlocks_skills = Array[String](["stamina_boost"])
+unlocks_knowledges = Array[String](["knowledge_advanced_husbandry"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

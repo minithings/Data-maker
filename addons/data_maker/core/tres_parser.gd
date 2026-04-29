@@ -146,7 +146,7 @@ func serialize_tres_value(v) -> String:
 		return '"%s"' % v
 	return str(v)
 
-func save_tres(file_data: Dictionary) -> void:
+func save_tres(file_data: Dictionary) -> bool:
 	var raw_body: String = file_data.get("raw_body", "")
 	var data: Dictionary = file_data["data"]
 	var header: String = file_data.get("raw_header", "[gd_resource type=\"Resource\" format=3]\n\n[resource]")
@@ -197,7 +197,12 @@ func save_tres(file_data: Dictionary) -> void:
 	var output = header.rstrip("\n") + "\n" + clean_body + "\n"
 
 	var f = FileAccess.open(file_data["abs_path"], FileAccess.WRITE)
-	if f:
-		f.store_string(output)
-		f.close()
-		file_data["raw_body"] = clean_body
+	if not f:
+		push_error("[DataMaker] Failed to write .tres file: %s (error %d)" % [
+			file_data["abs_path"], FileAccess.get_open_error()
+		])
+		return false
+	f.store_string(output)
+	f.close()
+	file_data["raw_body"] = clean_body
+	return true

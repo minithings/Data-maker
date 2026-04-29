@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="JobConfiguration" format=3 uid="uid://7egv2n8tvlgj"]
+
+[ext_resource type="Script" uid="uid://bp2hrge03rxl6" path="res://script/shared/data/jobs/job_configuration.gd" id="1_y28se"]
+[ext_resource type="Script" uid="uid://d3ihmk62r6ola" path="res://script/features/jobs/job/job_gatherer.gd" id="2_f513q"]
+
+[resource]
+script = ExtResource("1_y28se")
+job_name = "Người Thu Nhặt"
+job_code = "job_gatherer_post"
+job_type = "gatherer"
+strategy_script = ExtResource("2_f513q")
+metadata/_custom_type_script = "uid://bp2hrge03rxl6"
+
+description = "Lượm lặt các tài nguyên rơi vãi, hoa quả dại và cành cây khô xung quanh khu vực."
+work_radius = 1000
+target_resource = Array[String](["forage", "dropped_item"])
+required_tools = Array[String]([])

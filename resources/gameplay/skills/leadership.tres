@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://dky6ard7wr1qs"]
+
+[ext_resource type="Script" uid="uid://con4myvhthet7" path="res://script/features/skill/data/skill_data.gd" id="1_sc"]
+
+[resource]
+script = ExtResource("1_sc")
+code = "leadership"
+name = "Trưởng Bản Uy Tín"
+description = "Lời nói mang trọng lượng của người dẫn đầu. Truyền ngọn lửa nhiệt huyết, khiến dân làng tự giác đẩy nhanh tiến độ công việc."
+icon_emoji = "👑"
+category = "village"
+max_level = 3
+level_costs = [{
+"player_level": 1,
+"skill_points": 1
+}, {
+"player_level": 3,
+"skill_points": 2
+}, {
+"player_level": 5,
+"skill_points": 3
+}]
+level_effects = [{
+"npc_work_speed": 0.05
+}, {
+"npc_work_speed": 0.1
+}, {
+"npc_work_speed": 0.16
+}]
+children = Array[String](["efficient_work", "community_spirit"])

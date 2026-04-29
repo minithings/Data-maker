@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3 uid="uid://achi_village_founder"]
+
+[ext_resource type="Script" uid="uid://cx5soryltywi6" path="res://script/shared/data/achievement_data.gd" id="1_village_founder"]
+
+[resource]
+script = ExtResource("1_village_founder")
+code = "village_founder"
+name = "Người Sáng Lập"
+description = "Nơi hoang vu dần có hơi ấm con người. Nâng cấp ngôi làng của bạn lên cấp 2."
+icon_emoji = "🏘️"
+category = "building"
+condition_type = "village_level"
+condition_key = ""
+condition_value = 2
+secret = false
+sort_order = 21
+metadata/_custom_type_script = "uid://cx5soryltywi6"

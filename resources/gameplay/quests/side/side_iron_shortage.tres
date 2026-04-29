@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://b812t1qeoe1lh"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_sn3bg"]
+
+[resource]
+script = ExtResource("1_sn3bg")
+code = "side_iron_shortage"
+name = "Bác Thợ Rèn Cần Giúp"
+description = "Bác Hai thợ rèn đã hết quặng từ hôm qua, cả đống đơn hàng công cụ chưa làm xong. Hãy ra mỏ đá khai thác 20 quặng sắt mang về cho bác."
+type = "side"
+required_quests = Array[String](["main_act1_02_tools"])
+required_level = 0
+requirements = Dictionary[String, float]({ "collect_iron_ore": 20.0 })
+rewards = Dictionary[String, float]({ "gold": 120.0, "exp": 80.0 })
+reward_items = Dictionary[String, int]({ "iron_bar": 5 })
+unlock_npc = Array[String]([])
+unlock_area = Array[String]([])
+next_quest_codes = Array[String]([])
+only_at_night = false
+only_when_rain = false
+time_limit = -1
+metadata/_custom_type_script = "uid://docheif6dttt3"

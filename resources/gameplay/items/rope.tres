@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bropem004fgff"]
+
+[ext_resource type="Texture2D" uid="uid://bu48mnjmn4tq8" path="res://graphics/icons/crops.png" id="1_atlas"]
+[ext_resource type="Script" uid="uid://jlk7al1lfpix" path="res://script/features/item/data/item_data.gd" id="2_script"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rope"]
+atlas = ExtResource("1_atlas")
+region = Rect2(128, 32, 16, 16)
+
+[resource]
+script = ExtResource("2_script")
+code = "rope"
+name = "Dây Thừng"
+description = "Dây thừng bện tay từ sợi gai hay bẹ chuối, chắc không đứt khi kéo mạnh. Dùng buộc cột, cáng hàng, hay làm cán công cụ — thứ không thể thiếu ở bất kỳ trang trại nào."
+icon = SubResource("AtlasTexture_rope")
+sell_price = 15
+buy_price = 30
+max_stack_size = 99

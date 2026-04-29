@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://script/features/quest/data/quest_data.gd" id="1_umkt1"]
+
+[resource]
+script = ExtResource("1_umkt1")
+code = "side_hungry_villager"
+name = "Cái Bụng Đói"
+description = "Một dân làng đang rất đói."
+type = "side"
+required_quests = Array[String]([])
+required_level = 0
+requirements = Dictionary[String, float]({ "feed_npc": 1.0 })
+rewards = Dictionary[String, float]({ "happiness": 5.0 })
+reward_items = Dictionary[String, int]({})
+unlock_npc = Array[String]([])
+unlock_area = Array[String]([])
+next_quest_codes = Array[String]([])
+only_at_night = false
+only_when_rain = false
+time_limit = -1
+metadata/_custom_type_script = "uid://docheif6dttt3"

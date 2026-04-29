@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://dsw6rgqlblfab"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_a3neq"]
+
+[resource]
+script = ExtResource("1_a3neq")
+code = "vegetable_farming"
+name = "Canh Tác Rau Màu"
+description = "Mở rộng vườn tược với các loại rau màu quen thuộc: cà rốt, khoai tây, cà chua, bắp. Đa dạng hoá bữa ăn cho cả làng."
+flavor_text = "Một sào rau màu nuôi sống cả nhà — người nông dân khéo không bao giờ để đất bỏ không."
+category = "farming"
+tier = 2
+prerequisites = Array[String](["farming_basic"])
+required_village_level = 2
+gold_cost = 100
+item_costs = {
+"beetroot": 5,
+"wheat": 10,
+"wood": 15
+}
+children = Array[String](["root_vegetable_mastery"])
+unlocks_buildings = Array[String]([])
+unlocks_recipes = Array[String]([])
+unlocks_seeds = Array[String](["seed_carrot", "seed_potato", "seed_tomato", "seed_corn"])
+unlocks_knowledges = Array[String](["knowledge_vegetable_farming"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

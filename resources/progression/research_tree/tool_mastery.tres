@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://research_tool_mastery"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_tlm01"]
+
+[resource]
+
+
+
+
+
+script = ExtResource("1_tlm01")
+code = "tool_mastery"
+name = "Kỹ Thuật Chế Tác"
+description = "Làm chủ nghệ thuật đẽo gọt và rèn đúc. Mở khóa Cuốc Chim (Pickaxe) cùng các kỹ thuật thu hoạch hiệu suất cao."
+flavor_text = "Dao sắc gọt chuôi, công cụ tốt làm nên người thợ giỏi."
+category = "industry"
+tier = 2
+row_hint = 3
+prerequisites = Array[String](["woodwork_basic"])
+required_village_level = 2
+gold_cost = 80
+item_costs = {"wood":15,"stone":15}
+children = Array[String](["fishing"])
+unlocks_buildings = Array[String]([])
+unlocks_recipes = Array[String]([])
+unlocks_skills = Array[String]([])
+unlocks_tools = Array[String](["tool_pickaxe_t1"])
+unlocks_seeds = Array[String]([])
+unlocks_knowledges = Array[String](["knowledge_tool_mastery"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

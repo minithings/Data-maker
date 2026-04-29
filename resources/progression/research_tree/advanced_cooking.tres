@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://c2h6h2jx7gfij"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_a3neq"]
+
+[resource]
+script = ExtResource("1_a3neq")
+code = "advanced_cooking"
+name = "Nấu Ăn Nâng Cao"
+description = "Kỹ thuật nấu nướng điêu luyện, sử dụng lửa trại và các nguyên liệu phong phú để chế biến những món ăn phức tạp."
+flavor_text = "Lửa đỏ rực rỡ, khởi nguồn cho những bữa ăn sum vầy ấm cúng."
+category = "cooking"
+tier = 3
+prerequisites = Array[String](["cooking"])
+required_village_level = 3
+gold_cost = 150
+item_costs = {
+"bread": 10,
+"stone": 10,
+"wood": 20
+}
+children = Array[String](["food_mastery"])
+unlocks_buildings = Array[String](["campfire"])
+unlocks_recipes = Array[String](["ash"])
+unlocks_knowledges = Array[String](["knowledge_advanced_cooking"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

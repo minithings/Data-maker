@@ -10,6 +10,7 @@ var _prop: String
 var _group_files: Array
 
 func _ready() -> void:
+	hide()
 	title = "Change Column Type"
 	size = Vector2(400, 220)
 	wrap_controls = true
@@ -50,7 +51,7 @@ func _ready() -> void:
 	footer.add_child(confirm)
 	vbox.add_child(footer)
 
-func open_for(prop: String, group_files: Array, store: DataStore) -> void:
+func open_for(prop: String, group_files: Array, store) -> void:
 	_prop = prop
 	_group_files = group_files
 	_prop_label.text = prop

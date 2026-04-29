@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://djc7mteewi3ox"]
+
+[ext_resource type="Script" uid="uid://con4myvhthet7" path="res://script/features/skill/data/skill_data.gd" id="1_dsh"]
+
+[resource]
+script = ExtResource("1_dsh")
+code = "dash"
+name = "Trớn Lướt"
+description = "Bức tốc chớp nhoáng như cơn gió lướt qua ngọn cỏ, giúp bạn thoát hiểm trong gang tấc hoặc vượt qua địa hình trắc trở."
+icon_emoji = "💨"
+category = "survival"
+prerequisites = Array[String](["tough_body"])
+max_level = 2
+level_costs = [{
+"player_level": 5,
+"skill_points": 3
+}, {
+"player_level": 8,
+"skill_points": 4
+}]
+level_effects = [{
+"cooldown": 8.0,
+"dash_distance": 200,
+"mana_cost": 15
+}, {
+"cooldown": 5.0,
+"dash_distance": 350,
+"mana_cost": 10
+}]
+skill_type = "active"
+cooldown = 8
+mana_cost = 15

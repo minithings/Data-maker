@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://uprs7hsqr2ge"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_a3neq"]
+
+[resource]
+script = ExtResource("1_a3neq")
+code = "fish_processing"
+name = "Chế Biến Thuỷ Sản"
+description = "Nắm vững cách làm sạch, ướp gia vị và chế biến cá đồng thành các món ngon: canh chua, cá kho tộ, cá hấp gừng. Biến mẻ câu hàng ngày thành nguồn thu đáng kể."
+flavor_text = "Cá không tự đến bàn ăn — nhưng đôi bàn tay khéo có thể biến nó thành thứ giá trị gấp đôi."
+category = "fishing"
+tier = 3
+prerequisites = Array[String](["advanced_fishing"])
+required_village_level = 4
+gold_cost = 250
+item_costs = {
+"salmon": 3,
+"catfish": 5,
+"stone": 15
+}
+children = Array[String]([])
+unlocks_recipes = Array[String](["recipe_fish_soup"])
+production_buffs = {
+"cooked_fish_quality": 0.2
+}
+unlocks_knowledges = Array[String](["knowledge_fish_processing"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

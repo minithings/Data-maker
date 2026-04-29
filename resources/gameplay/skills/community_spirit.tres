@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://b6v7fawxk76fq"]
+
+[ext_resource type="Script" uid="uid://con4myvhthet7" path="res://script/features/skill/data/skill_data.gd" id="1_sc"]
+
+[resource]
+script = ExtResource("1_sc")
+code = "community_spirit"
+name = "Tình Làng Nghĩa Xóm"
+description = "Tối lửa tắt đèn có nhau. Uy tín của bạn giúp gắn kết lòng người, lan tỏa sự ấm no và hạnh phúc ra khắp nẻo đường làng."
+icon_emoji = "🤝"
+category = "village"
+prerequisites = Array[String](["leadership"])
+max_level = 2
+level_costs = [{
+"player_level": 3,
+"skill_points": 2
+}, {
+"player_level": 6,
+"skill_points": 3
+}]
+level_effects = [{
+"happiness_aura_radius": 200,
+"happiness_bonus": 5
+}, {
+"happiness_aura_radius": 350,
+"happiness_bonus": 10
+}]
+children = Array[String](["master_planner"])

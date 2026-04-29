@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://bfishsoupafgf"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_r3utn"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_odor8"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fishsoup"]
+atlas = ExtResource("1_r3utn")
+region = Rect2(16, 64, 16, 16)
+
+[resource]
+script = ExtResource("2_odor8")
+health_restore = 30
+energy_restore = 40
+hunger_restore = 75
+code = "fish_soup"
+name = "Canh Cá Đồng"
+description = "Canh cá đồng nấu với cà chua và thì là, nước dùng trong vắt ngọt lịm không cần mì chính. Chỉ cần một tô là quên hết mệt nhọc sau cả buổi lội ruộng."
+icon = SubResource("AtlasTexture_fishsoup")
+max_stack_size = 30
+sell_price = 90
+buy_price = 180

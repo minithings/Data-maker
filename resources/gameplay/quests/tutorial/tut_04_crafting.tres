@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://ch270srhl4nt5"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_cjs2k"]
+
+[resource]
+script = ExtResource("1_cjs2k")
+code = "tut_04_crafting"
+name = "Chế Tạo Rìu"
+description = "Chế tạo một chiếc rìu."
+type = "tutor"
+required_quests = Array[String](["tut_03_inventory"])
+requirements = Dictionary[String, float]({ "recipe_crafted_tool_axe_t1": 1.0 })
+rewards = Dictionary[String, float]({ "exp": 20.0 })
+next_quest_codes = Array[String](["tut_05_use_tool"])
+metadata/_custom_type_script = "uid://docheif6dttt3"
+
+required_level = 0
+reward_items = Dictionary[String, int]({})
+time_limit = -1

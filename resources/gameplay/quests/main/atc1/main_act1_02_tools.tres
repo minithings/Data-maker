@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://cc4gfag0tmdp4"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_cnpnn"]
+
+[resource]
+script = ExtResource("1_cnpnn")
+code = "main_act1_02_tools"
+name = "Nghiệp vụ Tiều Phu"
+description = "Lửa trại chỉ là tạm thời. Để xây dựng lâu dài, bạn cần nhiều gỗ hơn. Hãy chế tạo một chiếc Rìu Gỗ và chặt hạ cái cây đầu tiên của bạn."
+type = "main"
+requirements = Dictionary[String, float]({ "recipe_crafted_tool_axe_t1": 1.0, "collect_wood": 10.0 })
+rewards = Dictionary[String, float]({ "gold": 50.0, "exp": 100.0 })
+metadata/_custom_type_script = "uid://docheif6dttt3"
+
+required_quests = Array[String](["main_act1_01_survival"])
+required_level = 0
+reward_items = Dictionary[String, int]({ "stone": 5 })
+next_quest_codes = Array[String](["main_act1_03_automation"])
+time_limit = -1

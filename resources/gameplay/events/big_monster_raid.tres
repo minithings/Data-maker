@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://den11vegd0nak"]
+
+[ext_resource type="Script" uid="uid://07hdih6n6yp4" path="res://script/shared/data/event_data.gd" id="1_s3jqt"]
+
+[resource]
+script = ExtResource("1_s3jqt")
+code = "big_monster_raid"
+name = "Đột Kích Quái Lớn"
+descr = "Quái vật lớn tấn công thành phố mỗi 15 ngày với 12 con quái. Tiêu diệt để nhận phần thưởng hiếm."
+type = "monster_attack"
+repeat_interval = 15
+data = Dictionary[String, Variant]({
+"boss": true,
+"monster_count": 12,
+"reward": "rare_loot",
+"target": "city"
+})

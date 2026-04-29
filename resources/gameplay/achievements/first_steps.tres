@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3 uid="uid://achi_first_steps"]
+
+[ext_resource type="Script" uid="uid://cx5soryltywi6" path="res://script/shared/data/achievement_data.gd" id="1_first_steps"]
+
+[resource]
+script = ExtResource("1_first_steps")
+code = "first_steps"
+name = "Bước Chân Rời Khỏi Cửa"
+description = "Thế giới ngoài kia rộng lớn hơn bạn nghĩ. Khám phá 10 ô đất đầu tiên xung quanh khu vực an toàn."
+icon_emoji = "👣"
+category = "exploration"
+condition_type = "stat"
+condition_key = "tiles_explored"
+condition_value = 10
+secret = false
+sort_order = 30
+metadata/_custom_type_script = "uid://cx5soryltywi6"

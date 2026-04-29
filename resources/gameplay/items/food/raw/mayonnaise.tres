@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://5vpwr857irmy"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_0k25i"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_sffw7"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5mqks"]
+atlas = ExtResource("1_0k25i")
+region = Rect2(64, 0, 16, 16)
+
+[resource]
+
+script = ExtResource("2_sffw7")
+energy_restore = 10
+hunger_restore = 25
+code = "mayonnaise"
+name = "Sốt Mayonnaise"
+description = "Sốt béo ngậy được đánh bông từ trứng và dầu. Dùng làm gia vị chấm rất tuyệt."
+icon = SubResource("AtlasTexture_5mqks")
+buy_price = 120
+category_type = "Consumable"
+
+health_restore = 0
+sell_price = 60
+max_stack_size = 99

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://btomatsauefgf"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_r3utn"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_odor8"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tomsauce"]
+atlas = ExtResource("1_r3utn")
+region = Rect2(80, 64, 16, 16)
+
+[resource]
+script = ExtResource("2_odor8")
+health_restore = 5
+energy_restore = 10
+hunger_restore = 15
+code = "tomato_sauce"
+name = "Tương Cà"
+description = "Cà chua tươi được băm nhuyễn và nấu sền sệt với hành tím, muối và đường. Gia vị nền không thể thiếu trong bếp ăn — cho thêm vào bất cứ món hầm hay kho nào đều dậy mùi hơn."
+icon = SubResource("AtlasTexture_tomsauce")
+max_stack_size = 50
+sell_price = 30
+buy_price = 60

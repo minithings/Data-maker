@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="JobConfiguration" format=3 uid="uid://tgbdv28rk477"]
+
+[ext_resource type="Script" uid="uid://bp2hrge03rxl6" path="res://script/shared/data/jobs/job_configuration.gd" id="1_no4b2"]
+[ext_resource type="Script" uid="uid://d1fwtniq4mnn4" path="res://script/features/jobs/job/job_lumberjack.gd" id="2_4miby"]
+
+[resource]
+script = ExtResource("1_no4b2")
+job_name = "Tiều Phu"
+job_code = "job_lumberjack_post"
+job_type = "lumberjack"
+strategy_script = ExtResource("2_4miby")
+target_resource = Array[String](["tree"])
+metadata/_custom_type_script = "uid://bp2hrge03rxl6"
+
+description = "Đốn hạ cây cối trong khu vực làm việc để duy trì nguồn cung cấp gỗ xây dựng."
+work_radius = 1000
+required_tools = Array[String](["tool_axe_t1"])

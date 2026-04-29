@@ -1,9 +1,5 @@
 @tool
 extends RefCounted
-class_name GDParser
-
-# Parses .gd files to extract @export hints, enum definitions,
-# class_name, extends — mirrors parseGDScript() from index.html
 
 var _re_class_name: RegEx
 var _re_extends: RegEx
@@ -27,16 +23,14 @@ func _init() -> void:
 	_re_export_enum = RegEx.new()
 	_re_export_enum.compile(r"\(([^)]+)\)")
 
-func parse_gdscript(content: String, filename: String, store: DataStore) -> void:
+func parse_gdscript(content: String, filename: String, store) -> void:
 	var hints: Dictionary = {}
 	var enums: Dictionary = {}
 
-	# class_name
 	var cm = _re_class_name.search(content)
 	if cm:
 		store.class_map[cm.get_string(1)] = filename
 
-	# extends
 	var em = _re_extends.search(content)
 	var parent: String = ""
 	if em:
@@ -45,7 +39,6 @@ func parse_gdscript(content: String, filename: String, store: DataStore) -> void
 		else:
 			parent = em.get_string(2)
 
-	# enum declarations
 	for m in _re_enum.search_all(content):
 		var enum_name = m.get_string(1)
 		var raw = m.get_string(2)
@@ -56,7 +49,6 @@ func parse_gdscript(content: String, filename: String, store: DataStore) -> void
 				values.append(v)
 		enums[enum_name] = values
 
-	# var declarations — line by line
 	for line in content.split("\n"):
 		var t = line.strip_edges()
 		var vm = _re_var.search(t)
@@ -85,7 +77,7 @@ func parse_gdscript(content: String, filename: String, store: DataStore) -> void
 
 	store.scripts[filename] = { "hints": hints, "parent": parent }
 
-func get_hint(file: Dictionary, prop: String, store: DataStore) -> Dictionary:
+func get_hint(file: Dictionary, prop: String, store) -> Dictionary:
 	var h: Dictionary = {}
 	var cur = file.get("script_name", "")
 	var depth = 0
@@ -95,7 +87,6 @@ func get_hint(file: Dictionary, prop: String, store: DataStore) -> Dictionary:
 			si = store.scripts.get(store.class_map.get(cur, ""), null)
 		if si == null:
 			break
-		# Child hints override parent
 		var merged: Dictionary = {}
 		for k in si["hints"]:
 			merged[k] = si["hints"][k]
@@ -106,7 +97,7 @@ func get_hint(file: Dictionary, prop: String, store: DataStore) -> Dictionary:
 		depth += 1
 	return h.get(prop, { "type": "default" })
 
-func get_field_type(file: Dictionary, prop: String, store: DataStore) -> String:
+func get_field_type(file: Dictionary, prop: String, store) -> String:
 	var hint = get_hint(file, prop, store)
 	if hint["type"] != "default":
 		return hint["type"]

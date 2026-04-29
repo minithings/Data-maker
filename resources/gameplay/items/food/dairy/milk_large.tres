@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://cta3shicgd3p4"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_0rs0w"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_5ax1g"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wxijy"]
+atlas = ExtResource("1_0rs0w")
+region = Rect2(16, 32, 16, 16)
+
+[resource]
+script = ExtResource("2_5ax1g")
+health_restore = 5
+energy_restore = 30
+hunger_restore = 35
+code = "milk_large"
+name = "Sữa Bò (Lớn)"
+description = "Bình sữa bò vắt buổi sáng sớm cỡ lớn. Uống vào giúp tinh thần sảng khoái."
+icon = SubResource("AtlasTexture_wxijy")
+max_stack_size = 99
+sell_price = 45
+buy_price = 90

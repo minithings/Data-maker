@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://bv47jofvka84c"]
+
+[ext_resource type="Script" uid="uid://con4myvhthet7" path="res://script/features/skill/data/skill_data.gd" id="1_7d5ax"]
+
+[resource]
+script = ExtResource("1_7d5ax")
+code = "double_yield"
+name = "Lộc Kép"
+description = "Đất trời ban phước. Đôi tay khéo léo giúp bạn có thêm cơ hội thu hoạch được lượng nông sản gấp đôi từ cùng một gốc rễ."
+icon_emoji = "🌾"
+prerequisites = Array[String](["quick_hands"])
+max_level = 2
+level_costs = [{
+"player_level": 3,
+"skill_points": 2
+}, {
+"player_level": 6,
+"skill_points": 3
+}]
+level_effects = [{
+"double_yield_chance": 0.1
+}, {
+"double_yield_chance": 0.2
+}]
+children = Array[String](["bountiful_harvest"])

@@ -7,6 +7,7 @@ signal import_requested(json_text: String)
 var _text_edit: TextEdit
 
 func _ready() -> void:
+	hide()
 	title = "Paste Database JSON"
 	size = Vector2(600, 400)
 	wrap_controls = true

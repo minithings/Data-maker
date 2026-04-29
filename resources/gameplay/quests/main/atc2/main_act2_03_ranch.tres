@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" format=3]
+
+[ext_resource type="Script" path="res://script/features/quest/data/quest_data.gd" id="1_rclfh"]
+
+[resource]
+script = ExtResource("1_rclfh")
+code = "main_act2_03_ranch"
+name = "Chăn Nuôi"
+description = "Bắt đầu nuôi động vật để đa dạng nguồn thực phẩm."
+type = "main"
+requirements = Dictionary[String, float]({ "build_barn_or_coop": 1.0 })
+rewards = Dictionary[String, float]({ "exp": 250.0 })
+metadata/_custom_type_script = "uid://docheif6dttt3"
+
+required_quests = Array[String](["main_act1_02_tools"])
+required_level = 0
+reward_items = Dictionary[String, int]({ "seed_wheat": 10 })
+next_quest_codes = Array[String](["main_act2_04_logistics"])
+time_limit = -1

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://cskop1u6fi1l4"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_tbg4o"]
+
+[resource]
+script = ExtResource("1_tbg4o")
+code = "main_act1_05_storage"
+name = "Quy Hoạch Kho Bãi"
+description = "Làng đang lớn mạnh, tài nguyên tràn ngập mặt đất! Hãy xây dựng một Kho Đồ (Warehouse) và một Tháp Nông Sản (Silo) để quản lý tài sản chuyên nghiệp."
+type = "main"
+requirements = Dictionary[String, float]({ "build_warehouse": 1.0, "build_silo": 1.0 })
+rewards = Dictionary[String, float]({ "gold": 300.0, "exp": 300.0 })
+metadata/_custom_type_script = "uid://docheif6dttt3"
+
+required_quests = Array[String](["main_act1_04_farming"])
+required_level = 1
+reward_items = Dictionary[String, int]({ "copper_ore": 5 })
+next_quest_codes = Array[String](["main_act1_06_trade"])
+time_limit = -1

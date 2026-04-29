@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://bbeefstewffgf"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_r3utn"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_odor8"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_beefstew"]
+atlas = ExtResource("1_r3utn")
+region = Rect2(96, 64, 16, 16)
+
+[resource]
+script = ExtResource("2_odor8")
+health_restore = 40
+energy_restore = 50
+hunger_restore = 90
+code = "beef_stew"
+name = "Bò Hầm Rau Củ"
+description = "Thịt bò hầm nhừ cùng khoai tây và cà rốt, nước dùng sánh vàng đậm đà. Món đặc biệt chỉ xuất hiện trong những ngày lễ lớn hoặc khi làng có khách quý."
+icon = SubResource("AtlasTexture_beefstew")
+max_stack_size = 20
+sell_price = 180
+buy_price = 360

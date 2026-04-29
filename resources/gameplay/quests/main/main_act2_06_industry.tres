@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://dq02rpqbsxvbx"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_sn3bg"]
+
+[resource]
+script = ExtResource("1_sn3bg")
+code = "main_act2_06_industry"
+name = "Khi Làng Có Lò Rèn"
+description = "Làng đã đủ sức dựng lò rèn riêng. Không còn phải mua công cụ từ chợ xa — hãy khai thác quặng, đốt lò và tự đúc ra những chiếc cuốc sắt đầu tiên của làng mình."
+type = "main"
+required_quests = Array[String](["main_act2_05_storage"])
+required_level = 5
+requirements = Dictionary[String, float]({
+"complete_research_metallurgy": 1.0,
+"craft_iron_bar": 5.0
+})
+rewards = Dictionary[String, float]({ "gold": 500.0, "exp": 300.0 })
+reward_items = Dictionary[String, int]({ "iron_bar": 10, "coal": 20 })
+unlock_npc = Array[String]([])
+unlock_area = Array[String]([])
+next_quest_codes = Array[String](["main_act3_01_trade"])
+only_at_night = false
+only_when_rain = false
+time_limit = -1
+metadata/_custom_type_script = "uid://docheif6dttt3"

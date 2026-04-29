@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://cvq1i8pcgdk2j"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_ch1at"]
+
+[resource]
+
+
+
+
+
+script = ExtResource("1_ch1at")
+code = "trade"
+name = "Thương Nghiệp"
+description = "Khai thông tuyến đường buôn bán với các thương lái vãng lai. Mở khóa Trạm Giao Thương (Tradepost)."
+flavor_text = "Phi thương bất phú, buôn có bạn bán có phường."
+category = "trade"
+tier = 4
+row_hint = 3
+prerequisites = Array[String](["fishing", "processing"])
+required_village_level = 4
+gold_cost = 500
+item_costs = {"wood":100,"stone":50}
+children = Array[String]([])
+unlocks_buildings = Array[String](["tradepost"])
+unlocks_recipes = Array[String]([])
+unlocks_skills = Array[String]([])
+unlocks_knowledges = Array[String](["knowledge_trade_routes"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

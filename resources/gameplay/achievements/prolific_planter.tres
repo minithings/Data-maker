@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3 uid="uid://achi_prolific_planter"]
+
+[ext_resource type="Script" uid="uid://cx5soryltywi6" path="res://script/shared/data/achievement_data.gd" id="1_prolific_planter"]
+
+[resource]
+script = ExtResource("1_prolific_planter")
+code = "prolific_planter"
+name = "Người Làm Vườn Cần Mẫn"
+description = "Khu vườn của bạn ngày càng rực rỡ sắc màu. Ươm mầm và trồng thành công ít nhất 5 loại cây khác nhau."
+icon_emoji = "🌻"
+category = "farming"
+condition_type = "stat"
+condition_key = "unique_crops_planted"
+condition_value = 5
+secret = false
+sort_order = 12
+metadata/_custom_type_script = "uid://cx5soryltywi6"

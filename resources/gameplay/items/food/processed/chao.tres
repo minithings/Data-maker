@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://bx6k4uevm6ppr"]
+
+[ext_resource type="Texture2D" uid="uid://c3ibp6xacekwi" path="res://graphics/icons/Food.png" id="1_sa050"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_6yqia"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_afogm"]
+atlas = ExtResource("1_sa050")
+region = Rect2(80, 0, 16, 16)
+
+[resource]
+script = ExtResource("2_6yqia")
+health_restore = 15
+energy_restore = 40
+hunger_restore = 80
+code = "chao"
+name = "Cháo"
+description = "Tô cháo trắng nóng hổi, dễ tiêu hóa. Lựa chọn số một khi sức khỏe suy yếu."
+icon = SubResource("AtlasTexture_afogm")
+max_stack_size = 99
+sell_price = 60
+buy_price = 120
+rarity = 1

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://bsalmon06fgff"]
+
+[ext_resource type="Texture2D" uid="uid://bu48mnjmn4tq8" path="res://graphics/icons/crops.png" id="1_kye8j"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_kye8j"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_salmon"]
+atlas = ExtResource("1_kye8j")
+region = Rect2(0, 48, 16, 16)
+
+[resource]
+script = ExtResource("2_kye8j")
+health_restore = 15
+energy_restore = 25
+hunger_restore = 50
+code = "salmon"
+name = "Cá Hồi Suối"
+description = "Loài cá hồi quý hiếm sống ở suối núi nước lạnh trong vắt. Thịt đỏ hồng chắc thơm — người dân vùng cao coi đây là lộc trời ban cho kẻ kiên nhẫn."
+icon = SubResource("AtlasTexture_salmon")
+max_stack_size = 99
+sell_price = 80
+buy_price = 160

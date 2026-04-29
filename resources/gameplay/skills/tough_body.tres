@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://dmaaft7sadvj0"]
+
+[ext_resource type="Script" uid="uid://con4myvhthet7" path="res://script/features/skill/data/skill_data.gd" id="1_tghb"]
+
+[resource]
+script = ExtResource("1_tghb")
+code = "tough_body"
+name = "Mình Đồng Da Sắt"
+description = "Cơ thể trui rèn qua bão táp mưa sa. Giảm tốc độ tiêu hao sinh lực khi làm việc nặng, bền bỉ đối mặt với mọi thử thách khắc nghiệt."
+icon_emoji = "🛡"
+category = "survival"
+prerequisites = Array[String](["stamina_boost"])
+max_level = 2
+level_costs = [{
+"player_level": 3,
+"skill_points": 2
+}, {
+"player_level": 6,
+"skill_points": 3
+}]
+level_effects = [{
+"energy_decay_reduction": 0.15,
+"max_stamina": 15
+}, {
+"energy_decay_reduction": 0.28,
+"max_stamina": 25
+}]
+children = Array[String](["dash", "second_wind"])

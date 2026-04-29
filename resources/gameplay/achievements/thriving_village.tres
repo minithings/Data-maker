@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3 uid="uid://achi_thriving_village"]
+
+[ext_resource type="Script" uid="uid://cx5soryltywi6" path="res://script/shared/data/achievement_data.gd" id="1_thriving_village"]
+
+[resource]
+script = ExtResource("1_thriving_village")
+code = "thriving_village"
+name = "Vùng Đất Trù Phú"
+description = "Từ một bãi đất trống trở thành trung tâm giao thương nhộn nhịp. Nâng cấp ngôi làng của bạn lên cấp tối đa (Cấp 5)."
+icon_emoji = "🏙️"
+category = "building"
+condition_type = "village_level"
+condition_key = ""
+condition_value = 5
+secret = false
+sort_order = 22
+metadata/_custom_type_script = "uid://cx5soryltywi6"

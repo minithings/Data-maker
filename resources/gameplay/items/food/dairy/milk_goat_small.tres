@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://b2kkn43cwsoe"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_tbbku"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_00yrp"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wxijy"]
+atlas = ExtResource("1_tbbku")
+region = Rect2(32, 32, 16, 16)
+
+[resource]
+script = ExtResource("2_00yrp")
+health_restore = 4
+energy_restore = 18
+hunger_restore = 20
+code = "milk_goat_small"
+name = "Sữa Dê (Nhỏ)"
+description = "Sữa dê thanh trùng đóng chai nhỏ, rất tốt cho hệ tiêu hóa."
+icon = SubResource("AtlasTexture_wxijy")
+max_stack_size = 99
+sell_price = 25
+buy_price = 50

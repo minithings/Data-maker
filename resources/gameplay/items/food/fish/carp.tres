@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://ctj5crc2u555l"]
+
+[ext_resource type="Texture2D" uid="uid://bikhvtxpxkrop" path="res://graphics/icons/fish/River/Carp.png" id="1_k7477"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_ly0a4"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0qqr8"]
+atlas = ExtResource("1_k7477")
+region = Rect2(0, 0, 16, 16)
+
+[resource]
+script = ExtResource("2_ly0a4")
+health_restore = 5
+energy_restore = 15
+hunger_restore = 25
+code = "carp"
+name = "Cá Chép"
+description = "Loài cá nước ngọt phổ biến câu được ở sông hồ. Thích hợp để làm món cá nướng."
+icon = SubResource("AtlasTexture_0qqr8")
+max_stack_size = 99
+sell_price = 35
+buy_price = 70

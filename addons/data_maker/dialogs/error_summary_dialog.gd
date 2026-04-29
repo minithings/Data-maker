@@ -7,6 +7,7 @@ signal navigate_to_error(folder: String, file_name: String)
 var _list: ItemList
 
 func _ready() -> void:
+	hide()
 	title = "Validation Errors"
 	size = Vector2(520, 400)
 	wrap_controls = true

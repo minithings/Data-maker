@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ResearchData" format=3 uid="uid://brootvegemasf"]
+
+[ext_resource type="Script" uid="uid://dusv5du6dkjkx" path="res://script/shared/data/research_data.gd" id="1_a3neq"]
+
+[resource]
+script = ExtResource("1_a3neq")
+code = "root_vegetable_mastery"
+name = "Thuần Thục Rau Màu"
+description = "Nắm vững kỹ thuật làm đất, bón phân và tưới tiêu cho từng loại rau củ. Cây lớn nhanh hơn, sản lượng tăng — đất không bao giờ bỏ phí."
+flavor_text = "Đất tốt hay xấu là do bàn tay người làm — không phải do trời."
+category = "farming"
+tier = 3
+prerequisites = Array[String](["vegetable_farming"])
+required_village_level = 3
+gold_cost = 200
+item_costs = {
+"carrot": 10,
+"potato": 10,
+"fertilizer": 5
+}
+children = Array[String]([])
+unlocks_buildings = Array[String]([])
+unlocks_recipes = Array[String]([])
+unlocks_skills = Array[String](["root_crop_expert"])
+production_buffs = {
+"vegetable_grow_speed": 0.2,
+"vegetable_yield_bonus": 0.15
+}
+unlocks_knowledges = Array[String](["knowledge_root_vegetable_mastery"])
+metadata/_custom_type_script = "uid://dusv5du6dkjkx"

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://csvshfua6vte8"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_b3wxy"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_qn4th"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3i67n"]
+atlas = ExtResource("1_b3wxy")
+region = Rect2(48, 16, 16, 16)
+
+[resource]
+script = ExtResource("2_qn4th")
+energy_restore = 8
+hunger_restore = 12
+code = "egg_brown_small"
+name = "Trứng Nâu (Nhỏ)"
+description = "Quả trứng nhỏ vỏ nâu. Một nguyên liệu cơ bản cho nhiều món bánh."
+icon = SubResource("AtlasTexture_3i67n")
+max_stack_size = 99
+sell_price = 12
+buy_price = 24

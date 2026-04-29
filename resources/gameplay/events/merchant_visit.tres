@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EventData" load_steps=2 format=3 uid="uid://cfm32lwk35gi3"]
+
+[ext_resource type="Script" uid="uid://07hdih6n6yp4" path="res://script/shared/data/event_data.gd" id="1_k1a66"]
+
+[resource]
+script = ExtResource("1_k1a66")
+code = "merchant_visit"
+name = "Thương Nhân Ghé Thăm"
+descr = "Thương nhân đặc biệt xuất hiện mỗi 7 ngày. Mang theo hàng hóa và công thức hiếm để giao dịch."
+type = "npc_event"
+day = -1
+season = -1
+year = -1
+repeat_interval = 7
+trigger_time = "day"
+data = Dictionary[String, Variant]({ "npc_id": "merchant", "special_goods": true })
+metadata/_custom_type_script = "uid://cowts8785821r"

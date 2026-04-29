@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3 uid="uid://achi_trail_blazer"]
+
+[ext_resource type="Script" uid="uid://cx5soryltywi6" path="res://script/shared/data/achievement_data.gd" id="1_trail_blazer"]
+
+[resource]
+script = ExtResource("1_trail_blazer")
+code = "trail_blazer"
+name = "Người Tiên Phong"
+description = "Vén bức màn sương mù mờ ảo. Đặt chân đến và khám phá 100 ô đất trên bản đồ thế giới."
+icon_emoji = "🗺️"
+category = "exploration"
+condition_type = "stat"
+condition_key = "tiles_explored"
+condition_value = 100
+secret = false
+sort_order = 31
+metadata/_custom_type_script = "uid://cx5soryltywi6"

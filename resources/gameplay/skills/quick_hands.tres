@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://dg4m2b1chroc1"]
+
+[ext_resource type="Script" uid="uid://con4myvhthet7" path="res://script/features/skill/data/skill_data.gd" id="1_sc"]
+
+[resource]
+script = ExtResource("1_sc")
+code = "quick_hands"
+name = "Thoăn Thoắt Đôi Tay"
+description = "Thao tác gặt hái nhanh như con thoi. Kỹ năng làm nông được rèn luyện qua bao mùa vụ, rút ngắn thời gian làm việc trên cánh đồng."
+icon_emoji = "🌾"
+max_level = 3
+level_costs = [{
+"player_level": 1,
+"skill_points": 1
+}, {
+"player_level": 3,
+"skill_points": 2
+}, {
+"player_level": 5,
+"skill_points": 3
+}]
+level_effects = [{
+"harvest_speed": 0.15
+}, {
+"harvest_speed": 0.27
+}, {
+"harvest_speed": 0.42
+}]
+children = Array[String](["double_yield", "green_thumb"])

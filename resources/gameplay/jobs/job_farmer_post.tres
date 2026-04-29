@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="JobConfiguration" format=3 uid="uid://c1mm8redlxf7a"]
+
+[ext_resource type="Script" uid="uid://bp2hrge03rxl6" path="res://script/shared/data/jobs/job_configuration.gd" id="1_xvtpk"]
+[ext_resource type="Script" uid="uid://bj8j4k3eq4w74" path="res://script/features/jobs/job/job_farmer.gd" id="2_s5xk0"]
+
+[resource]
+script = ExtResource("1_xvtpk")
+job_name = "Nông Dân"
+job_code = "job_farmer_post"
+job_type = "farmer"
+strategy_script = ExtResource("2_s5xk0")
+metadata/_custom_type_script = "uid://bp2hrge03rxl6"
+
+description = "Chăm chỉ gieo hạt, tưới nước và thu hoạch nông sản trên các thửa ruộng được chỉ định."
+work_radius = 500
+target_resource = Array[String](["crop"])
+required_tools = Array[String](["tool_hoe_t1", "tool_watering_can_t1", "tool_scythe_t1"])

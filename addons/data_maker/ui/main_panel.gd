@@ -2,60 +2,82 @@
 extends PanelContainer
 class_name DataMakerMainPanel
 
+const _DataStore          = preload("res://addons/data_maker/core/data_store.gd")
+const _TresParser         = preload("res://addons/data_maker/core/tres_parser.gd")
+const _GDParser           = preload("res://addons/data_maker/core/gd_parser.gd")
+const _JsonHandler        = preload("res://addons/data_maker/core/json_handler.gd")
+const _FileScanner        = preload("res://addons/data_maker/core/file_scanner.gd")
+const _Validator          = preload("res://addons/data_maker/core/validator.gd")
+const _DataMakerToolbar   = preload("res://addons/data_maker/ui/toolbar.gd")
+const _DataMakerSidebar   = preload("res://addons/data_maker/ui/sidebar.gd")
+const _TableGroup         = preload("res://addons/data_maker/ui/table_group.gd")
+const _MultilineDialog    = preload("res://addons/data_maker/dialogs/multiline_dialog.gd")
+const _CollectionDialog   = preload("res://addons/data_maker/dialogs/collection_dialog.gd")
+const _CreateResDialog    = preload("res://addons/data_maker/dialogs/create_resource_dialog.gd")
+const _AddPropDialog      = preload("res://addons/data_maker/dialogs/add_prop_dialog.gd")
+const _RenamePropDialog   = preload("res://addons/data_maker/dialogs/rename_prop_dialog.gd")
+const _ChangeTypeDialog   = preload("res://addons/data_maker/dialogs/change_type_dialog.gd")
+const _ImportDialog       = preload("res://addons/data_maker/dialogs/import_dialog.gd")
+const _ErrorSummaryDialog = preload("res://addons/data_maker/dialogs/error_summary_dialog.gd")
+
 # ── Core objects ──────────────────────────────────────────────────────────────
-var _store: DataStore
-var _tres_parser: TresParser
-var _gd_parser: GDParser
-var _json_handler: JsonHandler
-var _file_scanner: FileScanner
-var _validator: Validator
+var _store
+var _tres_parser
+var _gd_parser
+var _json_handler
+var _file_scanner
+var _validator
 
 # ── UI ────────────────────────────────────────────────────────────────────────
-var _toolbar: DataMakerToolbar
-var _sidebar: DataMakerSidebar
+var _toolbar
+var _sidebar
 var _content: VBoxContainer
+var _table_scroll: ScrollContainer
+var _table_groups: Array = []
+var _sidebar_toggle_btn: Button
 
 # ── Dialogs ───────────────────────────────────────────────────────────────────
-var _multiline_dlg: MultilineDialog
-var _collection_dlg: CollectionDialog
-var _create_dlg: CreateResourceDialog
-var _add_prop_dlg: AddPropDialog
-var _rename_prop_dlg: RenamePropDialog
-var _change_type_dlg: ChangeTypeDialog
-var _import_dlg: ImportDialog
-var _error_dlg: ErrorSummaryDialog
+var _multiline_dlg
+var _collection_dlg
+var _create_dlg
+var _add_prop_dlg
+var _rename_prop_dlg
+var _change_type_dlg
+var _import_dlg
+var _error_dlg
 
-# ── File picker ───────────────────────────────────────────────────────────────
+# ── File pickers ──────────────────────────────────────────────────────────────
 var _dir_dialog: EditorFileDialog
 var _import_file_dialog: EditorFileDialog
 var _export_file_dialog: EditorFileDialog
 
+# ─────────────────────────────────────────────────────────────────────────────
 func _ready() -> void:
 	_init_core()
 	_init_ui()
 	_init_dialogs()
 
-# ─────────────────────────────────────────────────────────────────────────────
 func _init_core() -> void:
-	_store = DataStore.new()
-	_tres_parser = TresParser.new()
-	_gd_parser = GDParser.new()
-	_json_handler = JsonHandler.new()
-	_file_scanner = FileScanner.new(_store, _tres_parser, _gd_parser, _json_handler)
-	_validator = Validator.new(_store, _gd_parser)
+	_store        = _DataStore.new()
+	_tres_parser  = _TresParser.new()
+	_gd_parser    = _GDParser.new()
+	_json_handler = _JsonHandler.new()
+	_file_scanner = _FileScanner.new(_store, _tres_parser, _gd_parser, _json_handler)
+	_validator    = _Validator.new(_store, _gd_parser)
 	_store.scan_complete.connect(_on_scan_complete)
 	_store.dirty_changed.connect(_on_dirty_changed)
 
 func _init_ui() -> void:
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	size_flags_vertical = Control.SIZE_EXPAND_FILL
+	size_flags_vertical   = Control.SIZE_EXPAND_FILL
 
-	var vbox = VBoxContainer.new()
-	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(vbox)
+	var root_vbox = VBoxContainer.new()
+	root_vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root_vbox.add_theme_constant_override("separation", 0)
+	add_child(root_vbox)
 
-	# Toolbar
-	_toolbar = DataMakerToolbar.new()
+	# ── Toolbar ───────────────────────────────────────────────────────────────
+	_toolbar = _DataMakerToolbar.new()
 	_toolbar.open_project_requested.connect(_on_open_project)
 	_toolbar.reload_requested.connect(_on_reload)
 	_toolbar.export_requested.connect(_on_export)
@@ -64,80 +86,128 @@ func _init_ui() -> void:
 	_toolbar.sync_requested.connect(save_dirty_files)
 	_toolbar.issues_requested.connect(_on_show_errors)
 	_toolbar.search_changed.connect(_on_search_changed)
-	vbox.add_child(_toolbar)
+	root_vbox.add_child(_toolbar)
 
-	# Main split
-	var hsplit = HSplitContainer.new()
-	hsplit.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(hsplit)
+	# ── Workspace row: [toggle btn] [sidebar] [table scroll] ─────────────────
+	var workspace = HBoxContainer.new()
+	workspace.size_flags_vertical   = Control.SIZE_EXPAND_FILL
+	workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	workspace.add_theme_constant_override("separation", 0)
+	root_vbox.add_child(workspace)
 
-	# Sidebar
-	_sidebar = DataMakerSidebar.new(_store, _validator)
+	# Sidebar toggle button (thin strip on far left)
+	_sidebar_toggle_btn = Button.new()
+	_sidebar_toggle_btn.text = "◀"
+	_sidebar_toggle_btn.flat = true
+	_sidebar_toggle_btn.custom_minimum_size = Vector2(16, 0)
+	_sidebar_toggle_btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_sidebar_toggle_btn.tooltip_text = "Toggle sidebar"
+	_sidebar_toggle_btn.pressed.connect(_on_toggle_sidebar)
+	workspace.add_child(_sidebar_toggle_btn)
+
+	# Sidebar (folder tree) — starts collapsed to 150px
+	_sidebar = _DataMakerSidebar.new(_store, _validator)
+	_sidebar.custom_minimum_size.x = 150
+	_sidebar.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	_sidebar.folder_selected.connect(_on_folder_selected)
 	_sidebar.new_resource_requested.connect(func(): _create_dlg.open())
-	hsplit.add_child(_sidebar)
+	workspace.add_child(_sidebar)
 
-	# Content scroll
-	var scroll = ScrollContainer.new()
-	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	hsplit.add_child(scroll)
+	var sidebar_vsep = VSeparator.new()
+	workspace.add_child(sidebar_vsep)
+
+	# Table scroll area
+	_table_scroll = ScrollContainer.new()
+	_table_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_table_scroll.vertical_scroll_mode   = ScrollContainer.SCROLL_MODE_AUTO
+	_table_scroll.size_flags_horizontal  = Control.SIZE_EXPAND_FILL
+	_table_scroll.size_flags_vertical    = Control.SIZE_EXPAND_FILL
+	workspace.add_child(_table_scroll)
 
 	_content = VBoxContainer.new()
 	_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(_content)
+	_content.add_theme_constant_override("separation", 6)
+	_table_scroll.add_child(_content)
 
 func _init_dialogs() -> void:
-	_multiline_dlg = MultilineDialog.new()
+	_multiline_dlg = _MultilineDialog.new()
 	_multiline_dlg.content_saved.connect(_on_multiline_saved)
-	add_child(_multiline_dlg)
 
-	_collection_dlg = CollectionDialog.new()
+	_collection_dlg = _CollectionDialog.new()
 	_collection_dlg.collection_saved.connect(_on_collection_saved)
-	add_child(_collection_dlg)
 
-	_create_dlg = CreateResourceDialog.new(_store)
+	_create_dlg = _CreateResDialog.new(_store)
 	_create_dlg.resource_create_requested.connect(_on_create_resource)
-	add_child(_create_dlg)
 
-	_add_prop_dlg = AddPropDialog.new()
+	_add_prop_dlg = _AddPropDialog.new()
 	_add_prop_dlg.property_confirmed.connect(_on_add_property)
-	add_child(_add_prop_dlg)
 
-	_rename_prop_dlg = RenamePropDialog.new()
+	_rename_prop_dlg = _RenamePropDialog.new()
 	_rename_prop_dlg.rename_confirmed.connect(_on_rename_property)
-	add_child(_rename_prop_dlg)
 
-	_change_type_dlg = ChangeTypeDialog.new()
+	_change_type_dlg = _ChangeTypeDialog.new()
 	_change_type_dlg.type_change_confirmed.connect(_on_change_type)
-	add_child(_change_type_dlg)
 
-	_import_dlg = ImportDialog.new()
+	_import_dlg = _ImportDialog.new()
 	_import_dlg.import_requested.connect(_process_import)
-	add_child(_import_dlg)
 
-	_error_dlg = ErrorSummaryDialog.new()
+	_error_dlg = _ErrorSummaryDialog.new()
 	_error_dlg.navigate_to_error.connect(_on_navigate_to_error)
-	add_child(_error_dlg)
 
-	# File pickers
 	_dir_dialog = EditorFileDialog.new()
 	_dir_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
-	_dir_dialog.access = EditorFileDialog.ACCESS_FILESYSTEM
+	_dir_dialog.access   = EditorFileDialog.ACCESS_FILESYSTEM
 	_dir_dialog.dir_selected.connect(_on_dir_selected)
-	add_child(_dir_dialog)
 
 	_import_file_dialog = EditorFileDialog.new()
 	_import_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
 	_import_file_dialog.add_filter("*.json", "JSON Files")
 	_import_file_dialog.file_selected.connect(_on_import_file_selected)
-	add_child(_import_file_dialog)
 
 	_export_file_dialog = EditorFileDialog.new()
 	_export_file_dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
 	_export_file_dialog.add_filter("*.json", "JSON Files")
 	_export_file_dialog.file_selected.connect(_on_export_file_selected)
-	add_child(_export_file_dialog)
+
+	# Window nodes must be children of a Window/Viewport, not a Control.
+	# Add them to the editor root after this node enters the scene tree.
+	call_deferred("_add_dialogs_to_root")
+
+func _add_dialogs_to_root() -> void:
+	var root = get_tree().root if get_tree() else null
+	if root == null:
+		return
+	var windows = [
+		_multiline_dlg, _collection_dlg, _create_dlg, _add_prop_dlg,
+		_rename_prop_dlg, _change_type_dlg, _import_dlg, _error_dlg,
+		_dir_dialog, _import_file_dialog, _export_file_dialog
+	]
+	for w in windows:
+		if w and not w.is_inside_tree():
+			root.add_child(w)
+
+func _popup_dialog(dlg: Window) -> void:
+	var root = get_tree().root
+	root.add_child(dlg)
+	dlg.popup_centered()
+	# Auto-free when closed
+	dlg.close_requested.connect(func():
+		if is_instance_valid(dlg):
+			root.remove_child(dlg)
+			dlg.queue_free()
+	)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		var windows = [
+			_multiline_dlg, _collection_dlg, _create_dlg, _add_prop_dlg,
+			_rename_prop_dlg, _change_type_dlg, _import_dlg, _error_dlg,
+			_dir_dialog, _import_file_dialog, _export_file_dialog
+		]
+		for w in windows:
+			if is_instance_valid(w) and w.is_inside_tree():
+				w.get_parent().remove_child(w)
+				w.queue_free()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Public API
@@ -158,22 +228,30 @@ func save_dirty_files() -> void:
 		if f["dirty"]:
 			paths[f["path"]] = true
 
+	var failed: Array[String] = []
 	for path in paths:
 		var entries = _store.all_files.filter(func(f): return f.get("dirty", false) and f["path"] == path)
 		if entries.is_empty():
 			continue
+		var ok: bool
 		if entries[0]["type"] == "tres":
-			_tres_parser.save_tres(entries[0])
-			entries[0]["dirty"] = false
+			ok = _tres_parser.save_tres(entries[0])
+			if ok: entries[0]["dirty"] = false
 		else:
-			_json_handler.save_json(entries[0]["abs_path"], path, _store)
-			for e in entries:
-				e["dirty"] = false
+			ok = _json_handler.save_json(entries[0]["abs_path"], path, _store)
+			if ok:
+				for e in entries: e["dirty"] = false
+		if not ok:
+			failed.append(path)
 
-	_store.dirty_count = 0
-	_store.dirty_changed.emit(0)
+	_store.dirty_count = _store.all_files.filter(func(f): return f.get("dirty", false)).size()
+	_store.dirty_changed.emit(_store.dirty_count)
 
-	# Trigger Godot editor reimport
+	if not failed.is_empty():
+		OS.alert("Failed to save %d file(s):\n%s\n\nCheck file permissions." % [
+			failed.size(), "\n".join(failed)
+		])
+
 	if Engine.is_editor_hint():
 		EditorInterface.get_resource_filesystem().scan()
 
@@ -192,10 +270,9 @@ func _on_dir_selected(path: String) -> void:
 func _on_reload() -> void:
 	if _store.dirty_count > 0:
 		var dlg = ConfirmationDialog.new()
-		dlg.dialog_text = "Discard unsaved changes?"
+		dlg.dialog_text = "Discard unsaved changes and reload?"
 		dlg.confirmed.connect(func(): _file_scanner.load_project_data(_store.project_root))
-		add_child(dlg)
-		dlg.popup_centered()
+		_popup_dialog(dlg)
 	else:
 		_file_scanner.load_project_data(_store.project_root)
 
@@ -238,9 +315,13 @@ func _on_scan_complete() -> void:
 	_toolbar.set_reload_enabled(true)
 	_toolbar.update_dirty(0, 0)
 
+func _on_toggle_sidebar() -> void:
+	_sidebar.visible = !_sidebar.visible
+	_sidebar_toggle_btn.text = "▶" if not _sidebar.visible else "◀"
+
 func _on_folder_selected(path: String) -> void:
 	_store.active_folder = path
-	_store.search_query = ""
+	_store.search_query  = ""
 	_refresh_table()
 
 func _on_dirty_changed(count: int) -> void:
@@ -248,31 +329,48 @@ func _on_dirty_changed(count: int) -> void:
 	_toolbar.update_errors(_validator.get_error_count())
 
 # ─────────────────────────────────────────────────────────────────────────────
+# inspect_resource_requested: open a .tres in Godot's native Inspector
+# ─────────────────────────────────────────────────────────────────────────────
+
+func _on_inspect_resource(abs_path: String) -> void:
+	if not Engine.is_editor_hint():
+		return
+	var res = ResourceLoader.load(abs_path, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if res:
+		EditorInterface.edit_resource(res)
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Table rendering
 # ─────────────────────────────────────────────────────────────────────────────
 
 func _refresh_table() -> void:
+	var saved_scroll = _table_scroll.scroll_vertical
 	for child in _content.get_children():
 		child.queue_free()
+	_table_groups.clear()
 
 	var grouped = _store.get_grouped_files()
 	for script_name in grouped:
 		var group_files: Array = grouped[script_name]
-		var group_node = TableGroup.new(_store, _validator, _gd_parser)
-		group_node.setup(script_name, group_files)
+		var tg = _TableGroup.new(_store, _validator, _gd_parser)
+		tg.setup(script_name, group_files)
 
-		group_node.entry_add_requested.connect(_on_add_entry)
-		group_node.column_add_requested.connect(func(gf): _add_prop_dlg.open_for(gf))
-		group_node.column_rename_requested.connect(func(prop, gf): _rename_prop_dlg.open_for(prop, gf))
-		group_node.column_change_type_requested.connect(func(prop, gf): _change_type_dlg.open_for(prop, gf, _store))
-		group_node.entry_rename_requested.connect(_on_rename_entry)
-		group_node.entry_duplicate_requested.connect(_on_duplicate_entry)
-		group_node.entry_delete_requested.connect(_on_delete_entry)
-		group_node.multiline_open_requested.connect(func(f, prop): _multiline_dlg.open_for(f, prop))
-		group_node.collection_open_requested.connect(func(f, prop): _collection_dlg.open_for(f, prop))
-		group_node.file_changed.connect(func(_f): _on_dirty_changed(_store.dirty_count))
+		tg.inspect_resource_requested.connect(_on_inspect_resource)
+		tg.entry_add_requested.connect(_on_add_entry)
+		tg.column_add_requested.connect(func(gf): _add_prop_dlg.open_for(gf))
+		tg.column_rename_requested.connect(func(prop, gf): _rename_prop_dlg.open_for(prop, gf))
+		tg.column_change_type_requested.connect(func(prop, gf): _change_type_dlg.open_for(prop, gf, _store))
+		tg.entry_rename_requested.connect(_on_rename_entry)
+		tg.entry_duplicate_requested.connect(_on_duplicate_entry)
+		tg.entry_delete_requested.connect(_on_delete_entry)
+		tg.multiline_open_requested.connect(func(f, prop): _multiline_dlg.open_for(f, prop))
+		tg.collection_open_requested.connect(func(f, prop, gf): _collection_dlg.open_for(f, prop, gf))
+		tg.file_changed.connect(func(_f): _on_dirty_changed(_store.dirty_count))
 
-		_content.add_child(group_node)
+		_content.add_child(tg)
+		_table_groups.append(tg)
+
+	_table_scroll.call_deferred("set", "scroll_vertical", saved_scroll)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CRUD
@@ -282,20 +380,26 @@ func _on_add_entry(group_files: Array, script_name: String) -> void:
 	if group_files.is_empty():
 		return
 	var dlg = AcceptDialog.new()
-	dlg.title = "Add Entry"
+	dlg.title = "New Entry — " + script_name
+	var vb = VBoxContainer.new()
+	var lbl = Label.new()
+	lbl.text = "Identifier:"
+	vb.add_child(lbl)
 	var edit = LineEdit.new()
-	edit.placeholder_text = "Identifier"
-	dlg.add_child(edit)
+	edit.placeholder_text = "my_entry_id"
+	edit.custom_minimum_size.x = 280
+	vb.add_child(edit)
+	dlg.add_child(vb)
 	dlg.confirmed.connect(func():
-		var id = edit.text.strip_edges()
+		var id = _sanitize_name(edit.text)
 		if id == "":
+			OS.alert("Invalid identifier.")
 			return
 		var first = group_files[0]
 		if first["type"] == "json":
 			var ed: Dictionary = {}
 			for k in first["data"]:
-				var v = first["data"][k]
-				match typeof(v):
+				match typeof(first["data"][k]):
 					TYPE_BOOL: ed[k] = false
 					TYPE_INT, TYPE_FLOAT: ed[k] = 0
 					_: ed[k] = ""
@@ -313,12 +417,11 @@ func _on_add_entry(group_files: Array, script_name: String) -> void:
 		_refresh_table()
 		_sidebar.refresh()
 	)
-	add_child(dlg)
-	dlg.popup_centered()
+	_popup_dialog(dlg)
 
 func _on_delete_entry(file: Dictionary) -> void:
 	var dlg = ConfirmationDialog.new()
-	dlg.dialog_text = "Delete '%s'?" % file["name"]
+	dlg.dialog_text = "Delete '%s'? This cannot be undone." % file["name"]
 	dlg.confirmed.connect(func():
 		if file["type"] == "tres":
 			DirAccess.remove_absolute(file["abs_path"])
@@ -331,30 +434,29 @@ func _on_delete_entry(file: Dictionary) -> void:
 		_refresh_table()
 		_sidebar.refresh()
 	)
-	add_child(dlg)
-	dlg.popup_centered()
+	_popup_dialog(dlg)
 
 func _on_rename_entry(file: Dictionary) -> void:
 	var dlg = AcceptDialog.new()
 	dlg.title = "Rename Entry"
 	var edit = LineEdit.new()
 	edit.text = file["name"]
+	edit.custom_minimum_size.x = 280
 	dlg.add_child(edit)
 	dlg.confirmed.connect(func():
-		var new_name = edit.text.strip_edges()
+		var new_name = _sanitize_name(edit.text)
 		if new_name == "" or new_name == file["name"]:
 			return
 		if file["type"] == "tres":
-			var new_fn = new_name if new_name.ends_with(".tres") else new_name + ".tres"
+			var new_fn  = new_name if new_name.ends_with(".tres") else new_name + ".tres"
 			var new_abs = file["abs_path"].get_base_dir().path_join(new_fn)
 			var new_rel = file["path"].get_base_dir().path_join(new_fn).lstrip("/")
 			if _store.all_files.any(func(f): return f["path"] == new_rel):
-				OS.alert("File already exists!")
+				OS.alert("A file with that name already exists.")
 				return
-			# Write new file
 			var fw = FileAccess.open(new_abs, FileAccess.WRITE)
 			if fw:
-				fw.store_string(file["raw_header"].rstrip("\n") + "\n" + file.get("raw_body", "") + "\n")
+				fw.store_string(file.get("raw_header", "").rstrip("\n") + "\n" + file.get("raw_body", "") + "\n")
 				fw.close()
 			DirAccess.remove_absolute(file["abs_path"])
 			var old_id = file["id"]
@@ -362,49 +464,51 @@ func _on_rename_entry(file: Dictionary) -> void:
 			file["id"] = new_rel; file["abs_path"] = new_abs
 			var types = _store.original_types.get(old_id)
 			_store.original_types.erase(old_id)
-			if types:
-				_store.original_types[file["id"]] = types
+			if types: _store.original_types[file["id"]] = types
 		else:
 			var old_id = file["id"]
 			file["name"] = new_name
-			file["id"] = file["path"] + ":" + new_name
+			file["id"]   = file["path"] + ":" + new_name
 			var types = _store.original_types.get(old_id)
 			_store.original_types.erase(old_id)
-			if types:
-				_store.original_types[file["id"]] = types
+			if types: _store.original_types[file["id"]] = types
 			_store.mark_dirty(file)
 		_store.build_tree()
 		_refresh_table()
 		_sidebar.refresh()
 	)
-	add_child(dlg)
-	dlg.popup_centered()
+	_popup_dialog(dlg)
 
 func _on_duplicate_entry(file: Dictionary) -> void:
 	var base = file["name"].trim_suffix(".tres")
-	var dlg = AcceptDialog.new()
+	var dlg  = AcceptDialog.new()
 	dlg.title = "Duplicate Entry"
 	var edit = LineEdit.new()
 	edit.text = base + "_copy"
+	edit.custom_minimum_size.x = 280
 	dlg.add_child(edit)
 	dlg.confirmed.connect(func():
-		var new_name = edit.text.strip_edges()
+		var new_name = _sanitize_name(edit.text)
 		if new_name == "":
+			OS.alert("Invalid name.")
 			return
 		_file_scanner.internal_create_tres(new_name, file["folder"], file["id"], _store)
 		_refresh_table()
 		_sidebar.refresh()
 	)
-	add_child(dlg)
-	dlg.popup_centered()
+	_popup_dialog(dlg)
 
-func _on_create_resource(name: String, ext: String, template_id: String, schema: Array) -> void:
+func _on_create_resource(res_name: String, ext: String, template_id: String, schema: Array) -> void:
+	var safe_name = _sanitize_name(res_name)
+	if safe_name == "":
+		OS.alert("Invalid filename.")
+		return
 	if ext == ".tres":
-		_file_scanner.internal_create_tres(name, _store.active_folder, template_id, _store)
+		_file_scanner.internal_create_tres(safe_name, _store.active_folder, template_id, _store)
 	else:
-		var full_name = name if name.ends_with(".json") else name + ".json"
-		var folder = _store.active_folder
-		var abs_dir = _store.project_root
+		var full_name = safe_name if safe_name.ends_with(".json") else safe_name + ".json"
+		var folder    = _store.active_folder
+		var abs_dir   = _store.project_root
 		if folder != "root" and folder != "":
 			abs_dir = abs_dir.path_join(folder)
 		var abs_path = abs_dir.path_join(full_name)
@@ -420,15 +524,15 @@ func _on_create_resource(name: String, ext: String, template_id: String, schema:
 # Column management
 # ─────────────────────────────────────────────────────────────────────────────
 
-func _on_add_property(name: String, type: String, default_val: String, group_files: Array) -> void:
+func _on_add_property(prop_name: String, type: String, default_val: String, group_files: Array) -> void:
 	var val
 	match type:
-		"number": val = float(default_val) if default_val.is_valid_float() else 0
+		"number":  val = float(default_val) if default_val.is_valid_float() else 0.0
 		"boolean": val = default_val == "true"
-		_: val = default_val
+		_:         val = default_val
 	for f in group_files:
-		if not f["data"].has(name):
-			f["data"][name] = val
+		if not f["data"].has(prop_name):
+			f["data"][prop_name] = val
 			_store.mark_dirty(f)
 			_store.record_types(f["id"], f["data"])
 	_refresh_table()
@@ -450,10 +554,7 @@ func _on_change_type(prop: String, new_type: String, group_files: Array) -> void
 		var val = f["data"].get(prop)
 		match new_type:
 			"number":
-				if typeof(val) == TYPE_BOOL:
-					val = 1 if val else 0
-				else:
-					val = float(str(val)) if str(val).is_valid_float() else 0
+				val = float(str(val)) if str(val).is_valid_float() else 0.0
 			"boolean":
 				val = bool(val)
 			_:
@@ -485,7 +586,7 @@ func _process_import(json_text: String) -> void:
 		return
 	var imported = json.get_data()
 	if typeof(imported) != TYPE_DICTIONARY:
-		OS.alert("Invalid JSON structure")
+		OS.alert("Expected a JSON object at top level.")
 		return
 	var count = 0
 	for f in _store.all_files:
@@ -493,11 +594,23 @@ func _process_import(json_text: String) -> void:
 			f["data"] = imported[f["id"]]
 			_store.mark_dirty(f)
 			count += 1
-	OS.alert("Synced %d items." % count)
+	OS.alert("Synced %d item(s)." % count)
 	_refresh_table()
 
 func _on_navigate_to_error(folder: String, file_name: String) -> void:
 	_store.active_folder = folder
-	_store.search_query = file_name
+	_store.search_query  = file_name
 	_refresh_table()
 	_sidebar.refresh()
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+static func _sanitize_name(raw: String) -> String:
+	var n = raw.strip_edges()
+	if n == "": return ""
+	if "/" in n or "\\" in n or n.contains(".."): return ""
+	for ch in ['<', '>', ':', '"', '|', '?', '*']:
+		if ch in n: return ""
+	return n

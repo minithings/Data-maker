@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://cekerph5d0f2s"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_ryeio"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_1vcfq"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_afogm"]
+atlas = ExtResource("1_ryeio")
+region = Rect2(48, 0, 16, 16)
+
+[resource]
+
+script = ExtResource("2_1vcfq")
+energy_restore = 15
+hunger_restore = 15
+code = "butter"
+name = "Thỏi Bơ"
+description = "Bơ béo ngậy được đánh từ sữa tươi. Dùng để gia tăng hương vị cho nhiều món ăn khác nhau."
+icon = SubResource("AtlasTexture_afogm")
+buy_price = 90
+category_type = "Consumable"
+
+health_restore = 2
+sell_price = 45
+max_stack_size = 99

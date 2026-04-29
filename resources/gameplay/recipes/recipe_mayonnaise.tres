@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3 uid="uid://dyf8ffs45o287"]
+
+[ext_resource type="Script" uid="uid://olfmkhvqb52k" path="res://script/features/inventory/data/recipe_data.gd" id="1_s3ig5"]
+
+[resource]
+script = ExtResource("1_s3ig5")
+name = "Sốt Mayonnaise"
+craft_time = 25
+ingredients = Dictionary[String, int]({ "egg_white": 2 })
+"wheat": 2
+})
+output_item_id = "mayonnaise"
+output_amount = 1
+
+allowed_building_codes = Array[String](["mayo_maker"])

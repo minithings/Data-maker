@@ -1,11 +1,10 @@
 @tool
 extends RefCounted
-class_name Validator
 
-var store: DataStore
-var gd_parser: GDParser
+var store
+var gd_parser
 
-func _init(p_store: DataStore, p_gd: GDParser) -> void:
+func _init(p_store, p_gd) -> void:
 	store = p_store
 	gd_parser = p_gd
 
@@ -21,6 +20,9 @@ func has_issue(file: Dictionary, prop: String) -> bool:
 
 func has_warning(file: Dictionary, prop: String) -> bool:
 	if file["type"] != "tres":
+		return false
+	var field_type = gd_parser.get_field_type(file, prop, store)
+	if field_type in ["bool", "enum", "export_enum"]:
 		return false
 	var v = file["data"].get(prop)
 	return v == "" or v == null

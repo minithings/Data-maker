@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://dlmgra53y2whu"]
+
+[ext_resource type="Script" uid="uid://07hdih6n6yp4" path="res://script/shared/data/event_data.gd" id="1_mcddw"]
+
+[resource]
+
+
+script = ExtResource("1_mcddw")
+metadata/_custom_type_script = "uid://07hdih6n6yp4"
+
+code = "evt_harvest_festival"
+name = "Hội Làng Đêm Trăng"
+description = "Vụ mùa bội thu, các bô lão đề nghị mở hội cúng tế đất trời. Nếu bạn quyên góp đủ lương thực, không khí lễ hội sẽ giúp toàn dân làm việc hăng say trong cả tuần tới."
+flavor_text = "Trống đình rộn rã cờ bay, trai thanh gái lịch vui vầy đêm trăng."
+category = "management"
+trigger_type = "fixed_date"
+season_allowed = Array[String](["autumn"])
+required_village_level = 3
+duration_days = 1
+choices = [{"id": "host_big", "text": "Làm mâm cỗ lớn (Tốn 100 Lương thực tổng hợp)"}, {"id": "cancel", "text": "Hủy bỏ hội làng để tiết kiệm"}]
+outcomes = [{"choice": "host_big", "village_happiness": 30, "npc_work_speed_bonus": 0.2, "buff_duration_days": 7}, {"choice": "cancel", "village_happiness": -20, "npc_work_speed_bonus": -0.1, "buff_duration_days": 3}]
+icon_path = "res://assets/ui/events/harvest_festival.png"

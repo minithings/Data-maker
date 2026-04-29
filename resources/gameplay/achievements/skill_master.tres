@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3 uid="uid://achi_skill_master"]
+
+[ext_resource type="Script" uid="uid://cx5soryltywi6" path="res://script/shared/data/achievement_data.gd" id="1_skill_master"]
+
+[resource]
+script = ExtResource("1_skill_master")
+code = "skill_master"
+name = "Chiến Binh Đa Năng"
+description = "Làm chủ nhiều trường phái chiến đấu khác nhau. Thuần thục 5 kỹ năng trong bảng kỹ năng."
+icon_emoji = "💫"
+category = "combat"
+condition_type = "stat"
+condition_key = "skills_unlocked"
+condition_value = 5
+secret = false
+sort_order = 41
+metadata/_custom_type_script = "uid://cx5soryltywi6"

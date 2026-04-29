@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://bsuh2av3vtgsi"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_av68p"]
+
+[resource]
+script = ExtResource("1_av68p")
+code = "main_act1_06_trade"
+name = "Thương Gia Tập Sự"
+description = "Để nâng cấp lên đồ đồng, bạn cần nhiều vàng hơn. Hãy xây dựng Trạm Giao Thương (Tradepost) và hoàn thành giao dịch bán hàng đầu tiên."
+type = "main"
+requirements = Dictionary[String, float]({ "build_tradepost": 1.0, "trades_done": 1.0 })
+rewards = Dictionary[String, float]({ "gold": 500.0, "exp": 500.0 })
+metadata/_custom_type_script = "uid://docheif6dttt3"
+
+required_quests = Array[String](["main_act1_05_storage"])
+required_level = 1
+reward_items = Dictionary[String, int]({})
+unlock_area = Array[String](["market_district"])
+next_quest_codes = Array[String]([])
+time_limit = -1

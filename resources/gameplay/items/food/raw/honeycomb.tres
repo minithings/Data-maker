@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ItemFoodData" format=3 uid="uid://34fppj36t2w"]
+
+[ext_resource type="Texture2D" uid="uid://c6gw0hjiiow46" path="res://graphics/icons/food 0.1.png" id="1_7duh5"]
+[ext_resource type="Script" uid="uid://cokww0ljm78wd" path="res://script/features/item/data/item_food_data.gd" id="2_e4fy7"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_afogm"]
+atlas = ExtResource("1_7duh5")
+region = Rect2(16, 0, 16, 16)
+
+[resource]
+
+script = ExtResource("2_e4fy7")
+energy_restore = 15
+hunger_restore = 10
+code = "honeycomb"
+name = "Sáp Ong"
+description = "Khối sáp ong nguyên chất cắt ra từ tổ. Có thể nhai trực tiếp hoặc dùng để ép mật."
+icon = SubResource("AtlasTexture_afogm")
+buy_price = 70
+category_type = "Consumable"
+
+health_restore = 2
+sell_price = 35
+max_stack_size = 99

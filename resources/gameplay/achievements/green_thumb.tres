@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AchievementData" format=3 uid="uid://achi_green_thumb"]
+
+[ext_resource type="Script" uid="uid://cx5soryltywi6" path="res://script/shared/data/achievement_data.gd" id="1_green_thumb"]
+
+[resource]
+script = ExtResource("1_green_thumb")
+code = "green_thumb"
+name = "Bàn Tay Mát Nước"
+description = "Khả năng thấu hiểu nhịp đập của đất giúp hạt mầm đâm chồi và trưởng thành với tốc độ kinh ngạc. Đạt 100 lần thu hoạch."
+icon_emoji = "🌱"
+category = "farming"
+condition_type = "stat"
+condition_key = "total_harvests"
+condition_value = 100
+secret = false
+sort_order = 11
+metadata/_custom_type_script = "uid://cx5soryltywi6"
+
+prerequisites = Array[String](["quick_hands"])
+max_level = 2.0
+level_costs = [{"skill_points": 2, "player_level": 3}, {"skill_points": 3, "player_level": 6}]
+level_effects = [{"crop_grow_speed": 0.15}, {"crop_grow_speed": 0.30}]
+children = Array[String](["bountiful_harvest"])

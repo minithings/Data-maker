@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://v8syhnklqjn5"]
+
+[ext_resource type="Script" uid="uid://dkb3ymydwprj2" path="res://script/features/quest/data/quest_data.gd" id="1_bq8oc"]
+
+[resource]
+script = ExtResource("1_bq8oc")
+code = "tut_build_05_infrastructure"
+name = "Tuyến Đường Huyết Mạch"
+description = "Hàng hóa trong làng luân chuyển chậm quá. Hãy lát 10 ô Đường Mòn Bằng Đất (Dirt Road) nối từ Kho đến các trạm làm việc. Cư dân và Người Vận Chuyển sẽ đi nhanh hơn hẳn khi bước trên đường đấy!"
+type = "tutor"
+requirements = Dictionary[String, float]({ "build_dirt_road": 10.0 })
+rewards = Dictionary[String, float]({ "exp": 250.0, "gold": 200.0 })
+next_quest_codes = Array[String]([])
+
+required_quests = Array[String](["tut_build_04_ranching"])
+required_level = 2
+reward_items = Dictionary[String, int]({ "stone": 30 })
+time_limit = -1

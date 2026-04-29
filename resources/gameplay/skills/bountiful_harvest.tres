@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SkillData" format=3 uid="uid://51hdj8dii86q"]
+
+[ext_resource type="Script" uid="uid://con4myvhthet7" path="res://script/features/skill/data/skill_data.gd" id="1_bth"]
+
+[resource]
+script = ExtResource("1_bth")
+code = "bountiful_harvest"
+name = "Mùa Vàng Bội Thu"
+description = "Đỉnh cao của nghề nông. Sự hiện diện của bạn trên cánh đồng truyền cảm hứng cho dân làng, khiến lúa trĩu hạt và người người làm việc quên mệt mỏi."
+icon_emoji = "🌟"
+category = "village"
+prerequisites = Array[String](["double_yield", "green_thumb"])
+level_costs = [{
+"player_level": 8,
+"skill_points": 4
+}]
+level_effects = [{
+"aura_radius": 350,
+"crop_yield_bonus": 0.2,
+"npc_harvest_speed_aura": 0.12
+}]
