@@ -72,7 +72,6 @@ func update_errors(count: int) -> void:
 func set_reload_enabled(v: bool) -> void:
 	_reload_btn.disabled = not v
 
-@discardable
 func _make_btn(label: String, cb: Callable, color: Color = Color.WHITE) -> Button:
 	var btn = Button.new()
 	btn.text = label
