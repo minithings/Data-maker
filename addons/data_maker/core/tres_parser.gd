@@ -105,15 +105,12 @@ func parse_tres_body(body: String) -> Dictionary:
 		if BLACKLIST.has(key_lower) or key.begins_with("metadata/"):
 			continue
 
-		# Skip built-in Godot types we can't edit
+		# Skip built-in Godot types we can't edit as plain text
 		var skip = false
 		for gt in GODOT_TYPES:
 			if val.begins_with(gt + "("):
 				skip = true
 				break
-		# Skip typed Array[X](...) and Dictionary[X,Y](...) — Godot native, not user-editable text
-		if not skip and (val.begins_with("Array[") or val.begins_with("Dictionary[")):
-			skip = true
 		if skip:
 			continue
 

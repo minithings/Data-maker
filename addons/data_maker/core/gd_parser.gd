@@ -1,11 +1,23 @@
 @tool
 extends RefCounted
 
+# Scalar primitive types (directly editable as text/bool/number)
+const PRIMITIVE_TYPES: Array[String] = [
+	"String", "StringName", "int", "float", "bool",
+]
+
+# Array element types that are considered primitive (Array[X] where X is in this list → collection)
+const PRIMITIVE_ARRAY_ELEM: Array[String] = [
+	"String", "StringName", "int", "float", "bool",
+	"Dictionary",
+]
+
 var _re_class_name: RegEx
 var _re_extends: RegEx
 var _re_enum: RegEx
 var _re_var: RegEx
 var _re_export_enum: RegEx
+var _re_type_annotation: RegEx
 
 func _init() -> void:
 	_re_class_name = RegEx.new()
@@ -22,6 +34,10 @@ func _init() -> void:
 
 	_re_export_enum = RegEx.new()
 	_re_export_enum.compile(r"\(([^)]+)\)")
+
+	# Matches ": TypeName" or ": Array[TypeName]" in a var declaration line
+	_re_type_annotation = RegEx.new()
+	_re_type_annotation.compile(r":\s*(Array\[([A-Za-z_]\w*)\]|Dictionary|([A-Za-z_]\w*))")
 
 func parse_gdscript(content: String, filename: String, store) -> void:
 	var hints: Dictionary = {}
@@ -68,6 +84,10 @@ func parse_gdscript(content: String, filename: String, store) -> void:
 				for o in em2.get_string(1).split(","):
 					opts.append(o.strip_edges().trim_prefix('"').trim_suffix('"').trim_prefix("'").trim_suffix("'"))
 				hints[var_name] = { "type": "export_enum", "options": opts, "default": 0 }
+		elif "= []" in t and is_export:
+			hints[var_name] = { "type": "collection", "default": [] }
+		elif "= {}" in t and is_export:
+			hints[var_name] = { "type": "collection", "default": {} }
 		elif ": bool" in t or "= true" in t or "= false" in t:
 			var default_bool = true if "= true" in t else false
 			hints[var_name] = { "type": "bool", "default": default_bool }
@@ -83,8 +103,31 @@ func parse_gdscript(content: String, filename: String, store) -> void:
 					matched_enum = true
 					break
 			if not matched_enum:
-				var default_str = _parse_default_string(t)
-				hints[var_name] = { "type": "default", "default": default_str }
+				var tm = _re_type_annotation.search(t)
+				if tm:
+					var full   = tm.get_string(1)  # e.g. "Array[String]", "Dictionary", "Texture2D"
+					var elem   = tm.get_string(2)   # inner type if Array[X], else ""
+					var scalar = tm.get_string(3)   # plain type if not Array/Dict, else ""
+					if full.begins_with("Array["):
+						if elem in PRIMITIVE_ARRAY_ELEM:
+							# Array[String], Array[int], Array[Dictionary] → editable collection
+							hints[var_name] = { "type": "collection", "default": [] }
+						else:
+							# Array[LootData], Array[FishData] etc. → unsupported
+							hints[var_name] = { "type": "unsupported", "gdtype": full, "default": null }
+					elif full == "Dictionary":
+						hints[var_name] = { "type": "collection", "default": {} }
+					elif scalar in PRIMITIVE_TYPES:
+						# String, int, float → default text field
+						var default_str = _parse_default_string(t)
+						hints[var_name] = { "type": "default", "default": default_str }
+					else:
+						# Texture2D, ItemStatData, FishData, etc. → unsupported
+						hints[var_name] = { "type": "unsupported", "gdtype": scalar, "default": null }
+				else:
+					# No type annotation — treat as plain string
+					var default_str = _parse_default_string(t)
+					hints[var_name] = { "type": "default", "default": default_str }
 
 	store.scripts[filename] = { "hints": hints, "parent": parent }
 

@@ -41,10 +41,6 @@ func setup(script_name: String, group_files: Array) -> void:
 	_script_name = script_name
 	_group_files = group_files
 	_fields      = _get_fields(group_files)
-	if _script_name == "item_data.gd":
-		print("[DM_FIELDS] ", _script_name, " → ", _fields)
-		if not _group_files.is_empty():
-			print("[DM_DATA] ash data = ", _group_files[0]["data"])
 	_build_ui()
 
 # Returns the authoritative field list for this group.
@@ -78,9 +74,14 @@ func _get_fields(group_files: Array) -> Array:
 					all_keys.append(k)
 		return all_keys
 
-	# Use hint keys as the authoritative column order (matches @export declaration order)
-	# all_hints is built in order via the while-loop below — return as ordered array
-	return all_hints.keys()
+	# Filter: skip fields whose GDScript type is an unsupported Resource/Object type
+	var renderable: Array = []
+	var sample = group_files[0]
+	for k in all_hints.keys():
+		var h = _gd_parser.get_hint(sample, k, _store)
+		if h.get("type") != "unsupported":
+			renderable.append(k)
+	return renderable
 
 # Walk the inheritance chain and return an ordered dict of all @export field names.
 func _collect_hints(script_file: String) -> Dictionary:
@@ -399,17 +400,15 @@ func _make_cell(file: Dictionary, prop: String) -> Control:
 		pad.add_child(_make_extref_cell(val, file))
 		return outer
 
-	# Bool fields always render as CheckButton regardless of null/empty value
+	# Bool fields: build CheckButton here so we can use the already-injected `val`
+	# (CellRenderer.make_cell re-reads file["data"].get(prop) which misses injected default)
 	if field_type == "bool":
-		var bool_cell = _CellRenderer.make_cell(
-			file, prop, "bool", hint, false, false,
-			func(v): _on_value_changed(file, prop, v),
-			func(): multiline_open_requested.emit(file, prop),
-			func(): collection_open_requested.emit(file, prop, _group_files)
-		)
-		bool_cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		bool_cell.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
-		pad.add_child(bool_cell)
+		var btn = CheckButton.new()
+		btn.button_pressed = true if val else false
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.size_flags_vertical   = Control.SIZE_SHRINK_CENTER
+		btn.toggled.connect(func(v): _on_value_changed(file, prop, v))
+		pad.add_child(btn)
 		return outer
 
 	# Null/empty value whose type looks like a collection in sibling entries →
@@ -428,12 +427,13 @@ func _make_cell(file: Dictionary, prop: String) -> Control:
 		pad.add_child(btn)
 		return outer
 
-	# Normal editable cell via CellRenderer
+	# Normal editable cell via CellRenderer — pass injected val so default is shown correctly
 	var cell = _CellRenderer.make_cell(
 		file, prop, field_type, hint, hi, hw,
 		func(v): _on_value_changed(file, prop, v),
 		func(): multiline_open_requested.emit(file, prop),
-		func(): collection_open_requested.emit(file, prop, _group_files)
+		func(): collection_open_requested.emit(file, prop, _group_files),
+		val
 	)
 	cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cell.size_flags_vertical   = Control.SIZE_SHRINK_CENTER

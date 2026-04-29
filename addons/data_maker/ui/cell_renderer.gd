@@ -63,9 +63,10 @@ static func make_cell(
 	file: Dictionary, prop: String,
 	field_type: String, hint: Dictionary,
 	has_issue: bool, has_warning: bool,
-	on_change: Callable, on_multiline: Callable, on_collection: Callable
+	on_change: Callable, on_multiline: Callable, on_collection: Callable,
+	injected_val
 ) -> Control:
-	var val = file["data"].get(prop)
+	var val = injected_val
 
 	match field_type:
 		"multiline":
@@ -123,7 +124,7 @@ static func _make_multiline_cell(val, on_multiline: Callable) -> Control:
 # ── Bool ───────────────────────────────────────────────────────────────────
 static func _make_bool_cell(val, on_change: Callable) -> Control:
 	var btn = CheckButton.new()
-	btn.button_pressed = bool(val)
+	btn.button_pressed = true if val else false
 	btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	btn.toggled.connect(func(v): on_change.call(v))
 	return btn
