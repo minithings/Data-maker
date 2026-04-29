@@ -80,6 +80,7 @@ func _init_ui() -> void:
 	var root_vbox = VBoxContainer.new()
 	root_vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root_vbox.add_theme_constant_override("separation", 0)
+	root_vbox.offset_top = 4
 	add_child(root_vbox)
 
 	# Toolbar
@@ -93,6 +94,10 @@ func _init_ui() -> void:
 	_toolbar.issues_requested.connect(_on_show_errors)
 	_toolbar.search_changed.connect(_on_search_changed)
 	root_vbox.add_child(_toolbar)
+
+	var top_gap = Control.new()
+	top_gap.custom_minimum_size = Vector2(0, 6)
+	root_vbox.add_child(top_gap)
 
 	# Workspace: [toggle][sidebar][sep][table]
 	var workspace = HBoxContainer.new()
