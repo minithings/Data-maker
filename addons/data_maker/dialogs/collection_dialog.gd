@@ -14,6 +14,7 @@ var _array_dicts: Array = []  # For array_dict: [[{k,v},...],...]
 
 var _body_container: VBoxContainer
 var _preview_label: Label
+var _type_label: Label
 
 func _ready() -> void:
 	hide()
@@ -28,10 +29,9 @@ func _ready() -> void:
 
 	# Header info
 	var hdr = HBoxContainer.new()
-	var type_label = Label.new()
-	type_label.name = "TypeLabel"
-	type_label.add_theme_font_size_override("font_size", 11)
-	hdr.add_child(type_label)
+	_type_label = Label.new()
+	_type_label.add_theme_font_size_override("font_size", 11)
+	hdr.add_child(_type_label)
 	vbox.add_child(hdr)
 
 	# Body area (scrollable)
@@ -92,9 +92,7 @@ func open_for(file: Dictionary, prop: String, group_files: Array = []) -> void:
 		_array_dicts = _parse_array_dicts(v) if _kind == "array_dict" else []
 
 	title = "Collection Editor — %s" % prop
-	var type_label = get_node("VBoxContainer/HBoxContainer/TypeLabel")
-	if type_label:
-		type_label.text = "%s  [%s]" % [_godot_type, _kind]
+	_type_label.text = "%s  [%s]" % [_godot_type, _kind]
 
 	_rebuild_body()
 	_update_preview()
@@ -250,9 +248,7 @@ func _build_raw_picker() -> void:
 			_items = []
 			_pairs = []
 			_array_dicts = []
-			var tl = get_node_or_null("VBoxContainer/HBoxContainer/TypeLabel")
-			if tl:
-				tl.text = "%s  [%s]" % [_godot_type, _kind]
+			_type_label.text = "%s  [%s]" % [_godot_type, _kind]
 			_rebuild_body()
 			_update_preview()
 		)
